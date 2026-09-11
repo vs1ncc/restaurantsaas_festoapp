@@ -1,0 +1,4071 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import "./index.css";
+
+const ADMIN_EMAIL = "yosoycastello@gmail.com";
+const ADMIN_PASSWORD = "admin";
+
+const STORAGE = {
+  restaurants: "festo_restaurants",
+  categories: "festo_categories",
+  dishes: "festo_dishes",
+  tables: "festo_tables",
+  orders: "festo_orders",
+};
+
+const DEFAULT_RESTAURANT = {
+  id: "demo-restaurant",
+  legalName: "ООО «Фесто»",
+  inn: "0000000000",
+  phone: "+7 900 000-00-00",
+  name: "Demo Restaurant",
+  address: "Адрес ресторана",
+  accent: "#6C4BF4",
+  login: "director",
+  password: "123456",
+  license: "FESTO-DEMO-2026",
+};
+
+const DEFAULT_CATEGORIES = [
+  {
+    id: "cat-hot",
+    restaurantId: "demo-restaurant",
+    name: "Основные блюда",
+    sort: 1,
+  },
+  {
+    id: "cat-snacks",
+    restaurantId: "demo-restaurant",
+    name: "Закуски",
+    sort: 2,
+  },
+  {
+    id: "cat-drinks",
+    restaurantId: "demo-restaurant",
+    name: "Напитки",
+    sort: 3,
+  },
+];
+
+const DEFAULT_DISHES = [
+  {
+    id: "dish-1",
+    restaurantId: "demo-restaurant",
+    categoryId: "cat-hot",
+    name: "Паста Карбонара",
+    description: "Паста, бекон, сливочный соус и пармезан",
+    price: 690,
+    image:
+      "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80",
+    active: true,
+  },
+  {
+    id: "dish-2",
+    restaurantId: "demo-restaurant",
+    categoryId: "cat-hot",
+    name: "Стейк с овощами",
+    description: "Сочный стейк с сезонными овощами",
+    price: 1490,
+    image:
+      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=900&q=80",
+    active: true,
+  },
+  {
+    id: "dish-3",
+    restaurantId: "demo-restaurant",
+    categoryId: "cat-snacks",
+    name: "Брускетта",
+    description: "Хрустящий хлеб, томаты, зелень и оливковое масло",
+    price: 420,
+    image:
+      "https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=900&q=80",
+    active: true,
+  },
+  {
+    id: "dish-4",
+    restaurantId: "demo-restaurant",
+    categoryId: "cat-snacks",
+    name: "Сырная тарелка",
+    description: "Ассорти европейских сыров",
+    price: 850,
+    image:
+      "https://images.unsplash.com/photo-1452195100486-9cc805987862?auto=format&fit=crop&w=900&q=80",
+    active: true,
+  },
+  {
+    id: "dish-5",
+    restaurantId: "demo-restaurant",
+    categoryId: "cat-drinks",
+    name: "Лимонад",
+    description: "Домашний лимонад с цитрусами",
+    price: 290,
+    image:
+      "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=900&q=80",
+    active: true,
+  },
+];
+
+const DEFAULT_TABLES = [
+  {
+    id: "table-1",
+    restaurantId: "demo-restaurant",
+    name: "Столик 1",
+    number: "1",
+  },
+  {
+    id: "table-2",
+    restaurantId: "demo-restaurant",
+    name: "Столик 2",
+    number: "2",
+  },
+];
+
+function readStorage(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    if (!value) return fallback;
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStorage(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function uid(prefix = "id") {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function money(value) {
+  return `${Number(value || 0).toLocaleString("ru-RU")} ₽`;
+}
+
+function getInitials(name = "") {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((x) => x[0])
+    .join("")
+    .toUpperCase() || "F";
+}
+
+function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
+  const paths = {
+    home: <><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/></>,
+    restaurant: <><path d="M6 3v7"/><path d="M3.5 3v4.5a2.5 2.5 0 0 0 5 0V3"/><path d="M6 10v11"/><path d="M15.5 3v18"/><path d="M15.5 3c3.2 1.2 3.2 5.8 0 7"/></>,
+    license: <><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></>,
+    settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V20H10v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4v-2h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1L7 7.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V6h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v2h-.1a1.7 1.7 0 0 0-1.5 1Z"/></>,
+    menu: <><path d="M5 6h14M5 12h14M5 18h14"/></>,
+    table: <><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11M15 9v11"/></>,
+    orders: <><path d="M6 3h12l2 4v14H4V7l2-4Z"/><path d="M4 8h16M8 13h8M8 17h5"/></>,
+    plus: <><path d="M12 5v14M5 12h14"/></>,
+    edit: <><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5a2.5 2.5 0 0 0-3.5-3.5L4 16.5Z"/><path d="m14 7 3 3"/></>,
+    trash: <><path d="M4 7h16M10 11v6M14 11v6"/><path d="M7 7l1 14h8l1-14M9 7l1-3h4l1 3"/></>,
+    eye: <><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></>,
+    eyeOff: <><path d="m3 3 18 18M10.6 6.2A9.7 9.7 0 0 1 12 6c6.1 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.6M6.3 6.3C3.9 8.2 2.5 12 2.5 12s3.4 6 9.5 6c1.2 0 2.3-.2 3.3-.6"/></>,
+    upload: <><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 14v6h14v-6"/></>,
+    spark: <><path d="m12 2 1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5L12 2Z"/><path d="m19 16 .6 2.4L22 19l-2.4.6L19 22l-.6-2.4L16 19l2.4-.6L19 16Z"/></>,
+    search: <><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></>,
+    close: <><path d="m6 6 12 12M18 6 6 18"/></>,
+    check: <><path d="m5 12 4.2 4.2L19 6.5"/></>,
+    file: <><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/></>,
+    image: <><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="m5 17 4.5-4 3 2.5 2.5-2 4 3.5"/></>,
+    logout: <><path d="M10 5H5v14h5M14 8l4 4-4 4M9 12h9"/></>,
+    arrow: <><path d="M5 12h14M13 6l6 6-6 6"/></>,
+  };
+  return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
+}
+
+function customerUrl(tableId) {
+  return `${window.location.origin}${window.location.pathname}?table=${encodeURIComponent(
+    tableId
+  )}`;
+}
+
+/* -------------------------------------------------------
+   AUTH
+------------------------------------------------------- */
+
+function Auth({ restaurants, onLogin }) {
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  function submit(e) {
+    e.preventDefault();
+    setError("");
+
+    const normalized = login.trim().toLowerCase();
+
+    // Главное правило:
+    // главный администратор ВСЕГДА определяется по email.
+    // Он никогда не становится директором ресторана.
+    if (normalized === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      onLogin({
+        role: "admin",
+        email: ADMIN_EMAIL,
+      });
+      return;
+    }
+
+    const restaurant = restaurants.find(
+      (item) =>
+        item.login?.trim().toLowerCase() === normalized &&
+        item.password === password
+    );
+
+    if (restaurant) {
+      onLogin({
+        role: "director",
+        restaurantId: restaurant.id,
+        login: restaurant.login,
+      });
+      return;
+    }
+
+    setError("Неверный логин или пароль");
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-glow glow-one" />
+      <div className="auth-glow glow-two" />
+
+      <form className="auth-card" onSubmit={submit}>
+        <div className="logo">F</div>
+
+        <div className="eyebrow">FESTO</div>
+
+        <h1>Добро пожаловать</h1>
+
+        <p className="auth-description">
+          Войдите в систему управления рестораном
+        </p>
+
+        {error && <div className="error">{error}</div>}
+
+        <div className="input-group">
+          <label>Логин</label>
+          <input
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
+            placeholder="Введите логин"
+            autoComplete="username"
+          />
+        </div>
+
+        <div className="input-group">
+          <label>Пароль</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Введите пароль"
+            autoComplete="current-password"
+          />
+        </div>
+
+        <button className="login-button" type="submit">
+          Войти
+        </button>
+      </form>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   ADMIN
+------------------------------------------------------- */
+
+function AdminApp({
+  restaurants,
+  setRestaurants,
+  categories,
+  dishes,
+  tables,
+  orders,
+  setTables,
+  setOrders,
+  onLogout,
+}) {
+  const [page, setPage] = useState("dashboard");
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+
+  const activeRestaurant =
+    restaurants.find((r) => r.id === selectedRestaurant) || null;
+
+  function deleteRestaurant(id) {
+    if (id === "demo-restaurant") {
+      alert("Демо-ресторан нельзя удалить.");
+      return;
+    }
+
+    const restaurant = restaurants.find((r) => r.id === id);
+
+    if (!restaurant) return;
+
+    if (
+      !window.confirm(
+        `Удалить ресторан «${restaurant.name}»?\n\nВсе связанные меню, столы и заказы также будут удалены.`
+      )
+    ) {
+      return;
+    }
+
+    setRestaurants((prev) => prev.filter((r) => r.id !== id));
+    setTables((prev) => prev.filter((t) => t.restaurantId !== id));
+  }
+
+  return (
+    <div className="app-shell">
+      <Sidebar
+        page={page}
+        setPage={setPage}
+        role="admin"
+        onLogout={onLogout}
+      />
+
+      <main className="main-content">
+        <Topbar
+          title={getAdminPageTitle(page)}
+          name="Администратор"
+          subtitle={ADMIN_EMAIL}
+        />
+
+        {page === "dashboard" && (
+          <AdminDashboard
+            restaurants={restaurants}
+            categories={categories}
+            dishes={dishes}
+            tables={tables}
+            orders={orders}
+            onCreate={() => setShowCreate(true)}
+            onRestaurants={() => setPage("restaurants")}
+          />
+        )}
+
+        {page === "restaurants" && (
+          <RestaurantsPage
+            restaurants={restaurants}
+            onCreate={() => setShowCreate(true)}
+            onSelect={(id) => {
+              setSelectedRestaurant(id);
+              setPage("restaurant-details");
+            }}
+            onDelete={deleteRestaurant}
+          />
+        )}
+
+        {page === "licenses" && (
+          <LicensesPage restaurants={restaurants} />
+        )}
+
+        {page === "restaurant-details" && activeRestaurant && (
+          <RestaurantDetails
+            restaurant={activeRestaurant}
+            categories={categories}
+            dishes={dishes}
+            tables={tables}
+            orders={orders}
+            onBack={() => setPage("restaurants")}
+            onUpdate={(updated) => {
+              setRestaurants((prev) =>
+                prev.map((r) => (r.id === updated.id ? updated : r))
+              );
+            }}
+          />
+        )}
+
+        {page === "settings" && (
+          <SettingsPage
+            title="Настройки"
+            subtitle="Основные параметры приложения Festo"
+            email={ADMIN_EMAIL}
+          />
+        )}
+
+        {showCreate && (
+          <CreateRestaurantModal
+            restaurants={restaurants}
+            onClose={() => setShowCreate(false)}
+            onCreate={(restaurant) => {
+              setRestaurants((prev) => [...prev, restaurant]);
+              setShowCreate(false);
+            }}
+          />
+        )}
+      </main>
+
+      <MobileBar
+        page={page}
+        setPage={setPage}
+        role="admin"
+      />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   DIRECTOR
+------------------------------------------------------- */
+
+function DirectorApp({
+  restaurant,
+  categories,
+  setCategories,
+  dishes,
+  setDishes,
+  tables,
+  setTables,
+  orders,
+  setOrders,
+  setRestaurants,
+  onLogout,
+}) {
+  const [page, setPage] = useState("dashboard");
+
+  function openLiveOrders() {
+    const url = `${window.location.origin}${window.location.pathname}?liveOrders=${encodeURIComponent(
+      restaurant.id
+    )}`;
+
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  if (!restaurant) {
+    return (
+      <Auth
+        restaurants={[]}
+        onLogin={() => {}}
+      />
+    );
+  }
+
+  const restaurantDishes = dishes.filter(
+    (d) => d.restaurantId === restaurant.id
+  );
+
+  const restaurantCategories = categories.filter(
+    (c) => c.restaurantId === restaurant.id
+  );
+
+  const restaurantTables = tables.filter(
+    (t) => t.restaurantId === restaurant.id
+  );
+
+  const restaurantOrders = orders.filter(
+    (o) => o.restaurantId === restaurant.id
+  );
+
+  return (
+    <div
+      className="app-shell"
+      style={{ "--accent": restaurant.accent || "#6C4BF4" }}
+    >
+      <Sidebar
+        page={page}
+        setPage={setPage}
+        role="director"
+        restaurant={restaurant}
+        onLogout={onLogout}
+      />
+
+      <button
+        className="live-orders-button"
+        onClick={openLiveOrders}
+        title="Открыть Live-заказы в новой вкладке"
+      >
+        <span className="live-dot" />
+        LIVE ЗАКАЗЫ
+        <span className="live-arrow"><Icon name="arrow" size={15} /></span>
+      </button>
+
+      <main className="main-content">
+        <Topbar
+          title={getDirectorPageTitle(page)}
+          name={restaurant.name}
+          subtitle="Директор ресторана"
+        />
+
+        {page === "dashboard" && (
+          <DirectorDashboard
+            restaurant={restaurant}
+            dishes={restaurantDishes}
+            categories={restaurantCategories}
+            tables={restaurantTables}
+            orders={restaurantOrders}
+            onPage={setPage}
+          />
+        )}
+
+        {page === "menu" && (
+          <MenuManager
+            restaurant={restaurant}
+            categories={restaurantCategories}
+            dishes={restaurantDishes}
+            setCategories={setCategories}
+            setDishes={setDishes}
+          />
+        )}
+
+        {page === "tables" && (
+          <TablesManager
+            restaurant={restaurant}
+            tables={restaurantTables}
+            setTables={setTables}
+          />
+        )}
+
+        {page === "orders" && (
+          <OrdersManager
+            restaurant={restaurant}
+            orders={restaurantOrders}
+            setOrders={setOrders}
+          />
+        )}
+
+        {page === "settings" && (
+          <RestaurantSettings
+            restaurant={restaurant}
+            setRestaurants={setRestaurants}
+          />
+        )}
+      </main>
+
+      <MobileBar
+        page={page}
+        setPage={setPage}
+        role="director"
+      />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   SIDEBAR
+------------------------------------------------------- */
+
+function Sidebar({ page, setPage, role, restaurant, onLogout }) {
+  const adminItems = [
+    { id: "dashboard", icon: "home", label: "Главная" },
+    { id: "restaurants", icon: "restaurant", label: "Рестораны" },
+    { id: "licenses", icon: "license", label: "Лицензии" },
+    { id: "settings", icon: "settings", label: "Настройки" },
+  ];
+  const directorItems = [
+    { id: "dashboard", icon: "home", label: "Главная" },
+    { id: "menu", icon: "menu", label: "Меню" },
+    { id: "tables", icon: "table", label: "Столы" },
+    { id: "orders", icon: "orders", label: "Заказы" },
+    { id: "settings", icon: "settings", label: "Настройки" },
+  ];
+  const items = role === "admin" ? adminItems : directorItems;
+  return (
+    <aside className="sidebar">
+      <div className="brand"><div className="brand-logo">F</div><span>FESTO</span></div>
+      <nav>
+        {items.map((item) => (
+          <button key={item.id} className={`nav-item ${page === item.id ? "active" : ""}`} onClick={() => setPage(item.id)}>
+            <Icon name={item.icon} size={18} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
+      {restaurant && <div className="sidebar-restaurant"><strong>{restaurant.name}</strong><span>Режим директора</span></div>}
+      <button className="logout" onClick={onLogout}><Icon name="logout" size={17} />Выйти</button>
+    </aside>
+  );
+}
+
+/* -------------------------------------------------------
+   TOPBAR
+------------------------------------------------------- */
+
+function Topbar({ title, name, subtitle }) {
+  return (
+    <div className="topbar">
+      <h2>{title}</h2>
+
+      <div className="profile">
+        <div className="avatar">{getInitials(name)}</div>
+
+        <div>
+          <strong>{name}</strong>
+          <span>{subtitle}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   ADMIN DASHBOARD
+------------------------------------------------------- */
+
+function AdminDashboard({
+  restaurants,
+  categories,
+  dishes,
+  tables,
+  orders,
+  onCreate,
+  onRestaurants,
+}) {
+  const revenue = orders.reduce(
+    (sum, order) => sum + Number(order.total || 0),
+    0
+  );
+
+  return (
+    <>
+      <div className="welcome-card">
+        <div>
+          <div className="card-label">FESTO RESTAURANT SYSTEM</div>
+
+          <h1>Управление ресторанами</h1>
+
+          <p>
+            Управляйте ресторанами, лицензиями и ресторанной
+            инфраструктурой из одного места.
+          </p>
+
+          <button className="primary-button" onClick={onCreate}>
+            + Добавить ресторан
+          </button>
+        </div>
+
+        <div className="welcome-mark">F</div>
+      </div>
+
+      <div className="dashboard-grid">
+        <div className="dashboard-card">
+          <span>РЕСТОРАНЫ</span>
+          <strong>{restaurants.length}</strong>
+          <p>Подключено</p>
+        </div>
+
+        <div className="dashboard-card">
+          <span>МЕНЮ</span>
+          <strong>{dishes.length}</strong>
+          <p>Блюд в системе</p>
+        </div>
+
+        <div className="dashboard-card">
+          <span>ЗАКАЗЫ</span>
+          <strong>{orders.length}</strong>
+          <p>{money(revenue)} оборот</p>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 30 }}>
+        <div className="page-heading">
+          <div>
+            <div className="eyebrow">СИСТЕМА</div>
+            <h1>Последние рестораны</h1>
+            <p>Подключённые точки Festo</p>
+          </div>
+
+          <button className="secondary-button" onClick={onRestaurants}>
+            Все рестораны
+          </button>
+        </div>
+
+        <div className="restaurant-grid">
+          {restaurants.slice(0, 3).map((restaurant) => (
+            <div className="restaurant-card" key={restaurant.id}>
+              <div
+                className="restaurant-accent"
+                style={{
+                  background: restaurant.accent || "#111",
+                }}
+              />
+
+              <div className="restaurant-card-body">
+                <div className="restaurant-icon">
+                  {getInitials(restaurant.name)}
+                </div>
+
+                <div className="restaurant-info">
+                  <h3>{restaurant.name}</h3>
+                  <p>{restaurant.address}</p>
+                  <span>ИНН: {restaurant.inn}</span>
+
+                  <div className="license-badge">
+                    Лицензия активна
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* -------------------------------------------------------
+   DIRECTOR DASHBOARD
+------------------------------------------------------- */
+
+function DirectorDashboard({
+  restaurant,
+  dishes,
+  categories,
+  tables,
+  orders,
+  onPage,
+}) {
+  const revenue = orders.reduce(
+    (sum, order) => sum + Number(order.total || 0),
+    0
+  );
+
+  return (
+    <>
+      <div className="director-hero">
+        <div>
+          <div className="card-label">ПАНЕЛЬ РЕСТОРАНА</div>
+
+          <h1>{restaurant.name}</h1>
+
+          <p>
+            Управляйте меню, столами, QR-кодами и заказами
+            вашего ресторана.
+          </p>
+
+          <button
+            className="primary-button"
+            onClick={() => onPage("menu")}
+            style={{
+              background: "white",
+              color: "#111",
+              marginTop: 24,
+            }}
+          >
+            Открыть меню
+          </button>
+        </div>
+
+        <div className="hero-logo">F</div>
+      </div>
+
+      <div className="dashboard-grid">
+        <div
+          className="dashboard-card"
+          onClick={() => onPage("menu")}
+          style={{ cursor: "pointer" }}
+        >
+          <span>БЛЮДА</span>
+          <strong>{dishes.length}</strong>
+          <p>{categories.length} категории</p>
+        </div>
+
+        <div
+          className="dashboard-card"
+          onClick={() => onPage("tables")}
+          style={{ cursor: "pointer" }}
+        >
+          <span>СТОЛЫ</span>
+          <strong>{tables.length}</strong>
+          <p>QR-коды готовы</p>
+        </div>
+
+        <div
+          className="dashboard-card"
+          onClick={() => onPage("orders")}
+          style={{ cursor: "pointer" }}
+        >
+          <span>ЗАКАЗЫ</span>
+          <strong>{orders.length}</strong>
+          <p>{money(revenue)} сумма</p>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 30 }}>
+        <div className="page-heading">
+          <div>
+            <div className="eyebrow">БЫСТРЫЙ ДОСТУП</div>
+            <h1>Рабочее пространство</h1>
+            <p>Основные инструменты ресторана</p>
+          </div>
+        </div>
+
+        <div className="dashboard-grid">
+          <QuickAction
+            title="Меню"
+            text="Блюда и категории"
+            icon="menu"
+            onClick={() => onPage("menu")}
+          />
+
+          <QuickAction
+            title="Столы"
+            text="QR-коды для гостей"
+            icon="table"
+            onClick={() => onPage("tables")}
+          />
+
+          <QuickAction
+            title="Заказы"
+            text="Заказы гостей"
+            icon="orders"
+            onClick={() => onPage("orders")}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function QuickAction({ title, text, icon, onClick }) {
+  return (
+    <button className="dashboard-card quick-action" onClick={onClick} type="button">
+      <div className="quick-icon"><Icon name={icon} size={21} /></div>
+      <strong>{title}</strong>
+      <p>{text}</p>
+    </button>
+  );
+}
+
+/* -------------------------------------------------------
+   RESTAURANTS
+------------------------------------------------------- */
+
+function RestaurantsPage({
+  restaurants,
+  onCreate,
+  onSelect,
+  onDelete,
+}) {
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">FESTO</div>
+          <h1>Рестораны</h1>
+          <p>Управление подключёнными ресторанами</p>
+        </div>
+
+        <button className="primary-button" onClick={onCreate}>
+          + Добавить ресторан
+        </button>
+      </div>
+
+      {restaurants.length === 0 ? (
+        <EmptyState
+          icon="R"
+          title="Ресторанов пока нет"
+          text="Создайте первый ресторан, чтобы начать работу."
+          button="Добавить ресторан"
+          onClick={onCreate}
+        />
+      ) : (
+        <div className="restaurant-grid">
+          {restaurants.map((restaurant) => (
+            <div
+              className="restaurant-card"
+              key={restaurant.id}
+              onClick={() => onSelect(restaurant.id)}
+            >
+              <div
+                className="restaurant-accent"
+                style={{
+                  background: restaurant.accent || "#111",
+                }}
+              />
+
+              <div className="restaurant-card-body">
+                <div className="restaurant-icon">
+                  {getInitials(restaurant.name)}
+                </div>
+
+                <div className="restaurant-info">
+                  <h3>{restaurant.name}</h3>
+                  <p>{restaurant.address}</p>
+
+                  <span>
+                    {restaurant.legalName}
+                  </span>
+
+                  <span>
+                    ИНН: {restaurant.inn}
+                  </span>
+
+                  <div className="license-badge">
+                    Лицензия бессрочная
+                  </div>
+                </div>
+
+                {restaurant.id !== "demo-restaurant" && (
+                  <button
+                    className="card-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(restaurant.id);
+                    }}
+                  >
+                    Удалить
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* -------------------------------------------------------
+   LICENSES
+------------------------------------------------------- */
+
+function LicensesPage({ restaurants }) {
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">FESTO</div>
+          <h1>Лицензии</h1>
+          <p>Выданные лицензии ресторанам</p>
+        </div>
+      </div>
+
+      {restaurants.length === 0 ? (
+        <EmptyState
+          icon="L"
+          title="Лицензий пока нет"
+          text="Лицензия появится после создания ресторана."
+        />
+      ) : (
+        <div className="license-list">
+          {restaurants.map((restaurant) => (
+            <div className="license-card" key={restaurant.id}>
+              <div className="license-main">
+                <div
+                  className="license-icon"
+                  style={{
+                    background:
+                      restaurant.accent || "#111",
+                  }}
+                >
+                  F
+                </div>
+
+                <div>
+                  <h3>{restaurant.name}</h3>
+                  <p>{restaurant.legalName}</p>
+
+                  <div className="license-key">
+                    {restaurant.license}
+                  </div>
+                </div>
+              </div>
+
+              <div className="license-data">
+                <div>
+                  <span>СТАТУС</span>
+                  <strong style={{ color: "#367346" }}>
+                    Активна
+                  </strong>
+                </div>
+
+                <div>
+                  <span>СРОК</span>
+                  <strong>Бессрочно</strong>
+                </div>
+
+                <div>
+                  <span>ЛОГИН</span>
+                  <strong>{restaurant.login}</strong>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* -------------------------------------------------------
+   CREATE RESTAURANT
+------------------------------------------------------- */
+
+function CreateRestaurantModal({
+  restaurants,
+  onClose,
+  onCreate,
+}) {
+  const [form, setForm] = useState({
+    legalName: "",
+    inn: "",
+    phone: "",
+    name: "",
+    address: "",
+    accent: "#6C4BF4",
+  });
+
+  const [error, setError] = useState("");
+
+  function update(field, value) {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  function generateLogin() {
+    const base =
+      form.name
+        .toLowerCase()
+        .replace(/[^a-zа-яё0-9]+/gi, "")
+        .slice(0, 12) || "restaurant";
+
+    let login = base;
+    let index = 2;
+
+    while (
+      restaurants.some(
+        (restaurant) =>
+          restaurant.login?.toLowerCase() ===
+          login.toLowerCase()
+      )
+    ) {
+      login = `${base}${index}`;
+      index += 1;
+    }
+
+    return login;
+  }
+
+  function submit(e) {
+    e.preventDefault();
+    setError("");
+
+    if (
+      !form.legalName.trim() ||
+      !form.inn.trim() ||
+      !form.phone.trim() ||
+      !form.name.trim() ||
+      !form.address.trim()
+    ) {
+      setError("Заполните все обязательные поля.");
+      return;
+    }
+
+    const login = generateLogin();
+
+    const restaurant = {
+      id: uid("restaurant"),
+      legalName: form.legalName.trim(),
+      inn: form.inn.trim(),
+      phone: form.phone.trim(),
+      name: form.name.trim(),
+      address: form.address.trim(),
+      accent: form.accent,
+      login,
+      password: Math.random()
+        .toString(36)
+        .slice(-8),
+      license: `FESTO-${new Date().getFullYear()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)
+        .toUpperCase()}`,
+    };
+
+    onCreate(restaurant);
+  }
+
+  return (
+    <div className="modal-overlay">
+      <form className="modal" onSubmit={submit}>
+        <div className="modal-header">
+          <div>
+            <div className="eyebrow">НОВЫЙ РЕСТОРАН</div>
+            <h2>Добавить ресторан</h2>
+          </div>
+
+          <button
+            type="button"
+            className="close-button"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        {error && <div className="error">{error}</div>}
+
+        <div className="form-section">
+          <h3>Юридическая информация</h3>
+
+          <div className="input-group">
+            <label>Юридическое название *</label>
+            <input
+              value={form.legalName}
+              onChange={(e) =>
+                update("legalName", e.target.value)
+              }
+              placeholder="ООО «Название»"
+            />
+          </div>
+
+          <div className="two-columns">
+            <div className="input-group">
+              <label>ИНН *</label>
+              <input
+                value={form.inn}
+                onChange={(e) =>
+                  update("inn", e.target.value)
+                }
+                placeholder="0000000000"
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Телефон *</label>
+              <input
+                value={form.phone}
+                onChange={(e) =>
+                  update("phone", e.target.value)
+                }
+                placeholder="+7 900 000-00-00"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Ресторан</h3>
+
+          <div className="input-group">
+            <label>Название *</label>
+            <input
+              value={form.name}
+              onChange={(e) =>
+                update("name", e.target.value)
+              }
+              placeholder="Название ресторана"
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Адрес *</label>
+            <input
+              value={form.address}
+              onChange={(e) =>
+                update("address", e.target.value)
+              }
+              placeholder="Адрес ресторана"
+            />
+          </div>
+
+          <div className="color-row">
+            <div>
+              <label>Акцентный цвет</label>
+              <p>Используется в интерфейсе ресторана</p>
+            </div>
+
+            <input
+              type="color"
+              className="color-input"
+              value={form.accent}
+              onChange={(e) =>
+                update("accent", e.target.value)
+              }
+            />
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onClose}
+          >
+            Отмена
+          </button>
+
+          <button className="primary-button" type="submit">
+            Создать ресторан
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   RESTAURANT DETAILS
+------------------------------------------------------- */
+
+function RestaurantDetails({
+  restaurant,
+  categories,
+  dishes,
+  tables,
+  orders,
+  onBack,
+  onUpdate,
+}) {
+  const restaurantDishes = dishes.filter(
+    (d) => d.restaurantId === restaurant.id
+  );
+
+  const restaurantTables = tables.filter(
+    (t) => t.restaurantId === restaurant.id
+  );
+
+  const restaurantOrders = orders.filter(
+    (o) => o.restaurantId === restaurant.id
+  );
+
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState(restaurant);
+
+  function save() {
+    onUpdate(form);
+    setEditing(false);
+  }
+
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <button
+            className="secondary-button"
+            onClick={onBack}
+            style={{ marginBottom: 15 }}
+          >
+            ← Назад
+          </button>
+
+          <div className="eyebrow">РЕСТОРАН</div>
+          <h1>{restaurant.name}</h1>
+          <p>{restaurant.address}</p>
+        </div>
+
+        {!editing && (
+          <button
+            className="primary-button"
+            onClick={() => setEditing(true)}
+          >
+            Редактировать
+          </button>
+        )}
+      </div>
+
+      {editing ? (
+        <div className="settings-card">
+          <h1>Редактирование</h1>
+
+          <p>
+            Измените данные ресторана.
+          </p>
+
+          <div className="details-edit">
+            <h3>Название ресторана</h3>
+            <input
+              value={form.name}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  name: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className="details-edit">
+            <h3>Юридическое название</h3>
+            <input
+              value={form.legalName}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  legalName: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className="details-edit">
+            <h3>Телефон</h3>
+            <input
+              value={form.phone}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  phone: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className="details-edit">
+            <h3>Адрес</h3>
+            <input
+              value={form.address}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  address: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className="details-edit">
+            <h3>Акцентный цвет</h3>
+
+            <input
+              type="color"
+              className="color-input"
+              value={form.accent}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  accent: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className="modal-actions">
+            <button
+              className="secondary-button"
+              onClick={() => {
+                setForm(restaurant);
+                setEditing(false);
+              }}
+            >
+              Отмена
+            </button>
+
+            <button
+              className="primary-button"
+              onClick={save}
+            >
+              Сохранить
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="details-grid">
+            <div className="details-block">
+              <h3>Информация</h3>
+
+              <DetailRow
+                label="Юридическое название"
+                value={restaurant.legalName}
+              />
+
+              <DetailRow
+                label="ИНН"
+                value={restaurant.inn}
+              />
+
+              <DetailRow
+                label="Телефон"
+                value={restaurant.phone}
+              />
+
+              <DetailRow
+                label="Адрес"
+                value={restaurant.address}
+              />
+            </div>
+
+            <div className="details-block">
+              <h3>Доступ</h3>
+
+              <div className="credential">
+                <span>ЛОГИН ДИРЕКТОРА</span>
+                <strong>{restaurant.login}</strong>
+              </div>
+
+              <div className="credential">
+                <span>ПАРОЛЬ</span>
+                <strong>{restaurant.password}</strong>
+              </div>
+
+              <div className="credential">
+                <span>ЛИЦЕНЗИЯ</span>
+                <strong>{restaurant.license}</strong>
+              </div>
+
+              <div className="license-status">
+                <span className="status-dot" />
+                Лицензия активна
+              </div>
+            </div>
+          </div>
+
+          <div className="dashboard-grid">
+            <div className="dashboard-card">
+              <span>КАТЕГОРИИ</span>
+              <strong>{categories.length}</strong>
+            </div>
+
+            <div className="dashboard-card">
+              <span>БЛЮДА</span>
+              <strong>{restaurantDishes.length}</strong>
+            </div>
+
+            <div className="dashboard-card">
+              <span>СТОЛЫ</span>
+              <strong>{restaurantTables.length}</strong>
+            </div>
+          </div>
+
+          <div className="settings-card" style={{ marginTop: 20 }}>
+            <h3>Заказы</h3>
+            <p>
+              Всего заказов ресторана:{" "}
+              <strong>{restaurantOrders.length}</strong>
+            </p>
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+function DetailRow({ label, value }) {
+  return (
+    <div className="detail-row">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   MENU MANAGER
+------------------------------------------------------- */
+
+function MenuManager({ restaurant, categories, dishes, setCategories, setDishes }) {
+  const [categoryModal, setCategoryModal] = useState(false);
+  const [dishModal, setDishModal] = useState(false);
+  const [editingDish, setEditingDish] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [search, setSearch] = useState("");
+  const [showAIImport, setShowAIImport] = useState(false);
+
+  const visibleCategories = [...categories].sort((a, b) => a.sort - b.sort);
+  const visibleDishes = dishes.filter((dish) => {
+    const categoryMatch = activeCategory === "all" || dish.categoryId === activeCategory;
+    const query = search.trim().toLowerCase();
+    const searchMatch = !query || [dish.name, dish.description, dish.ingredients].some((v) => String(v || "").toLowerCase().includes(query));
+    return categoryMatch && searchMatch;
+  });
+
+  function deleteCategory(categoryId) {
+    if (dishes.some((dish) => dish.categoryId === categoryId)) {
+      alert("Сначала удалите или перенесите блюда из этой категории.");
+      return;
+    }
+    setCategories((prev) => prev.filter((category) => category.id !== categoryId));
+    if (activeCategory === categoryId) setActiveCategory("all");
+  }
+  function deleteDish(id) {
+    if (!window.confirm("Удалить блюдо?")) return;
+    setDishes((prev) => prev.filter((dish) => dish.id !== id));
+  }
+  function toggleDish(id) {
+    setDishes((prev) => prev.map((dish) => dish.id === id ? { ...dish, active: !dish.active } : dish));
+  }
+
+  function importAIResult(result) {
+    const incoming = Array.isArray(result?.dishes) ? result.dishes : [];
+    if (!incoming.length) throw new Error("ИИ не вернул ни одного блюда.");
+
+    const existingByName = new Map(dishes.map((d) => [d.name.trim().toLowerCase(), d]));
+    const categoryMap = new Map(categories.map((c) => [c.name.trim().toLowerCase(), c]));
+    const nextCategories = [...categories];
+    const newDishes = [];
+
+    incoming.forEach((item, index) => {
+      const categoryName = String(item.category || "Без категории").trim() || "Без категории";
+      const key = categoryName.toLowerCase();
+      let category = categoryMap.get(key);
+      if (!category) {
+        category = { id: uid("category"), restaurantId: restaurant.id, name: categoryName, sort: nextCategories.length + 1 };
+        nextCategories.push(category);
+        categoryMap.set(key, category);
+      }
+      const name = String(item.name || `Блюдо ${index + 1}`).trim();
+      const normalized = name.toLowerCase();
+      const existing = existingByName.get(normalized);
+      const dish = {
+        ...(existing || {}),
+        id: existing?.id || uid("dish"),
+        restaurantId: restaurant.id,
+        categoryId: category.id,
+        name,
+        description: String(item.description || "").trim(),
+        ingredients: String(item.ingredients || item.composition || "").trim(),
+        price: Number(String(item.price ?? 0).replace(/[^0-9.,]/g, "").replace(",", ".")) || 0,
+        image: String(item.image || item.imageUrl || "").trim(),
+        weight: item.weight || "",
+        variants: Array.isArray(item.variants) ? item.variants : [],
+        active: existing?.active !== false,
+        aiConfidence: item.confidence ?? null,
+      };
+      if (existing) {
+        const idx = newDishes.findIndex((d) => d.id === existing.id);
+        if (idx >= 0) newDishes[idx] = dish; else newDishes.push(dish);
+      } else newDishes.push(dish);
+    });
+
+    setCategories(nextCategories);
+    setDishes((prev) => {
+      const byId = new Map(prev.map((d) => [d.id, d]));
+      newDishes.forEach((d) => byId.set(d.id, d));
+      return [...byId.values()];
+    });
+    return newDishes.length;
+  }
+
+  return (
+    <>
+      <div className="page-heading">
+        <div><div className="eyebrow">РЕСТОРАН</div><h1>Меню</h1><p>Управляйте категориями и блюдами ресторана</p></div>
+        <div className="heading-actions">
+          <button className="ai-menu-button" onClick={() => setShowAIImport(true)} type="button"><Icon name="spark" size={18} />Добавить меню с ИИ</button>
+          <button className="secondary-button" onClick={() => setCategoryModal(true)} type="button"><Icon name="plus" size={16} />Категория</button>
+          <button className="primary-button" onClick={() => { setEditingDish(null); setDishModal(true); }} type="button"><Icon name="plus" size={16} />Добавить блюдо</button>
+        </div>
+      </div>
+
+      <div className="menu-toolbar">
+        <div className="menu-search"><Icon name="search" size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск блюда, описания или состава" /></div>
+        <div className="menu-toolbar-count">{visibleDishes.length} из {dishes.length} блюд</div>
+      </div>
+
+      <div className="menu-manager">
+        <div className="category-panel">
+          <button className={`category-item ${activeCategory === "all" ? "active" : ""}`} onClick={() => setActiveCategory("all")} type="button"><span>Все блюда</span><strong>{dishes.length}</strong></button>
+          {visibleCategories.map((category) => (
+            <div className={`category-row ${activeCategory === category.id ? "active" : ""}`} key={category.id}>
+              <button className="category-item" onClick={() => setActiveCategory(category.id)} type="button"><span>{category.name}</span><strong>{dishes.filter((d) => d.categoryId === category.id).length}</strong></button>
+              <button className="category-delete" onClick={() => deleteCategory(category.id)} type="button" title="Удалить категорию"><Icon name="trash" size={14} /></button>
+            </div>
+          ))}
+        </div>
+
+        <div className="dish-grid">
+          {visibleDishes.length === 0 ? (
+            <EmptyState icon="menu" title="Блюд пока нет" text="Добавьте первое блюдо или загрузите меню через ИИ." button="Добавить блюдо" onClick={() => { setEditingDish(null); setDishModal(true); }} />
+          ) : visibleDishes.map((dish) => {
+            const category = categories.find((c) => c.id === dish.categoryId);
+            return (
+              <div className={`dish-card ${dish.active ? "" : "dish-disabled"}`} key={dish.id}>
+                <div className="dish-image">
+                  {dish.image ? <img src={dish.image} alt={dish.name} /> : <div className="dish-image-placeholder"><Icon name="image" size={30} /></div>}
+                  {!dish.active && <div className="dish-hidden">Скрыто</div>}
+                </div>
+                <div className="dish-body">
+                  <div className="dish-category">{category?.name || "Без категории"}</div>
+                  <h3>{dish.name}</h3>
+                  <p>{dish.description || "Описание не указано"}</p>
+                  {dish.ingredients && <div className="dish-ingredients">{dish.ingredients}</div>}
+                  <div className="dish-bottom">
+                    <strong>{money(dish.price)}</strong>
+                    <div className="dish-actions">
+                      <button onClick={() => toggleDish(dish.id)} title={dish.active ? "Скрыть" : "Показать"} type="button"><Icon name={dish.active ? "eye" : "eyeOff"} size={16} /></button>
+                      <button onClick={() => { setEditingDish(dish); setDishModal(true); }} title="Редактировать" type="button"><Icon name="edit" size={16} /></button>
+                      <button onClick={() => deleteDish(dish.id)} title="Удалить" type="button"><Icon name="trash" size={16} /></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {categoryModal && <CategoryModal onClose={() => setCategoryModal(false)} onCreate={(name) => { setCategories((prev) => [...prev, { id: uid("category"), restaurantId: restaurant.id, name, sort: prev.length + 1 }]); setCategoryModal(false); }} />}
+      {dishModal && <DishModal restaurant={restaurant} categories={categories} dish={editingDish} onClose={() => { setDishModal(false); setEditingDish(null); }} onSave={(dish) => { setDishes((prev) => prev.some((item) => item.id === dish.id) ? prev.map((item) => item.id === dish.id ? dish : item) : [...prev, dish]); setDishModal(false); setEditingDish(null); }} />}
+      {showAIImport && <AIMenuImportModal restaurant={restaurant} categories={categories} onClose={() => setShowAIImport(false)} onImport={importAIResult} />}
+    </>
+  );
+}
+
+/* -------------------------------------------------------
+   AI MENU IMPORT
+------------------------------------------------------- */
+
+function AIMenuImportModal({ restaurant, categories, onClose, onImport }) {
+  const [files, setFiles] = useState([]);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState("");
+  const [review, setReview] = useState([]);
+  const [dragActive, setDragActive] = useState(false);
+  const inputRef = React.useRef(null);
+
+  const accepted = ".jpg,.jpeg,.png,.webp,.heic,.pdf,.xlsx,.xls,.docx,.doc,.csv,.txt";
+
+  function addFiles(list) {
+    const incoming = Array.from(list || []);
+    const allowed = incoming.filter((file) => /\.(jpe?g|png|webp|heic|pdf|xlsx?|docx?|csv|txt)$/i.test(file.name));
+    setError(allowed.length === incoming.length ? "" : "Некоторые файлы пропущены: поддерживаются фото, PDF, Excel, Word, CSV и TXT.");
+    setFiles((prev) => {
+      const map = new Map(prev.map((f) => [`${f.name}-${f.size}-${f.lastModified}`, f]));
+      allowed.forEach((f) => map.set(`${f.name}-${f.size}-${f.lastModified}`, f));
+      return [...map.values()];
+    });
+  }
+  function removeFile(index) { setFiles((prev) => prev.filter((_, i) => i !== index)); }
+
+  async function processFiles() {
+    if (!files.length) { setError("Добавьте хотя бы один файл."); return; }
+    setProcessing(true); setError("");
+    try {
+      const formData = new FormData();
+      formData.append("restaurantId", restaurant.id);
+      formData.append("restaurantName", restaurant.name);
+      formData.append("categories", JSON.stringify(categories));
+      files.forEach((file) => formData.append("files", file, file.name));
+      const response = await fetch("/api/menu/parse", { method: "POST", body: formData });
+      if (!response.ok) throw new Error(`Сервис ИИ вернул ошибку ${response.status}.`);
+      const data = await response.json();
+      if (!Array.isArray(data.dishes) || !data.dishes.length) throw new Error("ИИ не смог найти блюда в загруженных материалах.");
+      setReview(data.dishes.map((dish, index) => ({ id: uid("ai-review"), confidence: dish.confidence ?? null, ...dish, _index: index })));
+    } catch (err) {
+      setError(`${err.message || "Не удалось обработать файлы."} Сейчас в клиентской версии нужен подключённый endpoint /api/menu/parse с OCR/AI.`);
+    } finally { setProcessing(false); }
+  }
+
+  function updateReview(id, field, value) { setReview((prev) => prev.map((item) => item.id === id ? { ...item, [field]: value } : item)); }
+  function removeReview(id) { setReview((prev) => prev.filter((item) => item.id !== id)); }
+  function confirmImport() {
+    if (!review.length) return;
+    const count = onImport({ dishes: review });
+    alert(`В меню добавлено/обновлено блюд: ${count}`);
+    onClose();
+  }
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal ai-import-modal">
+        <div className="modal-header">
+          <div><div className="eyebrow">FESTO AI MENU</div><h2>{review.length ? "Проверка меню" : "Добавить меню с ИИ"}</h2><p className="modal-subtitle">Фото, Excel, Word и PDF. Можно загрузить сразу много файлов.</p></div>
+          <button type="button" className="close-button" onClick={onClose}><Icon name="close" size={18} /></button>
+        </div>
+
+        {!review.length ? (
+          <>
+            <div className={`ai-dropzone ${dragActive ? "drag-active" : ""}`} onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }} onDragOver={(e) => e.preventDefault()} onDragLeave={() => setDragActive(false)} onDrop={(e) => { e.preventDefault(); setDragActive(false); addFiles(e.dataTransfer.files); }} onClick={() => inputRef.current?.click()}>
+              <div className="ai-drop-icon"><Icon name="spark" size={25} /></div>
+              <strong>Перетащите файлы сюда</strong>
+              <span>или нажмите для выбора файлов</span>
+              <small>JPG · PNG · WEBP · PDF · XLSX · XLS · DOCX · DOC · CSV</small>
+              <input ref={inputRef} type="file" multiple accept={accepted} onChange={(e) => addFiles(e.target.files)} hidden />
+            </div>
+
+            <div className="ai-capabilities">
+              <div><Icon name="image" size={17} /><span><strong>Фото</strong> — распознаёт десятки блюд на одном фото</span></div>
+              <div><Icon name="file" size={17} /><span><strong>Excel / Word / PDF</strong> — извлекает названия, описания, состав и цены</span></div>
+              <div><Icon name="spark" size={17} /><span><strong>Объединение</strong> — сопоставляет данные из разных файлов в одно блюдо</span></div>
+            </div>
+
+            {files.length > 0 && <div className="ai-file-list">{files.map((file, index) => <div className="ai-file-row" key={`${file.name}-${file.size}-${index}`}><Icon name={file.type.startsWith("image/") ? "image" : "file"} size={17} /><div><strong>{file.name}</strong><span>{(file.size / 1024 / 1024).toFixed(2)} МБ</span></div><button type="button" onClick={() => removeFile(index)}><Icon name="close" size={15} /></button></div>)}</div>}
+            {error && <div className="error ai-error">{error}</div>}
+            <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>Отмена</button><button className="primary-button" type="button" disabled={!files.length || processing} onClick={processFiles}>{processing ? "ИИ анализирует…" : <><Icon name="spark" size={17} />Распознать меню</>}</button></div>
+          </>
+        ) : (
+          <>
+            <div className="ai-review-summary"><div><strong>{review.length}</strong><span>найдено блюд</span></div><div><strong>{review.filter((x) => x.confidence != null && Number(x.confidence) < 0.75).length}</strong><span>требуют проверки</span></div><div><strong>{files.length}</strong><span>источников</span></div></div>
+            <div className="ai-review-list">{review.map((item) => <div className="ai-review-card" key={item.id}>
+              <div className="ai-review-number">{item._index + 1}</div>
+              <div className="ai-review-fields">
+                <div className="ai-review-grid">
+                  <label>Название<input value={item.name || ""} onChange={(e) => updateReview(item.id, "name", e.target.value)} /></label>
+                  <label>Категория<input value={item.category || ""} onChange={(e) => updateReview(item.id, "category", e.target.value)} placeholder="Например: Основные блюда" /></label>
+                  <label>Цена<input value={item.price ?? ""} onChange={(e) => updateReview(item.id, "price", e.target.value)} inputMode="decimal" /></label>
+                  <label>Вес / объём<input value={item.weight || ""} onChange={(e) => updateReview(item.id, "weight", e.target.value)} /></label>
+                </div>
+                <label>Описание<textarea value={item.description || ""} onChange={(e) => updateReview(item.id, "description", e.target.value)} rows="2" /></label>
+                <label>Состав<input value={item.ingredients || item.composition || ""} onChange={(e) => updateReview(item.id, "ingredients", e.target.value)} /></label>
+              </div>
+              <div className="ai-review-side"><span className={`ai-confidence ${item.confidence != null && Number(item.confidence) < 0.75 ? "low" : ""}`}>{item.confidence == null ? "ПРОВЕРКА" : `${Math.round(Number(item.confidence) * 100)}%`}</span><button type="button" onClick={() => removeReview(item.id)} title="Убрать блюдо"><Icon name="trash" size={16} /></button></div>
+            </div>)}</div>
+            <div className="modal-actions"><button className="secondary-button" type="button" onClick={() => setReview([])}>Назад к файлам</button><button className="primary-button" type="button" onClick={confirmImport}><Icon name="check" size={17} />Добавить {review.length} блюд в меню</button></div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   CATEGORY MODAL
+------------------------------------------------------- */
+
+function CategoryModal({ onClose, onCreate }) {
+  const [name, setName] = useState("");
+
+  function submit(e) {
+    e.preventDefault();
+
+    if (!name.trim()) return;
+
+    onCreate(name.trim());
+  }
+
+  return (
+    <div className="modal-overlay">
+      <form className="modal" onSubmit={submit}>
+        <div className="modal-header">
+          <div>
+            <div className="eyebrow">МЕНЮ</div>
+            <h2>Новая категория</h2>
+          </div>
+
+          <button
+            type="button"
+            className="close-button"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="form-section">
+          <div className="input-group">
+            <label>Название категории</label>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Например: Завтраки"
+            />
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onClose}
+          >
+            Отмена
+          </button>
+
+          <button className="primary-button">
+            Создать
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   DISH MODAL
+------------------------------------------------------- */
+
+function DishModal({
+  restaurant,
+  categories,
+  dish,
+  onClose,
+  onSave,
+}) {
+  const [form, setForm] = useState(
+    dish || {
+      name: "",
+      description: "",
+      price: "",
+      image: "",
+      categoryId: categories[0]?.id || "",
+      active: true,
+    }
+  );
+
+  function update(field, value) {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  function submit(e) {
+    e.preventDefault();
+
+    if (!form.name.trim()) {
+      alert("Введите название блюда.");
+      return;
+    }
+
+    if (!form.categoryId) {
+      alert("Выберите категорию.");
+      return;
+    }
+
+    const result = {
+      ...form,
+      id: dish?.id || uid("dish"),
+      restaurantId: restaurant.id,
+      name: form.name.trim(),
+      description: form.description.trim(),
+      price: Number(form.price || 0),
+      image: form.image.trim(),
+      active: form.active !== false,
+    };
+
+    onSave(result);
+  }
+
+  return (
+    <div className="modal-overlay">
+      <form className="modal large-modal" onSubmit={submit}>
+        <div className="modal-header">
+          <div>
+            <div className="eyebrow">МЕНЮ</div>
+            <h2>
+              {dish ? "Редактировать блюдо" : "Новое блюдо"}
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            className="close-button"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="form-section">
+          <h3>Основная информация</h3>
+
+          <div className="input-group">
+            <label>Название *</label>
+            <input
+              value={form.name}
+              onChange={(e) =>
+                update("name", e.target.value)
+              }
+              placeholder="Название блюда"
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Описание</label>
+            <textarea
+              className="textarea"
+              value={form.description}
+              onChange={(e) =>
+                update("description", e.target.value)
+              }
+              placeholder="Краткое описание блюда"
+            />
+          </div>
+
+          <div className="two-columns">
+            <div className="input-group">
+              <label>Цена *</label>
+              <input
+                type="number"
+                min="0"
+                value={form.price}
+                onChange={(e) =>
+                  update("price", e.target.value)
+                }
+                placeholder="690"
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Категория *</label>
+
+              <select
+                value={form.categoryId}
+                onChange={(e) =>
+                  update("categoryId", e.target.value)
+                }
+              >
+                <option value="">
+                  Выберите категорию
+                </option>
+
+                {categories.map((category) => (
+                  <option
+                    key={category.id}
+                    value={category.id}
+                  >
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Изображение</h3>
+
+          <div className="input-group">
+            <label>URL изображения</label>
+            <input
+              value={form.image}
+              onChange={(e) =>
+                update("image", e.target.value)
+              }
+              placeholder="https://..."
+            />
+          </div>
+
+          {form.image && (
+            <div className="image-preview">
+              <img
+                src={form.image}
+                alt="Предпросмотр"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="form-section">
+          <label className="switch-row">
+            <span>
+              <strong>Показывать блюдо</strong>
+              <small>
+                Если выключить, блюдо не будет видно гостям.
+              </small>
+            </span>
+
+            <input
+              type="checkbox"
+              checked={form.active}
+              onChange={(e) =>
+                update("active", e.target.checked)
+              }
+            />
+          </label>
+        </div>
+
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onClose}
+          >
+            Отмена
+          </button>
+
+          <button className="primary-button">
+            {dish ? "Сохранить" : "Добавить блюдо"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   TABLES
+------------------------------------------------------- */
+
+function TablesManager({
+  restaurant,
+  tables,
+  setTables,
+}) {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTable, setSelectedTable] = useState(null);
+
+  function deleteTable(id) {
+    if (!window.confirm("Удалить этот столик?")) return;
+
+    setTables((prev) =>
+      prev.filter((table) => table.id !== id)
+    );
+
+    if (selectedTable?.id === id) {
+      setSelectedTable(null);
+    }
+  }
+
+  async function copyLink(table) {
+    const link = customerUrl(table.id);
+
+    try {
+      await navigator.clipboard.writeText(link);
+      alert("Ссылка скопирована.");
+    } catch {
+      window.prompt("Скопируйте ссылку:", link);
+    }
+  }
+
+  function printQR(table) {
+    setSelectedTable(table);
+    window.setTimeout(() => {
+      window.print();
+    }, 250);
+  }
+
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">РЕСТОРАН</div>
+          <h1>Столы</h1>
+          <p>
+            У каждого стола свой QR-код и ссылка на меню
+          </p>
+        </div>
+
+        <button
+          className="primary-button"
+          onClick={() => setShowModal(true)}
+        >
+          + Добавить стол
+        </button>
+      </div>
+
+      {tables.length === 0 ? (
+        <EmptyState
+          icon="table"
+          title="Столов пока нет"
+          text="Добавьте столик, чтобы получить QR-код."
+          button="Добавить стол"
+          onClick={() => setShowModal(true)}
+        />
+      ) : (
+        <div className="table-grid">
+          {tables.map((table) => (
+            <div className="table-card" key={table.id}>
+              <div className="table-top">
+                <div>
+                  <div className="eyebrow">СТОЛ</div>
+                  <h2>{table.name}</h2>
+                </div>
+
+                <div className="table-number">
+                  {table.number}
+                </div>
+              </div>
+
+              <div className="qr-box">
+                <QRCodeSVG
+                  value={customerUrl(table.id)}
+                  size={170}
+                  bgColor="#ffffff"
+                  fgColor="#111111"
+                  level="H"
+                />
+              </div>
+
+              <div className="table-url">
+                {customerUrl(table.id)}
+              </div>
+
+              <div className="table-actions">
+                <button
+                  className="primary-button"
+                  onClick={() =>
+                    setSelectedTable(table)
+                  }
+                >
+                  QR-код
+                </button>
+
+                <button
+                  className="secondary-button"
+                  onClick={() => copyLink(table)}
+                >
+                  Скопировать ссылку
+                </button>
+
+                <button
+                  className="secondary-button"
+                  onClick={() => printQR(table)}
+                >
+                  Печать QR
+                </button>
+
+                <button
+                  className="danger-button"
+                  onClick={() => deleteTable(table.id)}
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showModal && (
+        <AddTableModal
+          tables={tables}
+          restaurant={restaurant}
+          onClose={() => setShowModal(false)}
+          onCreate={(table) => {
+            setTables((prev) => [...prev, table]);
+            setShowModal(false);
+          }}
+        />
+      )}
+
+      {selectedTable && (
+        <QRModal
+          table={selectedTable}
+          onClose={() => setSelectedTable(null)}
+        />
+      )}
+    </>
+  );
+}
+
+/* -------------------------------------------------------
+   ADD TABLE
+------------------------------------------------------- */
+
+function AddTableModal({
+  tables,
+  restaurant,
+  onClose,
+  onCreate,
+}) {
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+
+  function submit(e) {
+    e.preventDefault();
+
+    if (!name.trim()) {
+      alert("Введите название стола.");
+      return;
+    }
+
+    const table = {
+      id: uid("table"),
+      restaurantId: restaurant.id,
+      name: name.trim(),
+      number:
+        number.trim() ||
+        String(
+          tables.filter(
+            (t) => t.restaurantId === restaurant.id
+          ).length + 1
+        ),
+    };
+
+    onCreate(table);
+  }
+
+  return (
+    <div className="modal-overlay">
+      <form className="modal" onSubmit={submit}>
+        <div className="modal-header">
+          <div>
+            <div className="eyebrow">СТОЛЫ</div>
+            <h2>Добавить стол</h2>
+          </div>
+
+          <button
+            type="button"
+            className="close-button"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="form-section">
+          <div className="input-group">
+            <label>Название</label>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Столик 3"
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Номер</label>
+            <input
+              value={number}
+              onChange={(e) =>
+                setNumber(e.target.value)
+              }
+              placeholder="3"
+            />
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onClose}
+          >
+            Отмена
+          </button>
+
+          <button className="primary-button">
+            Создать
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   QR MODAL
+------------------------------------------------------- */
+
+function QRModal({ table, onClose }) {
+  const link = customerUrl(table.id);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(link);
+      alert("Ссылка скопирована.");
+    } catch {
+      window.prompt("Скопируйте ссылку:", link);
+    }
+  }
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal qr-modal">
+        <div className="modal-header">
+          <div>
+            <div className="eyebrow">QR-КОД</div>
+            <h2>{table.name}</h2>
+          </div>
+
+          <button
+            className="close-button"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="qr-large">
+          <QRCodeSVG
+            value={link}
+            size={270}
+            bgColor="#ffffff"
+            fgColor="#111111"
+            level="H"
+          />
+        </div>
+
+        <div className="qr-link">
+          {link}
+        </div>
+
+        <div className="modal-actions">
+          <button
+            className="secondary-button"
+            onClick={copy}
+          >
+            Скопировать ссылку
+          </button>
+
+          <a
+            className="primary-button"
+            href={link}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Открыть меню
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   ORDERS
+------------------------------------------------------- */
+
+function OrdersManager({
+  restaurant,
+  orders,
+  setOrders,
+}) {
+  const [viewMode, setViewMode] = useState("active");
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const statuses = {
+    new: "Новый",
+    accepted: "Принят",
+    preparing: "Готовится",
+    assembled: "Собран",
+    ready: "Готов",
+    completed: "Завершён",
+    cancelled: "Отменён",
+  };
+
+  const historyStatuses = ["completed", "cancelled"];
+
+  const baseOrders =
+    viewMode === "history"
+      ? orders.filter((order) => historyStatuses.includes(order.status))
+      : orders.filter((order) => !historyStatuses.includes(order.status));
+
+  const filtered = baseOrders
+    .filter((order) => {
+      if (filter === "all") return true;
+      return order.status === filter;
+    })
+    .filter((order) => {
+      if (!search.trim()) return true;
+      const q = search.trim().toLowerCase();
+      return (
+        String(order.number).toLowerCase().includes(q) ||
+        String(order.tableName || "").toLowerCase().includes(q) ||
+        String(order.tableNumber || "").toLowerCase().includes(q)
+      );
+    })
+    .filter((order) => {
+      if (!dateFilter) return true;
+      const date = new Date(order.createdAt);
+      const localDate = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+      return localDate === dateFilter;
+    });
+
+  function updateStatus(id, status) {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === id
+          ? {
+              ...order,
+              status,
+              statusChangedAt: new Date().toISOString(),
+            }
+          : order
+      )
+    );
+
+    if (selectedOrder?.id === id) {
+      setSelectedOrder((prev) => ({
+        ...prev,
+        status,
+        statusChangedAt: new Date().toISOString(),
+      }));
+    }
+  }
+
+  const activeCount = orders.filter(
+    (order) => !historyStatuses.includes(order.status)
+  ).length;
+  const historyCount = orders.filter((order) =>
+    historyStatuses.includes(order.status)
+  ).length;
+
+  return (
+    <>
+      <div className="page-heading orders-heading">
+        <div>
+          <div className="eyebrow">РЕСТОРАН</div>
+          <h1>Заказы</h1>
+          <p>Заказы гостей из QR-меню</p>
+        </div>
+
+        <div className="orders-view-tabs">
+          <button
+            className={viewMode === "active" ? "active" : ""}
+            onClick={() => {
+              setViewMode("active");
+              setFilter("all");
+            }}
+          >
+            Активные <b>{activeCount}</b>
+          </button>
+          <button
+            className={viewMode === "history" ? "active" : ""}
+            onClick={() => {
+              setViewMode("history");
+              setFilter("all");
+            }}
+          >
+            История <b>{historyCount}</b>
+          </button>
+        </div>
+      </div>
+
+      <div className="orders-toolbar">
+        <input
+          className="order-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Поиск по номеру или столу"
+        />
+
+        <select
+          className="order-filter"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option value="all">Все статусы</option>
+          {viewMode === "active" ? (
+            <>
+              <option value="new">Новые</option>
+              <option value="accepted">Принятые</option>
+              <option value="preparing">Готовятся</option>
+              <option value="assembled">Собраны</option>
+              <option value="ready">Готовы</option>
+            </>
+          ) : (
+            <>
+              <option value="completed">Завершённые</option>
+              <option value="cancelled">Отменённые</option>
+            </>
+          )}
+        </select>
+
+        <input
+          className="order-date"
+          type="date"
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          title="Фильтр по дате"
+        />
+
+        {(search || dateFilter || filter !== "all") && (
+          <button
+            className="secondary-button"
+            onClick={() => {
+              setSearch("");
+              setDateFilter("");
+              setFilter("all");
+            }}
+          >
+            Сбросить
+          </button>
+        )}
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={viewMode === "history" ? "↺" : "□"}
+          title={
+            viewMode === "history"
+              ? "История пока пуста"
+              : "Заказов не найдено"
+          }
+          text={
+            viewMode === "history"
+              ? "Завершённые и отменённые заказы будут сохраняться здесь."
+              : "Новые заказы гостей появятся здесь автоматически."
+          }
+        />
+      ) : (
+        <div className="orders-list">
+          {filtered
+            .slice()
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .map((order) => (
+              <div
+                className="order-card"
+                key={order.id}
+                onClick={() => setSelectedOrder(order)}
+              >
+                <div className="order-main">
+                  <div className="order-number">
+                    #{String(order.number).padStart(4, "0")}
+                  </div>
+
+                  <div>
+                    <h3>
+                      {order.tableName || "Стол"}
+                      {order.tableNumber && (
+                        <span className="order-table-number">
+                          · №{order.tableNumber}
+                        </span>
+                      )}
+                    </h3>
+
+                    <p>
+                      {new Date(
+                        order.createdAt
+                      ).toLocaleString("ru-RU")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="order-items-count">
+                  {order.items.length} поз. ·{" "}
+                  {order.items.reduce(
+                    (sum, item) => sum + Number(item.quantity || 0),
+                    0
+                  )}{" "}
+                  шт.
+                </div>
+
+                <div className="order-total">
+                  {money(order.total)}
+                </div>
+
+                <div
+                  className={`order-status status-${order.status}`}
+                >
+                  {statuses[order.status] || order.status}
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+
+      {selectedOrder && (
+        <OrderModal
+          order={selectedOrder}
+          statuses={statuses}
+          onClose={() => setSelectedOrder(null)}
+          onStatus={(status) =>
+            updateStatus(selectedOrder.id, status)
+          }
+        />
+      )}
+    </>
+  );
+}
+
+/* -------------------------------------------------------
+   ORDER MODAL
+------------------------------------------------------- */
+
+function OrderModal({
+  order,
+  statuses,
+  onClose,
+  onStatus,
+}) {
+  const created = new Date(order.createdAt);
+  const changed = order.statusChangedAt
+    ? new Date(order.statusChangedAt)
+    : null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal large-modal order-detail-modal">
+        <div className="modal-header">
+          <div>
+            <div className="eyebrow">ЗАКАЗ</div>
+            <h2>
+              #{String(order.number).padStart(4, "0")}
+            </h2>
+            <p className="order-modal-subtitle">
+              {order.tableName || "Гость"}
+              {order.tableNumber
+                ? ` · Стол №${order.tableNumber}`
+                : ""}
+            </p>
+          </div>
+
+          <button className="close-button" onClick={onClose}>
+            ×
+          </button>
+        </div>
+
+        <div className="order-meta-grid">
+          <div className="order-meta-card">
+            <span>ОФОРМЛЕН</span>
+            <strong>
+              {created.toLocaleDateString("ru-RU")}{" "}
+              {created.toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </strong>
+          </div>
+          <div className="order-meta-card">
+            <span>СТОЛ</span>
+            <strong>
+              {order.tableNumber || order.tableName || "—"}
+            </strong>
+          </div>
+          <div className="order-meta-card">
+            <span>СТАТУС</span>
+            <strong>
+              {statuses[order.status] || order.status}
+            </strong>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Позиции заказа</h3>
+
+          <div className="order-detail-items">
+            {order.items.map((item, index) => (
+              <div
+                className="order-detail-item"
+                key={`${item.dishId}-${index}`}
+              >
+                <div>
+                  <strong>{item.name}</strong>
+                  <span>
+                    {item.quantity} × {money(item.price)}
+                  </span>
+                </div>
+
+                <strong>
+                  {money(item.quantity * item.price)}
+                </strong>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {order.comment && (
+          <div className="form-section">
+            <h3>Комментарий гостя</h3>
+            <div className="order-comment">
+              {order.comment}
+            </div>
+          </div>
+        )}
+
+        <div className="form-section">
+          <h3>Итого</h3>
+          <div className="order-big-total">
+            {money(order.total)}
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Изменить статус</h3>
+
+          <div className="status-buttons">
+            {Object.entries(statuses).map(
+              ([key, label]) => (
+                <button
+                  key={key}
+                  className={
+                    order.status === key
+                      ? "status-selected"
+                      : ""
+                  }
+                  onClick={() => onStatus(key)}
+                >
+                  {label}
+                </button>
+              )
+            )}
+          </div>
+
+          {changed && (
+            <p className="order-status-changed">
+              Последнее изменение:{" "}
+              {changed.toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          )}
+        </div>
+
+        <div className="modal-actions">
+          <button className="primary-button" onClick={onClose}>
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   SETTINGS
+------------------------------------------------------- */
+
+function SettingsPage({
+  title,
+  subtitle,
+  email,
+}) {
+  return (
+    <div className="settings-card">
+      <div className="eyebrow">FESTO</div>
+      <h1>{title}</h1>
+
+      <p>{subtitle}</p>
+
+      <div className="info-box">
+        <span>
+          <strong>Главный администратор</strong>
+        </span>
+
+        <span>{email}</span>
+      </div>
+
+      <div className="info-box">
+        <span>
+          <strong>Лицензирование</strong>
+        </span>
+
+        <span>
+          Все лицензии ресторанов бессрочные.
+        </span>
+      </div>
+
+      <div className="info-box">
+        <span>
+          <strong>Авторизация</strong>
+        </span>
+
+        <span>
+          Используется единая форма входа для
+          администратора и директоров ресторанов.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function RestaurantSettings({
+  restaurant,
+  setRestaurants,
+}) {
+  const [name, setName] = useState(restaurant.name);
+  const [address, setAddress] = useState(
+    restaurant.address
+  );
+  const [phone, setPhone] = useState(restaurant.phone);
+  const [accent, setAccent] = useState(
+    restaurant.accent || "#6C4BF4"
+  );
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  function saveDetails() {
+    setRestaurants((prev) =>
+      prev.map((r) =>
+        r.id === restaurant.id
+          ? {
+              ...r,
+              name,
+              address,
+              phone,
+              accent,
+            }
+          : r
+      )
+    );
+
+    alert("Данные сохранены.");
+  }
+
+  function changePassword() {
+    if (oldPassword !== restaurant.password) {
+      alert("Текущий пароль указан неверно.");
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      alert("Новый пароль должен быть не менее 4 символов.");
+      return;
+    }
+
+    setRestaurants((prev) =>
+      prev.map((r) =>
+        r.id === restaurant.id
+          ? {
+              ...r,
+              password: newPassword,
+            }
+          : r
+      )
+    );
+
+    setOldPassword("");
+    setNewPassword("");
+
+    alert("Пароль изменён.");
+  }
+
+  return (
+    <div className="settings-card">
+      <div className="eyebrow">РЕСТОРАН</div>
+      <h1>Настройки</h1>
+
+      <p>
+        Данные ресторана и доступ директора.
+      </p>
+
+      <div className="details-edit">
+        <h3>Название ресторана</h3>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+
+      <div className="details-edit">
+        <h3>Адрес</h3>
+        <input
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
+      </div>
+
+      <div className="details-edit">
+        <h3>Телефон</h3>
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      </div>
+
+      <div className="details-edit">
+        <h3>Акцентный цвет</h3>
+
+        <input
+          type="color"
+          className="color-input"
+          value={accent}
+          onChange={(e) => setAccent(e.target.value)}
+        />
+      </div>
+
+      <button
+        className="primary-button"
+        onClick={saveDetails}
+        style={{ marginTop: 15 }}
+      >
+        Сохранить изменения
+      </button>
+
+      <div className="password-section">
+        <h3>Изменить пароль</h3>
+
+        <input
+          type="password"
+          value={oldPassword}
+          onChange={(e) =>
+            setOldPassword(e.target.value)
+          }
+          placeholder="Текущий пароль"
+        />
+
+        <input
+          type="password"
+          value={newPassword}
+          onChange={(e) =>
+            setNewPassword(e.target.value)
+          }
+          placeholder="Новый пароль"
+        />
+
+        <button
+          className="secondary-button"
+          onClick={changePassword}
+        >
+          Изменить пароль
+        </button>
+      </div>
+
+      <div className="info-box">
+        <span>Логин директора</span>
+        <strong>{restaurant.login}</strong>
+
+        <span>Лицензия</span>
+        <strong>{restaurant.license}</strong>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   CUSTOMER QR MENU
+------------------------------------------------------- */
+
+function CustomerApp({
+  restaurant,
+  categories,
+  dishes,
+  tables,
+  setOrders,
+}) {
+  const params = new URLSearchParams(window.location.search);
+  const tableId = params.get("table");
+
+  const table = tables.find(
+    (item) =>
+      item.id === tableId &&
+      item.restaurantId === restaurant.id
+  );
+
+  const [activeCategory, setActiveCategory] =
+    useState("all");
+
+  const [cart, setCart] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [orderComplete, setOrderComplete] =
+    useState(false);
+  const [orderComment, setOrderComment] = useState("");
+  const [submittedOrder, setSubmittedOrder] = useState(null);
+
+  const restaurantCategories = categories
+    .filter((c) => c.restaurantId === restaurant.id)
+    .sort((a, b) => a.sort - b.sort);
+
+  const restaurantDishes = dishes.filter(
+    (d) =>
+      d.restaurantId === restaurant.id &&
+      d.active !== false
+  );
+
+  const filteredDishes =
+    activeCategory === "all"
+      ? restaurantDishes
+      : restaurantDishes.filter(
+          (d) => d.categoryId === activeCategory
+        );
+
+  const cartTotal = cart.reduce(
+    (sum, item) =>
+      sum + item.price * item.quantity,
+    0
+  );
+
+  const cartCount = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  function addToCart(dish) {
+    setCart((prev) => {
+      const exists = prev.find(
+        (item) => item.dishId === dish.id
+      );
+
+      if (exists) {
+        return prev.map((item) =>
+          item.dishId === dish.id
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+              }
+            : item
+        );
+      }
+
+      return [
+        ...prev,
+        {
+          dishId: dish.id,
+          name: dish.name,
+          price: Number(dish.price),
+          quantity: 1,
+        },
+      ];
+    });
+  }
+
+  function changeQuantity(dishId, delta) {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item.dishId === dishId
+            ? {
+                ...item,
+                quantity: item.quantity + delta,
+              }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  }
+
+  function submitOrder() {
+    if (!cart.length) return;
+
+    const order = {
+      id: uid("order"),
+      restaurantId: restaurant.id,
+      tableId: table?.id || null,
+      tableName: table?.name || "Гость",
+      tableNumber: table?.number ?? table?.name ?? "—",
+      number: Math.floor(
+        1000 + Math.random() * 9000
+      ),
+      items: cart,
+      total: cartTotal,
+      comment: orderComment.trim(),
+      status: "new",
+      createdAt: new Date().toISOString(),
+    };
+
+    setOrders((prev) => [...prev, order]);
+
+    setSubmittedOrder(order);
+    setCart([]);
+    setOrderComment("");
+    setShowCart(false);
+    setOrderComplete(true);
+  }
+
+  if (!table) {
+    return (
+      <CustomerError
+        title="Столик не найден"
+        text="QR-код недействителен или столик был удалён."
+      />
+    );
+  }
+
+  if (orderComplete) {
+    return (
+      <div
+        className="customer-page"
+        style={{
+          "--customer-accent":
+            restaurant.accent || "#6C4BF4",
+        }}
+      >
+        <div className="customer-success">
+          <div className="success-icon">✓</div>
+
+          <div className="customer-eyebrow">
+            ЗАКАЗ ПРИНЯТ
+          </div>
+
+          <h1>Спасибо!</h1>
+
+          <div className="customer-order-number">
+            ЗАКАЗ №{String(submittedOrder?.number || "").padStart(4, "0")}
+          </div>
+
+          <p>
+            Ваш заказ передан ресторану.
+            <br />
+            Ожидайте приготовления.
+          </p>
+
+          {submittedOrder && (
+            <CustomerOrderTracking order={submittedOrder} />
+          )}
+
+          <button
+            className="customer-primary"
+            onClick={() => setOrderComplete(false)}
+          >
+            Вернуться в меню
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="customer-page"
+      style={{
+        "--customer-accent":
+          restaurant.accent || "#6C4BF4",
+      }}
+    >
+      <header className="customer-header">
+        <div className="customer-logo">F</div>
+
+        <div>
+          <div className="customer-restaurant">
+            {restaurant.name}
+          </div>
+
+          <div className="customer-table">
+            {table.name}
+          </div>
+        </div>
+      </header>
+
+      <div className="customer-content">
+        <div className="customer-title">
+          <div className="customer-eyebrow">
+            МЕНЮ
+          </div>
+
+          <h1>Что желаете?</h1>
+        </div>
+
+        <div className="customer-categories">
+          <button
+            className={
+              activeCategory === "all"
+                ? "customer-category active"
+                : "customer-category"
+            }
+            onClick={() =>
+              setActiveCategory("all")
+            }
+          >
+            Всё
+          </button>
+
+          {restaurantCategories.map(
+            (category) => (
+              <button
+                key={category.id}
+                className={
+                  activeCategory === category.id
+                    ? "customer-category active"
+                    : "customer-category"
+                }
+                onClick={() =>
+                  setActiveCategory(category.id)
+                }
+              >
+                {category.name}
+              </button>
+            )
+          )}
+        </div>
+
+        <div className="customer-dishes">
+          {filteredDishes.map((dish) => (
+            <CustomerDish
+              key={dish.id}
+              dish={dish}
+              onAdd={() => addToCart(dish)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="customer-bottom-bar">
+        <button
+          className={!showCart ? "active" : ""}
+          onClick={() => setShowCart(false)}
+        >
+          <span>⌂</span>
+          <small>Меню</small>
+        </button>
+
+        <button
+          className={showCart ? "active" : ""}
+          onClick={() => setShowCart(true)}
+        >
+          <span>
+            □
+            {cartCount > 0 && (
+              <b>{cartCount}</b>
+            )}
+          </span>
+
+          <small>Мой заказ</small>
+        </button>
+      </div>
+
+      {showCart && (
+        <CustomerCart
+          cart={cart}
+          total={cartTotal}
+          onChange={changeQuantity}
+          onSubmit={submitOrder}
+          comment={orderComment}
+          onCommentChange={setOrderComment}
+          onClose={() => setShowCart(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function CustomerDish({ dish, onAdd }) {
+  return (
+    <div className="customer-dish">
+      <div className="customer-dish-image">
+        {dish.image ? (
+          <img
+            src={dish.image}
+            alt={dish.name}
+          />
+        ) : (
+          <div className="customer-image-placeholder">
+            F
+          </div>
+        )}
+      </div>
+
+      <div className="customer-dish-info">
+        <h2>{dish.name}</h2>
+
+        {dish.description && (
+          <p>{dish.description}</p>
+        )}
+
+        <div className="customer-dish-bottom">
+          <strong>{money(dish.price)}</strong>
+
+          <button
+            className="add-dish-button"
+            onClick={onAdd}
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CustomerCart({
+  cart,
+  total,
+  onChange,
+  onSubmit,
+  comment,
+  onCommentChange,
+  onClose,
+}) {
+  return (
+    <div className="customer-cart-overlay">
+      <div className="customer-cart">
+        <div className="customer-cart-header">
+          <div>
+            <div className="customer-eyebrow">
+              МОЙ ЗАКАЗ
+            </div>
+
+            <h2>Ваш заказ</h2>
+          </div>
+
+          <button
+            className="customer-close"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        {cart.length === 0 ? (
+          <div className="customer-empty-cart">
+            <div>□</div>
+            <h3>Пока пусто</h3>
+            <p>
+              Добавьте блюда из меню.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="customer-cart-items">
+              {cart.map((item) => (
+                <div
+                  className="customer-cart-item"
+                  key={item.dishId}
+                >
+                  <div>
+                    <strong>{item.name}</strong>
+                    <span>
+                      {money(item.price)}
+                    </span>
+                  </div>
+
+                  <div className="quantity-control">
+                    <button
+                      onClick={() =>
+                        onChange(
+                          item.dishId,
+                          -1
+                        )
+                      }
+                    >
+                      −
+                    </button>
+
+                    <strong>
+                      {item.quantity}
+                    </strong>
+
+                    <button
+                      onClick={() =>
+                        onChange(
+                          item.dishId,
+                          1
+                        )
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="customer-comment">
+              <label>Комментарий к заказу</label>
+              <textarea
+                value={comment}
+                onChange={(e) => onCommentChange(e.target.value)}
+                placeholder="Например: без лука, соус отдельно..."
+                maxLength={300}
+              />
+            </div>
+
+            <div className="customer-cart-total">
+              <span>Итого</span>
+              <strong>{money(total)}</strong>
+            </div>
+
+            <button
+              className="customer-primary customer-checkout"
+              onClick={onSubmit}
+            >
+              Оформить заказ
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CustomerOrderTracking({ order }) {
+  const [status, setStatus] = useState(order.status || "new");
+
+  useEffect(() => {
+    function sync() {
+      try {
+        const saved = readStorage(STORAGE.orders, []);
+        const current = saved.find((item) => item.id === order.id);
+        if (current) setStatus(current.status || "new");
+      } catch {
+        // Ignore storage errors.
+      }
+    }
+
+    sync();
+    const timer = window.setInterval(sync, 1000);
+    window.addEventListener("storage", sync);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("storage", sync);
+    };
+  }, [order.id]);
+
+  const labels = {
+    new: "Принят рестораном",
+    accepted: "Заказ принят",
+    preparing: "Готовится",
+    assembled: "Собран",
+    ready: "Готов к выдаче",
+    completed: "Заказ выдан",
+    cancelled: "Заказ отменён",
+  };
+
+  const steps = [
+    ["new", "Принят"],
+    ["preparing", "Готовится"],
+    ["assembled", "Собран"],
+    ["ready", "Готов"],
+  ];
+
+  const activeIndex = Math.max(
+    0,
+    steps.findIndex(([key]) => key === status)
+  );
+
+  return (
+    <div className="customer-tracking">
+      <div className="customer-tracking-title">
+        <span>СТАТУС</span>
+        <strong>{labels[status] || status}</strong>
+      </div>
+
+      <div className="customer-tracking-steps">
+        {steps.map(([key, label], index) => (
+          <div
+            className={
+              index <= activeIndex
+                ? "customer-track-step active"
+                : "customer-track-step"
+            }
+            key={key}
+          >
+            <span>{index < activeIndex ? "✓" : index + 1}</span>
+            <small>{label}</small>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CustomerError({ title, text }) {
+  return (
+    <div className="customer-error-page">
+      <div className="customer-error-card">
+        <div className="customer-logo">F</div>
+        <h1>{title}</h1>
+        <p>{text}</p>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   EMPTY
+------------------------------------------------------- */
+
+function EmptyState({
+  icon,
+  title,
+  text,
+  button,
+  onClick,
+}) {
+  return (
+    <div className="empty-state">
+      <div className="empty-icon">{icon}</div>
+
+      <h2>{title}</h2>
+
+      <p>{text}</p>
+
+      {button && onClick && (
+        <button
+          className="primary-button"
+          onClick={onClick}
+        >
+          {button}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   MOBILE BAR
+------------------------------------------------------- */
+
+function MobileBar({ page, setPage, role }) {
+  const items = role === "admin"
+    ? [["dashboard", "Главная", "home"], ["restaurants", "Рестораны", "restaurant"], ["licenses", "Лицензии", "license"], ["settings", "Настройки", "settings"]]
+    : [["dashboard", "Главная", "home"], ["menu", "Меню", "menu"], ["tables", "Столы", "table"], ["orders", "Заказы", "orders"]];
+  return <div className="mobile-bar">{items.map(([id, label, icon]) => <button key={id} className={page === id ? "mobile-active" : ""} onClick={() => setPage(id)} type="button"><Icon name={icon} size={17} /><span>{label}</span></button>)}</div>;
+}
+
+/* -------------------------------------------------------
+   PAGE TITLES
+------------------------------------------------------- */
+
+function getAdminPageTitle(page) {
+  const titles = {
+    dashboard: "Главная",
+    restaurants: "Рестораны",
+    licenses: "Лицензии",
+    "restaurant-details": "Ресторан",
+    settings: "Настройки",
+  };
+
+  return titles[page] || "Festo";
+}
+
+function getDirectorPageTitle(page) {
+  const titles = {
+    dashboard: "Главная",
+    menu: "Меню",
+    tables: "Столы",
+    orders: "Заказы",
+    settings: "Настройки",
+  };
+
+  return titles[page] || "Festo";
+}
+
+/* -------------------------------------------------------
+   LIVE ORDERS SCREEN
+------------------------------------------------------- */
+
+function LiveOrdersScreen({
+  restaurant,
+  orders,
+  setOrders,
+}) {
+  const [liveOrders, setLiveOrders] = useState(() => normalizeLiveOrders(orders, restaurant.id));
+  const [page, setPage] = useState(0);
+  const [viewport, setViewport] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  const [clock, setClock] = useState(Date.now());
+  const previousIds = React.useRef(new Set());
+  const initialized = React.useRef(false);
+  const audioContext = React.useRef(null);
+
+  function normalizeLiveOrders(source, restaurantId) {
+    return source
+      .filter((order) => order.restaurantId === restaurantId)
+      .filter((order) => order.status !== "completed" && order.status !== "cancelled")
+      .map((order) => ({
+        ...order,
+        // В кухонном режиме новый/принятый заказ сразу считается готовящимся.
+        liveStatus:
+          order.status === "assembled"
+            ? "assembled"
+            : order.status === "ready"
+              ? "ready"
+              : "preparing",
+      }))
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+  }
+
+  useEffect(() => {
+    function handleResize() {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    function handleStorage(event) {
+      if (event.key !== STORAGE.orders) return;
+
+      try {
+        setLiveOrders(
+          normalizeLiveOrders(JSON.parse(event.newValue || "[]"), restaurant.id)
+        );
+      } catch {
+        // Ignore malformed localStorage data.
+      }
+    }
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [restaurant.id]);
+
+  useEffect(() => {
+    setLiveOrders(normalizeLiveOrders(orders, restaurant.id));
+  }, [orders, restaurant.id]);
+
+  useEffect(() => {
+    const ids = new Set(liveOrders.map((order) => order.id));
+
+    if (initialized.current) {
+      const hasNewOrder = [...ids].some((id) => !previousIds.current.has(id));
+      if (hasNewOrder) {
+        setPage(0);
+        playNewOrderSound();
+      }
+    }
+
+    previousIds.current = ids;
+    initialized.current = true;
+  }, [liveOrders]);
+
+  function playNewOrderSound() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      if (!audioContext.current) {
+        audioContext.current = new AudioCtx();
+      }
+
+      const ctx = audioContext.current;
+      if (ctx.state === "suspended") ctx.resume();
+
+      const now = ctx.currentTime;
+      [0, 0.14, 0.28].forEach((offset, index) => {
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = index === 2 ? 880 : 660;
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.12, now + offset + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.12);
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.start(now + offset);
+        oscillator.stop(now + offset + 0.13);
+      });
+    } catch {
+      // Browser can block audio until user interaction.
+    }
+  }
+
+  const columns = Math.max(1, Math.floor(viewport.width / 310));
+  const availableHeight = Math.max(420, viewport.height - 125);
+  const rows = Math.max(1, Math.floor(availableHeight / 335));
+  const pageSize = Math.max(1, columns * rows);
+  const totalPages = Math.max(1, Math.ceil(liveOrders.length / pageSize));
+
+  useEffect(() => {
+    if (page >= totalPages) {
+      setPage(Math.max(0, totalPages - 1));
+    }
+  }, [page, totalPages]);
+
+  const visibleOrders = liveOrders.slice(
+    page * pageSize,
+    page * pageSize + pageSize
+  );
+
+  function formatTime(date) {
+    return new Date(date).toLocaleTimeString("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function elapsedMinutes(order) {
+    const start = new Date(order.createdAt).getTime();
+    const diff = Math.max(0, clock - start);
+    return Math.floor(diff / 60000);
+  }
+
+  function elapsedLabel(order) {
+    const start = new Date(order.createdAt).getTime();
+    const diff = Math.max(0, clock - start);
+    const minutes = Math.floor(diff / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function updateOrderStatus(id, status) {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === id
+          ? {
+              ...order,
+              status,
+              statusChangedAt: new Date().toISOString(),
+            }
+          : order
+      )
+    );
+  }
+
+  function handleOrderClick(order) {
+    const current = order.liveStatus || "preparing";
+
+    // Первый клик: заказ собран + голубая подсветка.
+    if (current === "preparing") {
+      updateOrderStatus(order.id, "assembled");
+      return;
+    }
+
+    // Второй клик: заказ готов.
+    if (current === "assembled") {
+      updateOrderStatus(order.id, "ready");
+    }
+  }
+
+  function statusLabel(status) {
+    if (status === "assembled") return "СОБРАН";
+    if (status === "ready") return "ГОТОВ";
+    return "ГОТОВИТСЯ";
+  }
+
+  return (
+    <div className="live-orders-screen">
+      <header className="live-orders-header">
+        <div className="live-header-left">
+          <div className="live-brand">
+            <div className="live-brand-logo">F</div>
+            <div>
+              <strong>{restaurant.name}</strong>
+              <span>Кухня · Live-заказы</span>
+            </div>
+          </div>
+
+          <div className="live-divider" />
+
+          <div className="live-title">
+            <h1>ЗАКАЗЫ</h1>
+            <div className="live-status">
+              <span className="live-pulse" />
+              LIVE
+            </div>
+          </div>
+        </div>
+
+        <div className="live-header-right">
+          <div className="live-counter">
+            <span>АКТИВНЫЕ ЗАКАЗЫ</span>
+            <strong>{liveOrders.length}</strong>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="live-pagination">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                aria-label="Предыдущая страница"
+              >
+                ←
+              </button>
+              <span>{page + 1} / {totalPages}</span>
+              <button
+                onClick={() =>
+                  setPage((p) => Math.min(totalPages - 1, p + 1))
+                }
+                disabled={page === totalPages - 1}
+                aria-label="Следующая страница"
+              >
+                →
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <main
+        className="live-orders-grid"
+        style={{
+          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+          gridAutoRows: "minmax(300px, 330px)",
+        }}
+      >
+        {visibleOrders.map((order) => {
+          const currentStatus = order.liveStatus || "preparing";
+          const minutes = elapsedMinutes(order);
+          const overdue = currentStatus === "preparing" && minutes >= 15;
+
+          return (
+            <article
+              className={`live-order-card live-status-${currentStatus} ${
+                overdue ? "live-order-overdue" : ""
+              }`}
+              key={order.id}
+              onClick={() => handleOrderClick(order)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  handleOrderClick(order);
+                }
+              }}
+              title={
+                currentStatus === "preparing"
+                  ? "Нажмите, когда заказ собран"
+                  : currentStatus === "assembled"
+                    ? "Нажмите ещё раз, когда заказ готов"
+                    : "Заказ готов"
+              }
+            >
+              <div className="live-order-card-header">
+                <div>
+                  <div className="live-order-number">
+                    #{String(order.number).padStart(4, "0")}
+                  </div>
+                  <div className="live-order-time">
+                    {formatTime(order.createdAt)}
+                  </div>
+                </div>
+
+                <div className="live-table-badge">
+                  <span>СТОЛ</span>
+                  <strong>
+                    {order.tableNumber || order.tableName || "—"}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="live-order-status-row">
+                <div className="live-order-status">
+                  {statusLabel(currentStatus)}
+                </div>
+                <div className="live-order-timer">{elapsedLabel(order)}</div>
+              </div>
+
+              <div className="live-order-items">
+                {order.items.map((item, index) => (
+                  <div
+                    className="live-order-item"
+                    key={`${item.dishId}-${index}`}
+                  >
+                    <div className="live-item-name">
+                      <strong>{item.quantity} ×</strong>
+                      <span>{item.name}</span>
+                    </div>
+                    <strong>{money(item.quantity * item.price)}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div className="live-order-footer">
+                <div>
+                  <span>ИТОГО</span>
+                  <strong>{money(order.total)}</strong>
+                </div>
+
+                <div className="live-action-hint">
+                  {currentStatus === "preparing"
+                    ? "НАЖМИТЕ — СОБРАН"
+                    : currentStatus === "assembled"
+                      ? "НАЖМИТЕ — ГОТОВ"
+                      : "ЗАКАЗ ГОТОВ"}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+
+        {visibleOrders.length === 0 && (
+          <div className="live-empty">
+            <div className="live-empty-icon">✓</div>
+            <h2>Все заказы обработаны</h2>
+            <p>Новые заказы появятся здесь автоматически</p>
+            <div className="live-waiting">
+              <span className="live-pulse" />
+              Ожидание новых заказов
+            </div>
+          </div>
+        )}
+      </main>
+
+      {totalPages > 1 && (
+        <footer className="live-orders-footer">
+          <div>
+            Страница <strong>{page + 1}</strong> из <strong>{totalPages}</strong>
+          </div>
+          <div className="live-page-dots">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                className={index === page ? "active" : ""}
+                onClick={() => setPage(index)}
+                aria-label={`Страница ${index + 1}`}
+              />
+            ))}
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+}
+
+
+/* -------------------------------------------------------
+   MAIN APP
+------------------------------------------------------- */
+
+export default function App() {
+  const [restaurants, setRestaurants] = useState(() =>
+    readStorage(
+      STORAGE.restaurants,
+      [DEFAULT_RESTAURANT]
+    )
+  );
+
+  const [categories, setCategories] = useState(() =>
+    readStorage(
+      STORAGE.categories,
+      DEFAULT_CATEGORIES
+    )
+  );
+
+  const [dishes, setDishes] = useState(() =>
+    readStorage(
+      STORAGE.dishes,
+      DEFAULT_DISHES
+    )
+  );
+
+  const [tables, setTables] = useState(() =>
+    readStorage(
+      STORAGE.tables,
+      DEFAULT_TABLES
+    )
+  );
+
+  const [orders, setOrders] = useState(() =>
+    readStorage(STORAGE.orders, [])
+  );
+
+  const [session, setSession] = useState(null);
+
+  const urlParams = useMemo(() => {
+    return new URLSearchParams(
+      window.location.search
+    );
+  }, []);
+
+  const tableFromUrl = urlParams.get("table");
+  const liveOrdersRestaurantId =
+    urlParams.get("liveOrders");
+
+  useEffect(() => {
+    writeStorage(
+      STORAGE.restaurants,
+      restaurants
+    );
+  }, [restaurants]);
+
+  useEffect(() => {
+    writeStorage(
+      STORAGE.categories,
+      categories
+    );
+  }, [categories]);
+
+  useEffect(() => {
+    writeStorage(STORAGE.dishes, dishes);
+  }, [dishes]);
+
+  useEffect(() => {
+    writeStorage(STORAGE.tables, tables);
+  }, [tables]);
+
+  useEffect(() => {
+    writeStorage(STORAGE.orders, orders);
+  }, [orders]);
+
+  /*
+   * Важная защита от бага предыдущей версии:
+   * email администратора НИКОГДА не используется
+   * как login директора.
+   */
+  useEffect(() => {
+    setRestaurants((prev) =>
+      prev.map((restaurant) => {
+        if (
+          restaurant.login?.trim().toLowerCase() ===
+          ADMIN_EMAIL.toLowerCase()
+        ) {
+          return {
+            ...restaurant,
+            login: `director-${restaurant.id.slice(
+              0,
+              5
+            )}`,
+          };
+        }
+
+        return restaurant;
+      })
+    );
+  }, []);
+
+  // QR URL всегда открывает клиентское меню.
+  if (tableFromUrl) {
+    const table = tables.find(
+      (item) => item.id === tableFromUrl
+    );
+
+    if (table) {
+      const restaurant = restaurants.find(
+        (item) => item.id === table.restaurantId
+      );
+
+      if (restaurant) {
+        return (
+          <CustomerApp
+            restaurant={restaurant}
+            categories={categories}
+            dishes={dishes}
+            tables={tables}
+            setOrders={setOrders}
+          />
+        );
+      }
+    }
+  }
+
+  if (liveOrdersRestaurantId) {
+    const liveRestaurant = restaurants.find(
+      (restaurant) =>
+        restaurant.id === liveOrdersRestaurantId
+    );
+
+    if (liveRestaurant) {
+      return (
+        <LiveOrdersScreen
+          restaurant={liveRestaurant}
+          orders={orders}
+          setOrders={setOrders}
+        />
+      );
+    }
+  }
+
+  if (!session) {
+    return (
+      <Auth
+        restaurants={restaurants}
+        onLogin={setSession}
+      />
+    );
+  }
+
+  function logout() {
+    setSession(null);
+  }
+
+  if (session.role === "admin") {
+    return (
+      <AdminApp
+        restaurants={restaurants}
+        setRestaurants={setRestaurants}
+        categories={categories}
+        dishes={dishes}
+        tables={tables}
+        orders={orders}
+        setTables={setTables}
+        setOrders={setOrders}
+        onLogout={logout}
+      />
+    );
+  }
+
+  const directorRestaurant = restaurants.find(
+    (restaurant) =>
+      restaurant.id === session.restaurantId
+  );
+
+  return (
+    <DirectorApp
+      restaurant={directorRestaurant}
+      categories={categories}
+      setCategories={setCategories}
+      dishes={dishes}
+      setDishes={setDishes}
+      tables={tables}
+      setTables={setTables}
+      orders={orders}
+      setOrders={setOrders}
+      setRestaurants={setRestaurants}
+      onLogout={logout}
+    />
+  );
+}
