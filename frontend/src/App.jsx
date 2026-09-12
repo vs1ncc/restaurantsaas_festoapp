@@ -13,6 +13,7 @@ const STORAGE = {
   orders: "festo_orders",
   invoices: "festo_invoices",
   qrStands: "festo_qr_stands",
+  reportDrafts: "festo_report_drafts",
 };
 
 const DEFAULT_RESTAURANT = {
@@ -26,7 +27,6 @@ const DEFAULT_RESTAURANT = {
   login: "director",
   password: "123456",
   license: "FESTO-DEMO-2026",
-  logo: null,
 };
 
 const DEFAULT_CATEGORIES = [
@@ -181,28 +181,49 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
     arrow: <><path d="M5 12h14M13 6l6 6-6 6"/></>,
     profile: <><circle cx="12" cy="8" r="3.5"/><path d="M5 21c.8-4 3.1-6 7-6s6.2 2 7 6"/></>,
     bank: <><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 14h.01M11 14h6"/></>,
+    chart: <><path d="M4 19V5M4 19h16"/><path d="m7 15 3-4 3 2 5-7"/></>,
     qr: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2"/></>,
   };
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
 }
 
-function customerUrl(tableId, restaurantId = null) {
-  let resolvedRestaurantId = restaurantId;
+const FESTO_API_BASE = (typeof window !== "undefined" && window.__FESTO_API_BASE__) || "";
 
-  // Если restaurantId не передан (например, старый вызов из QR-модалки),
-  // определяем его по столу из локальных данных.
-  if (!resolvedRestaurantId) {
-    const savedTables = readStorage(STORAGE.tables, DEFAULT_TABLES);
-    const savedTable = savedTables.find((item) => item.id === tableId);
-    resolvedRestaurantId = savedTable?.restaurantId || "";
-  }
+async function festoApi(path, options = {}) {
+  const response = await fetch(`${FESTO_API_BASE}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+  });
+  if (!response.ok) throw new Error(`FESTO API ${response.status}`);
+  return response.json();
+}
 
-  // Hash-маршрут не требует серверного rewrite на Vercel.
-  // В QR одновременно записываем restaurantId и tableId, чтобы меню
-  // можно было открыть с телефона, где нет localStorage админки.
-  return `${window.location.origin}${window.location.pathname}#/menu/${encodeURIComponent(
-    resolvedRestaurantId
-  )}/${encodeURIComponent(tableId)}`;
+function customerUrl(tableId, restaurantId) {
+  // Короткий hash-URL: iPhone легко считывает такой QR, а SPA-хостингу
+  // не нужен отдельный server rewrite для /menu/...
+  const path = window.location.pathname || "/";
+  const basePath = path.endsWith("/") ? path : path.slice(0, path.lastIndexOf("/") + 1) || "/";
+  return `${window.location.origin}${basePath}#/menu/${encodeURIComponent(restaurantId)}/${encodeURIComponent(tableId)}`;
+}
+
+function getPublicMenuSnapshot(tableId, restaurantId) {
+  const restaurants = readStorage(STORAGE.restaurants, [DEFAULT_RESTAURANT]);
+  const categories = readStorage(STORAGE.categories, DEFAULT_CATEGORIES);
+  const dishes = readStorage(STORAGE.dishes, DEFAULT_DISHES);
+  const tables = readStorage(STORAGE.tables, DEFAULT_TABLES);
+  const restaurant = restaurants.find((item) => item.id === restaurantId);
+  const table = tables.find((item) => item.id === tableId && item.restaurantId === restaurantId);
+  if (!restaurant || !table) return null;
+  return {
+    version: 3,
+    restaurant: { id: restaurant.id, name: restaurant.name, accent: restaurant.accent || "#6C4BF4" },
+    table: { id: table.id, name: table.name, number: table.number, restaurantId: table.restaurantId },
+    categories: categories.filter((item) => item.restaurantId === restaurantId).map(({ id, name, sort }) => ({ id, name, sort })),
+    dishes: dishes.filter((item) => item.restaurantId === restaurantId && item.active !== false).map((item) => ({
+      id: item.id, categoryId: item.categoryId, name: item.name, description: item.description || "", price: Number(item.price || 0),
+      image: String(item.image || "").startsWith("http") ? item.image : "",
+    })),
+  };
 }
 
 /* -------------------------------------------------------
@@ -296,6 +317,84 @@ function Auth({ restaurants, onLogin }) {
   );
 }
 
+
+/* -------------------------------------------------------
+   LICENSE AGREEMENT / TRIAL ACCESS
+------------------------------------------------------- */
+
+const TRIAL_HOURS = 5;
+const SUBSCRIPTION_PRICE = 5000;
+const DEFAULT_PAYMENT_REQUISITES = "+7 925 569 07-37 · Даниэла Альбертовна Х. · Сбер Банк · по СБП";
+
+function LicenseAgreementGate({ restaurant, onAccept, onLogout }) {
+  const [accepted, setAccepted] = useState(false);
+  return (
+    <div className="agreement-page">
+      <div className="agreement-card agreement-card-wide">
+        <div className="logo">F</div>
+        <div className="eyebrow">ПЕРВЫЙ ВХОД · FESTO</div>
+        <h1>Лицензионное соглашение</h1>
+        <p className="agreement-lead">Перед началом работы ознакомьтесь с условиями использования программного обеспечения FESTO.</p>
+        <div className="agreement-parties">
+          <div><span>Лицензиат</span><strong>ООО «Фесто»</strong><small>владелец лицензии</small></div>
+          <div><span>Лицензиар</span><strong>{restaurant.legalName || restaurant.name}</strong><small>ресторан, на который создан аккаунт</small></div>
+        </div>
+        <div className="agreement-scroll">
+          <h3>1. Общие положения</h3>
+          <p>Настоящее лицензионное соглашение регулирует предоставление права использования программного обеспечения FESTO для автоматизации работы ресторана. Лицензиаром по настоящему соглашению является ООО «Фесто», а Лицензиатом — юридическое лицо или индивидуальный предприниматель, указанный в учетной записи ресторана: <strong>{restaurant.legalName || restaurant.name}</strong>.</p>
+          <h3>2. Предмет лицензии</h3>
+          <p>Лицензиар предоставляет Лицензиату неисключительное, непередаваемое право использовать FESTO для управления меню, QR-меню, столами, заказами, отчетностью, настройками ресторана и иными доступными в аккаунте функциями. Передача исходного кода, перепродажа программы или предоставление доступа третьим лицам вне согласованного круга пользователей не разрешаются.</p>
+          <h3>3. Учетная запись и безопасность</h3>
+          <p>Лицензиат обязан хранить логин и пароль в тайне, своевременно обновлять данные и незамедлительно сообщать об утрате контроля над учетной записью. Действия, совершенные с использованием учетной записи, считаются совершенными Лицензиатом до момента уведомления Лицензиара об ее компрометации.</p>
+          <h3>4. Пробный период</h3>
+          <p>При первичном подключении предоставляется пробный доступ продолжительностью 5 часов с момента первого входа. В течение пробного периода функциональность предоставляется для ознакомления. По окончании пробного периода доступ к кабинету может быть ограничен до подтверждения оплаты лицензии.</p>
+          <h3>5. Стоимость и порядок оплаты</h3>
+          <p>Стоимость подключения нового ресторана составляет <strong>{money(SUBSCRIPTION_PRICE)}</strong>. Оплата производится банковским переводом по реквизитам, указанным в счете. После загрузки подтверждения платежа счет передается администратору FESTO на ручную проверку.</p>
+          <h3>6. Бессрочная лицензия после подтверждения оплаты</h3>
+          <p>После подтверждения администратором полной оплаты счета на подключение ресторана пробный период прекращается, а в учетной записи устанавливается статус бессрочной лицензии. Если платеж отклонен, статус лицензии не изменяется до получения и подтверждения корректного платежа.</p>
+          <h3>7. Интеллектуальные права</h3>
+          <p>Исключительные права на программное обеспечение FESTO, его интерфейс, код, товарные обозначения и документацию принадлежат соответствующим правообладателям. Настоящее соглашение не передает Лицензиату исключительные права на программу.</p>
+          <h3>8. Данные ресторана и ответственность пользователя</h3>
+          <p>Лицензиат самостоятельно отвечает за законность, достоверность и актуальность размещаемых в FESTO сведений, включая цены, состав блюд, изображения, реквизиты и сведения о заказах. Лицензиат также обязан иметь необходимые права на загружаемые фотографии, тексты и иные материалы.</p>
+          <h3>9. Доступность и техническая поддержка</h3>
+          <p>Лицензиар принимает разумные меры для поддержания работоспособности сервиса, однако не гарантирует бесперебойную работу при сбоях связи, оборудования, сторонней инфраструктуры или обстоятельствах непреодолимой силы. Плановые технические работы могут временно ограничивать доступ.</p>
+          <h3>10. Ограничение ответственности</h3>
+          <p>FESTO является программным инструментом автоматизации и не заменяет бухгалтерский, юридический или иной профессиональный контроль. Лицензиат самостоятельно проверяет корректность цен, заказов, платежей, отчетов и других критически важных данных перед их использованием.</p>
+          <h3>11. Срок действия и прекращение</h3>
+          <p>Соглашение действует с момента принятия и, при подтвержденной оплате лицензии, без ограничения срока, если иное не предусмотрено применимым законодательством или отдельным письменным соглашением сторон. При существенном нарушении условий доступ может быть приостановлен после уведомления Лицензиата, если нарушение не устранено в разумный срок.</p>
+          <h3>12. Изменения соглашения</h3>
+          <p>Изменения условий публикуются в интерфейсе FESTO или доводятся до Лицензиата иным доступным способом. Изменения, ухудшающие положение действующего Лицензиата, применяются с учетом требований законодательства и порядка уведомления.</p>
+          <h3>13. Заключительные положения</h3>
+          <p>Нажатие кнопки «Далее» после установки отметки означает, что пользователь ознакомился с текстом соглашения, понял его условия и действует от имени Лицензиата либо имеет полномочия принять соглашение. Если пользователь не согласен с условиями, он должен выйти из аккаунта и не использовать сервис.</p>
+          <p className="agreement-legal-note"><strong>Важно:</strong> этот текст является рабочим шаблоном пользовательского лицензионного соглашения для интерфейса FESTO. Перед коммерческим запуском его следует проверить и при необходимости адаптировать под реквизиты ООО «Фесто», выбранную юрисдикцию, налоговый режим и требования законодательства о персональных данных.</p>
+        </div>
+        <label className="agreement-check">
+          <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
+          <span>Я прочитал(а) и согласен(на) с лицензионным соглашением.</span>
+        </label>
+        <div className="agreement-actions">
+          <button className="secondary-button" type="button" onClick={onLogout}>Выйти</button>
+          <button className="primary-button" type="button" disabled={!accepted} onClick={onAccept}>Далее</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrialExpiredGate({ restaurant, invoices, setInvoices, onLogout }) {
+  return (
+    <div className="trial-expired-page">
+      <div className="trial-expired-head">
+        <div className="logo">F</div>
+        <div><div className="eyebrow">ПРОБНЫЙ ДОСТУП ЗАВЕРШЕН</div><h1>Оплатите FESTO, чтобы продолжить</h1><p>{restaurant.name} · пробный период 5 часов закончился.</p></div>
+        <button className="secondary-button" onClick={onLogout}><Icon name="logout" size={17}/>Выйти</button>
+      </div>
+      <div className="trial-expired-note"><strong>Счет за программное обеспечение — {money(SUBSCRIPTION_PRICE)}</strong><span>Оплата только банковским переводом. После перевода прикрепите чек в счете.</span></div>
+      <InvoicesPage restaurant={restaurant} invoices={invoices} setInvoices={setInvoices} onBack={null} embedded />
+    </div>
+  );
+}
+
 /* -------------------------------------------------------
    ADMIN
 ------------------------------------------------------- */
@@ -319,6 +418,11 @@ function AdminApp({
 
   const activeRestaurant =
     restaurants.find((r) => r.id === selectedRestaurant) || null;
+
+  // Navigation between sections must always start at the top of the desktop page.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [page]);
 
   function deleteRestaurant(id) {
     if (id === "demo-restaurant") {
@@ -405,6 +509,7 @@ function AdminApp({
         {page === "profile" && (
           <AdminProfilePage
             restaurants={restaurants}
+            setRestaurants={setRestaurants}
             invoices={invoices}
             setInvoices={setInvoices}
           />
@@ -424,6 +529,19 @@ function AdminApp({
             onClose={() => setShowCreate(false)}
             onCreate={(restaurant) => {
               setRestaurants((prev) => [...prev, restaurant]);
+              const invoice = {
+                id: uid("invoice"),
+                number: `F-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+                restaurantId: restaurant.id,
+                title: "Лицензия и программное обеспечение FESTO",
+                amount: SUBSCRIPTION_PRICE,
+                description: "Оплата программного обеспечения FESTO после пробного доступа.",
+                requisites: DEFAULT_PAYMENT_REQUISITES,
+                status: "pending_payment",
+                type: "subscription",
+                createdAt: new Date().toISOString(),
+              };
+              setInvoices((prev) => [invoice, ...prev]);
               setShowCreate(false);
             }}
           />
@@ -459,6 +577,11 @@ function DirectorApp({
   onLogout,
 }) {
   const [page, setPage] = useState("dashboard");
+
+  // Reset the document scroll whenever a desktop cabinet section changes.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [page]);
 
   function openLiveOrders() {
     const url = `${window.location.origin}${window.location.pathname}?liveOrders=${encodeURIComponent(
@@ -506,22 +629,13 @@ function DirectorApp({
         onLogout={onLogout}
       />
 
-      <button
-        className="live-orders-button"
-        onClick={openLiveOrders}
-        title="Открыть Live-заказы в новой вкладке"
-      >
-        <span className="live-dot" />
-        LIVE ЗАКАЗЫ
-        <span className="live-count">{restaurantOrders.length}</span>
-        <span className="live-arrow"><Icon name="arrow" size={15} /></span>
-      </button>
-
       <main className="main-content">
         <Topbar
           title={getDirectorPageTitle(page)}
           name={restaurant.name}
           subtitle="Директор ресторана"
+          liveCount={restaurantOrders.length}
+          onOpenLiveOrders={openLiveOrders}
         />
 
         {page === "dashboard" && (
@@ -561,6 +675,7 @@ function DirectorApp({
             tables={restaurantTables}
             invoices={invoices}
             setInvoices={setInvoices}
+            onLogout={onLogout}
           />
         )}
 
@@ -622,17 +737,32 @@ function Sidebar({ page, setPage, role, restaurant, onLogout }) {
    TOPBAR
 ------------------------------------------------------- */
 
-function Topbar({ title, name, subtitle }) {
+function Topbar({ title, name, subtitle, liveCount = 0, onOpenLiveOrders }) {
   return (
     <div className="topbar">
       <h2>{title}</h2>
 
-      <div className="profile">
+      <div className="topbar-actions">
+        {onOpenLiveOrders && (
+          <button
+            className="live-orders-button"
+            onClick={onOpenLiveOrders}
+            title="Открыть Live-заказы в новой вкладке"
+          >
+            <span className="live-dot" />
+            LIVE ЗАКАЗЫ
+            <span className="live-count">{liveCount}</span>
+            <span className="live-arrow"><Icon name="arrow" size={15} /></span>
+          </button>
+        )}
+
+        <div className="profile">
         <div className="avatar">{getInitials(name)}</div>
 
         <div>
           <strong>{name}</strong>
           <span>{subtitle}</span>
+        </div>
         </div>
       </div>
     </div>
@@ -1069,6 +1199,11 @@ function CreateRestaurantModal({
         .toString(36)
         .slice(2, 8)
         .toUpperCase()}`,
+      licenseAcceptedAt: null,
+      trialStartedAt: null,
+      trialDurationHours: TRIAL_HOURS,
+      subscriptionActive: false,
+      subscriptionType: "trial",
     };
 
     onCreate(restaurant);
@@ -1311,84 +1446,6 @@ function RestaurantDetails({
                 })
               }
             />
-          </div>
-
-          <div className="details-edit restaurant-logo-editor">
-            <h3>Логотип ресторана</h3>
-
-            <p className="muted">
-              Логотип будет показан в стеклянной шапке клиентского меню.
-            </p>
-
-            <div className="restaurant-logo-preview">
-              {form.logo ? (
-                <img
-                  src={form.logo}
-                  alt="Логотип ресторана"
-                />
-              ) : (
-                <div className="restaurant-logo-empty">
-                  LOGO
-                </div>
-              )}
-            </div>
-
-            <div className="restaurant-logo-actions">
-              <label className="secondary-button">
-                <Icon name="upload" size={17} />
-                {form.logo
-                  ? "Заменить логотип"
-                  : "Загрузить логотип"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => {
-                    const file =
-                      e.target.files?.[0];
-
-                    if (!file) return;
-
-                    if (
-                      !file.type.startsWith("image/")
-                    ) {
-                      alert("Выберите изображение.");
-                      return;
-                    }
-
-                    const reader =
-                      new FileReader();
-
-                    reader.onload = () => {
-                      setForm({
-                        ...form,
-                        logo: String(
-                          reader.result || ""
-                        ),
-                      });
-                    };
-
-                    reader.readAsDataURL(file);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-
-              {form.logo && (
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() =>
-                    setForm({
-                      ...form,
-                      logo: null,
-                    })
-                  }
-                >
-                  Удалить
-                </button>
-              )}
-            </div>
           </div>
 
           <div className="details-edit">
@@ -1670,7 +1727,6 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
       <div className="page-heading">
         <div><div className="eyebrow">РЕСТОРАН</div><h1>Меню</h1><p>Управляйте категориями и блюдами ресторана</p></div>
         <div className="heading-actions">
-          <button className="ai-menu-button" onClick={() => setMenuSubpage("ai")} type="button"><Icon name="spark" size={18} />Добавить меню с ИИ</button>
           <button className="secondary-button" onClick={() => setMenuSubpage("category")} type="button">Категория</button>
           <button className="primary-button" onClick={() => { setEditingDish(null); setMenuSubpage("dish"); }} type="button">Добавить блюдо</button>
         </div>
@@ -1728,12 +1784,262 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
 }
 
 /* -------------------------------------------------------
+   LOCAL FESTO AI MENU ENGINE
+   On-device OCR + layout parsing. No /api/menu/parse endpoint is required.
+   OCR runs in the browser; the recognized menu blocks are converted into
+   separate dishes with name, price, description, composition and a crop
+   from the source menu photo.
+------------------------------------------------------- */
+
+let festoTesseractPromise = null;
+
+function loadFestoTesseract() {
+  if (typeof window !== "undefined" && window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (festoTesseractPromise) return festoTesseractPromise;
+  festoTesseractPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-festo-tesseract="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.Tesseract));
+      existing.addEventListener("error", () => reject(new Error("Не удалось загрузить локальный OCR-модуль FESTO AI.")));
+      return;
+    }
+    const script = document.createElement("script");
+    script.dataset.festoTesseract = "1";
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js";
+    script.async = true;
+    script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error("OCR-модуль FESTO AI не найден."));
+    script.onerror = () => reject(new Error("Не удалось загрузить OCR-модуль. Проверьте интернет-соединение и повторите попытку."));
+    document.head.appendChild(script);
+  });
+  return festoTesseractPromise;
+}
+
+function festoNormalizeOCRText(value) {
+  return String(value || "")
+    .replace(/[|¦]/g, "I")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.])/g, "$1")
+    .trim();
+}
+
+function festoParsePrice(value) {
+  const text = festoNormalizeOCRText(value);
+  const matches = [...text.matchAll(/(^|\s)(\d{2,5}(?:[.,]\d{1,2})?)(?:\s*(?:₽|руб(?:\.|лей)?|р\.?))?(?=\s*$)/gi)];
+  if (!matches.length) return null;
+  const raw = matches[matches.length - 1][2].replace(",", ".");
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 20 && n <= 999999 ? n : null;
+}
+
+function festoNameWithoutPrice(value) {
+  const text = festoNormalizeOCRText(value);
+  const match = text.match(/^(.*?)(?:\s+)(\d{2,5}(?:[.,]\d{1,2})?)(?:\s*(?:₽|руб(?:\.|лей)?|р\.?))?$/i);
+  const name = match ? match[1].replace(/[—–-]\s*$/, "").trim() : "";
+  return festoLooksLikeDishName(name) ? name : "";
+}
+
+function festoLooksLikeNoise(text) {
+  const t = festoNormalizeOCRText(text);
+  if (!t || t.length < 2) return true;
+  if (/^(меню|menu|цена|price|руб|₽|р\.?|вес|грамм|гр|мл|ml|g)$/i.test(t)) return true;
+  const letters = (t.match(/[A-Za-zА-Яа-яЁё]/g) || []).length;
+  const digits = (t.match(/\d/g) || []).length;
+  return letters < 2 || digits > letters * 2;
+}
+
+function festoLooksLikeDishName(text) {
+  const t = festoNormalizeOCRText(text);
+  if (festoLooksLikeNoise(t) || t.length > 90) return false;
+  if (festoParsePrice(t) != null) return false;
+  if (/^(состав|ингредиенты|описание|вес|выход|ккал|калорийность|цена|руб|₽)/i.test(t)) return false;
+  return (t.match(/[A-Za-zА-Яа-яЁё]/g) || []).length >= 3;
+}
+
+function festoCompositionFromText(lines) {
+  const joined = lines.map(festoNormalizeOCRText).filter(Boolean).join(" ");
+  if (!joined) return "";
+  const match = joined.match(/(?:состав|ингредиенты)\s*[:—-]?\s*(.+?)(?=\s+(?:цена|выход|вес)\b|$)/i);
+  return match ? match[1].trim() : "";
+}
+
+async function festoImageSize(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = url;
+    });
+    return { image: img, width: img.naturalWidth || img.width, height: img.naturalHeight || img.height };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function festoCropDataUrl(file, crop) {
+  const { image, width, height } = await festoImageSize(file);
+  const x = Math.max(0, Math.min(width - 1, Math.floor(crop.x)));
+  const y = Math.max(0, Math.min(height - 1, Math.floor(crop.y)));
+  const w = Math.max(1, Math.min(width - x, Math.floor(crop.w)));
+  const h = Math.max(1, Math.min(height - y, Math.floor(crop.h)));
+  const canvas = document.createElement("canvas");
+  const maxSide = 1200;
+  const scale = Math.min(1, maxSide / Math.max(w, h));
+  canvas.width = Math.max(1, Math.round(w * scale));
+  canvas.height = Math.max(1, Math.round(h * scale));
+  const ctx = canvas.getContext("2d", { alpha: false });
+  ctx.drawImage(image, x, y, w, h, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.86);
+}
+
+function festoClusterColumns(lines, imageWidth) {
+  if (!lines.length) return [];
+  const sorted = [...lines].sort((a, b) => a.x - b.x);
+  const columns = [];
+  const threshold = Math.max(90, imageWidth * 0.18);
+  sorted.forEach(line => {
+    const center = line.x + line.w / 2;
+    let target = columns.find(c => Math.abs(c.center - center) < threshold);
+    if (!target) {
+      target = { lines: [], center };
+      columns.push(target);
+    }
+    target.lines.push(line);
+    target.center = target.lines.reduce((sum, item) => sum + item.x + item.w / 2, 0) / target.lines.length;
+  });
+  return columns.sort((a, b) => a.center - b.center);
+}
+
+async function festoRecognizeImage(file, onProgress) {
+  const Tesseract = await loadFestoTesseract();
+  let result;
+  try {
+    result = await Tesseract.recognize(file, "rus+eng", {
+      logger: message => {
+        if (message?.status === "recognizing text" && Number.isFinite(message.progress)) onProgress?.(message.progress);
+      },
+      tessedit_pageseg_mode: 6,
+      preserve_interword_spaces: 1,
+    });
+  } catch (firstError) {
+    // Some browsers/CDN caches fail while loading one of the language packs.
+    // Retry with English OCR so the importer still works instead of silently dying.
+    try {
+      result = await Tesseract.recognize(file, "eng", {
+        logger: message => {
+          if (message?.status === "recognizing text" && Number.isFinite(message.progress)) onProgress?.(message.progress);
+        },
+        tessedit_pageseg_mode: 6,
+        preserve_interword_spaces: 1,
+      });
+    } catch (secondError) {
+      throw new Error(`FESTO AI не смог запустить OCR: ${secondError?.message || firstError?.message || "ошибка OCR"}`);
+    }
+  }
+  const data = result?.data || {};
+  const size = await festoImageSize(file);
+  const imageWidth = size.width;
+  const imageHeight = size.height;
+  const rawLines = (data.lines || []).map(line => {
+    const bbox = line.bbox || {};
+    return {
+      text: festoNormalizeOCRText(line.text),
+      x: Number(bbox.x0 || 0),
+      y: Number(bbox.y0 || 0),
+      w: Math.max(1, Number(bbox.x1 || 0) - Number(bbox.x0 || 0)),
+      h: Math.max(1, Number(bbox.y1 || 0) - Number(bbox.y0 || 0)),
+    };
+  }).filter(line => line.text && line.w > 3 && line.h > 3);
+
+  const columns = festoClusterColumns(rawLines, imageWidth);
+  const detected = [];
+  for (const column of columns) {
+    const lines = column.lines.sort((a, b) => a.y - b.y);
+    const priceLines = lines.filter(line => festoParsePrice(line.text) != null);
+    const anchors = priceLines.length ? priceLines : lines.filter(line => festoLooksLikeDishName(line.text));
+    if (!anchors.length) continue;
+
+    const left = Math.max(0, Math.min(...lines.map(l => l.x)) - 24);
+    const right = Math.min(imageWidth, Math.max(...lines.map(l => l.x + l.w)) + 24);
+    for (let i = 0; i < anchors.length; i++) {
+      const anchor = anchors[i];
+      const previous = anchors[i - 1];
+      const next = anchors[i + 1];
+      const top = Math.max(0, previous ? Math.floor((previous.y + previous.h + anchor.y) / 2) : Math.floor(anchor.y - imageHeight * 0.09));
+      const bottom = Math.min(imageHeight, next ? Math.floor((anchor.y + anchor.h + next.y) / 2) : Math.floor(anchor.y + imageHeight * 0.16));
+      const nearby = lines.filter(line => line.y + line.h >= top && line.y <= bottom).sort((a, b) => a.y - b.y);
+      const price = festoParsePrice(anchor.text);
+      let nameIndex = nearby.findIndex(line => festoLooksLikeDishName(line.text) && (price == null || line.y <= anchor.y));
+      if (nameIndex < 0) nameIndex = nearby.findIndex(line => festoLooksLikeDishName(line.text));
+      const inlineName = nameIndex < 0 ? festoNameWithoutPrice(anchor.text) : "";
+      if (nameIndex < 0 && !inlineName) continue;
+      const name = inlineName || nearby[nameIndex].text;
+      const textLines = nearby.filter((line, idx) => (nameIndex < 0 || idx !== nameIndex) && line !== anchor && !festoParsePrice(line.text));
+      const description = textLines.map(l => l.text).filter(Boolean).join(" ").slice(0, 360);
+      const ingredients = festoCompositionFromText(textLines);
+      let image = "";
+      try {
+        image = await festoCropDataUrl(file, { x: left, y: top, w: Math.max(80, right - left), h: Math.max(80, bottom - top) });
+      } catch (_) {}
+      detected.push({
+        name,
+        price: price || 0,
+        description: ingredients ? description.replace(ingredients, "").trim() : description,
+        ingredients,
+        image,
+        category: "Без категории",
+        confidence: typeof data.confidence === "number" ? Math.max(0, Math.min(1, data.confidence / 100)) : null,
+        sourceFile: file.name,
+      });
+    }
+  }
+
+  // Deduplicate OCR anchors from overlapping columns/blocks.
+  const unique = [];
+  const seen = new Set();
+  detected.forEach(item => {
+    const key = `${item.name.toLowerCase().replace(/[^a-zа-яё0-9]+/gi, " ").trim()}|${item.price}`;
+    if (!seen.has(key)) { seen.add(key); unique.push(item); }
+  });
+  return unique;
+}
+
+async function festoLocalMenuAI(files, onProgress) {
+  const imageFiles = files.filter(file => /^image\/(jpeg|png|webp|heic)/i.test(file.type) || /\.(jpe?g|png|webp|heic)$/i.test(file.name));
+  if (!imageFiles.length) throw new Error("Для встроенного FESTO AI сейчас нужны фотографии меню (JPG, PNG или WEBP). PDF/Excel/Word можно оставить для отдельного серверного импорта.");
+  const all = [];
+  for (let i = 0; i < imageFiles.length; i++) {
+    const part = await festoRecognizeImage(imageFiles[i], progress => onProgress?.((i + progress) / imageFiles.length));
+    all.push(...part);
+  }
+  const merged = [];
+  const byName = new Map();
+  all.forEach(item => {
+    const key = item.name.toLowerCase().replace(/[^a-zа-яё0-9]+/gi, " ").trim();
+    if (!key) return;
+    if (byName.has(key)) {
+      const existing = byName.get(key);
+      if (!existing.image && item.image) existing.image = item.image;
+      if (!existing.ingredients && item.ingredients) existing.ingredients = item.ingredients;
+      if (!existing.description && item.description) existing.description = item.description;
+      if (!existing.price && item.price) existing.price = item.price;
+    } else {
+      byName.set(key, item);
+      merged.push(item);
+    }
+  });
+  return merged;
+}
+
+/* -------------------------------------------------------
    AI MENU IMPORT
 ------------------------------------------------------- */
 
 function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage = false }) {
   const [files, setFiles] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [review, setReview] = useState([]);
   const [dragActive, setDragActive] = useState(false);
@@ -1755,20 +2061,14 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage
 
   async function processFiles() {
     if (!files.length) { setError("Добавьте хотя бы один файл."); return; }
-    setProcessing(true); setError("");
+    setProcessing(true); setProgress(0); setError("");
     try {
-      const formData = new FormData();
-      formData.append("restaurantId", restaurant.id);
-      formData.append("restaurantName", restaurant.name);
-      formData.append("categories", JSON.stringify(categories));
-      files.forEach((file) => formData.append("files", file, file.name));
-      const response = await fetch("/api/menu/parse", { method: "POST", body: formData });
-      if (!response.ok) throw new Error(`Сервис ИИ вернул ошибку ${response.status}.`);
-      const data = await response.json();
-      if (!Array.isArray(data.dishes) || !data.dishes.length) throw new Error("ИИ не смог найти блюда в загруженных материалах.");
-      setReview(data.dishes.map((dish, index) => ({ id: uid("ai-review"), confidence: dish.confidence ?? null, ...dish, _index: index })));
+      const dishes = await festoLocalMenuAI(files, value => setProgress(Math.round(value * 100)));
+      if (!Array.isArray(dishes) || !dishes.length) throw new Error("Встроенный FESTO AI не нашел отдельных блюд. Попробуйте более четкое фото, где хорошо видны названия и цены.");
+      setReview(dishes.map((dish, index) => ({ id: uid("ai-review"), confidence: dish.confidence ?? null, ...dish, _index: index })));
+      setProgress(100);
     } catch (err) {
-      setError(`${err.message || "Не удалось обработать файлы."} Сейчас в клиентской версии нужен подключённый endpoint /api/menu/parse с OCR/AI.`);
+      setError(err.message || "Не удалось обработать фотографии меню.");
     } finally { setProcessing(false); }
   }
 
@@ -1785,7 +2085,7 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage
     <div className={fullPage ? "form-page-content" : "modal-overlay"}>
       <div className="modal ai-import-modal">
         <div className="modal-header">
-          <div><div className="eyebrow">FESTO AI MENU</div><h2>{review.length ? "Проверка меню" : "Добавить меню с ИИ"}</h2><p className="modal-subtitle">Фото, Excel, Word и PDF. Можно загрузить сразу много файлов.</p></div>
+          <div><div className="eyebrow">FESTO AI MENU</div><h2>{review.length ? "Проверка меню" : "Добавить меню с ИИ"}</h2><p className="modal-subtitle">Встроенный ИИ работает прямо в браузере: находит отдельные карточки блюд даже на одной фотографии и переносит название, цену, состав, описание и фото-кроп.</p></div>
           <button type="button" className="close-button" onClick={onClose}><Icon name="close" size={18} /></button>
         </div>
 
@@ -1800,20 +2100,21 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage
             </div>
 
             <div className="ai-capabilities">
-              <div><Icon name="image" size={17} /><span><strong>Фото</strong> — распознаёт десятки блюд на одном фото</span></div>
-              <div><Icon name="file" size={17} /><span><strong>Excel / Word / PDF</strong> — извлекает названия, описания, состав и цены</span></div>
-              <div><Icon name="spark" size={17} /><span><strong>Объединение</strong> — сопоставляет данные из разных файлов в одно блюдо</span></div>
+              <div><Icon name="image" size={17} /><span><strong>On-device OCR</strong> — распознаёт много блюд на одном фото и разбивает их на отдельные карточки</span></div>
+              <div><Icon name="spark" size={17} /><span><strong>Умный разбор</strong> — связывает название, цену, описание и состав по расположению текста</span></div>
+              <div><Icon name="image" size={17} /><span><strong>Фото блюда</strong> — сохраняет отдельный кроп исходной карточки меню для каждого найденного блюда</span></div>
             </div>
 
             {files.length > 0 && <div className="ai-file-list">{files.map((file, index) => <div className="ai-file-row" key={`${file.name}-${file.size}-${index}`}><Icon name={file.type.startsWith("image/") ? "image" : "file"} size={17} /><div><strong>{file.name}</strong><span>{(file.size / 1024 / 1024).toFixed(2)} МБ</span></div><button type="button" onClick={() => removeFile(index)}><Icon name="close" size={15} /></button></div>)}</div>}
             {error && <div className="error ai-error">{error}</div>}
-            <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>Отмена</button><button className="primary-button" type="button" disabled={!files.length || processing} onClick={processFiles}>{processing ? "ИИ анализирует…" : <><Icon name="spark" size={17} />Распознать меню</>}</button></div>
+            <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>Отмена</button><button className="primary-button" type="button" disabled={!files.length || processing} onClick={processFiles}>{processing ? `ИИ анализирует… ${progress}%` : <><Icon name="spark" size={17}/>Распознать меню</>}</button></div>
           </>
         ) : (
           <>
             <div className="ai-review-summary"><div><strong>{review.length}</strong><span>найдено блюд</span></div><div><strong>{review.filter((x) => x.confidence != null && Number(x.confidence) < 0.75).length}</strong><span>требуют проверки</span></div><div><strong>{files.length}</strong><span>источников</span></div></div>
             <div className="ai-review-list">{review.map((item) => <div className="ai-review-card" key={item.id}>
               <div className="ai-review-number">{item._index + 1}</div>
+              <div className="ai-review-image">{item.image ? <img src={item.image} alt="Предпросмотр блюда" /> : <Icon name="image" size={24} />}</div>
               <div className="ai-review-fields">
                 <div className="ai-review-grid">
                   <label>Название<input value={item.name || ""} onChange={(e) => updateReview(item.id, "name", e.target.value)} /></label>
@@ -1924,6 +2225,26 @@ function DishModal({
       ...prev,
       [field]: value,
     }));
+  }
+
+  function handleImageUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Выберите файл изображения: JPG, PNG, WEBP и т. п.");
+      e.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => update("image", String(reader.result || ""));
+    reader.onerror = () => alert("Не удалось прочитать выбранное изображение.");
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    update("image", "");
   }
 
   function submit(e) {
@@ -2042,26 +2363,23 @@ function DishModal({
         <div className="form-section">
           <h3>Изображение</h3>
 
-          <div className="input-group">
-            <label>URL изображения</label>
+          <div className="input-group dish-image-upload-group">
+            <label>Загрузить фото с компьютера</label>
             <input
-              value={form.image}
-              onChange={(e) =>
-                update("image", e.target.value)
-              }
-              placeholder="https://..."
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
             />
+            <small className="field-help">Выберите JPG, PNG, WEBP или другое изображение. Фото сохраняется вместе с блюдом.</small>
           </div>
 
           {form.image && (
-            <div className="image-preview">
+            <div className="image-preview dish-upload-preview">
               <img
                 src={form.image}
-                alt="Предпросмотр"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
+                alt="Предпросмотр блюда"
               />
+              <button type="button" className="secondary-button dish-remove-image" onClick={removeImage}>Удалить фото</button>
             </div>
           )}
         </div>
@@ -2196,16 +2514,17 @@ function TablesManager({
 
               <div className="qr-box">
                 <QRCodeSVG
-                  value={customerUrl(table.id)}
-                  size={170}
+                  value={customerUrl(table.id, table.restaurantId)}
+                  size={240}
                   bgColor="#ffffff"
                   fgColor="#111111"
-                  level="H"
+                  level="M"
+                  marginSize={4}
                 />
               </div>
 
               <div className="table-url">
-                {customerUrl(table.id)}
+                {customerUrl(table.id, table.restaurantId)}
               </div>
 
               <div className="table-actions">
@@ -2349,7 +2668,7 @@ function AddTableModal({
 ------------------------------------------------------- */
 
 function QRModal({ table, onClose }) {
-  const link = customerUrl(table.id);
+  const link = customerUrl(table.id, table.restaurantId);
 
   return (
     <div className="modal-overlay">
@@ -2371,10 +2690,11 @@ function QRModal({ table, onClose }) {
         <div className="qr-large">
           <QRCodeSVG
             value={link}
-            size={270}
+            size={320}
             bgColor="#ffffff"
             fgColor="#111111"
-            level="H"
+            level="M"
+            marginSize={5}
           />
         </div>
 
@@ -2462,6 +2782,9 @@ function OrdersManager({
               ...order,
               status,
               statusChangedAt: new Date().toISOString(),
+              ...(status === "assembled" && !order.assembledAt ? { assembledAt: new Date().toISOString() } : {}),
+              ...(status === "ready" ? { readyAt: new Date().toISOString() } : {}),
+              ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}),
             }
           : order
       )
@@ -3009,24 +3332,6 @@ function RestaurantSettings({
    CUSTOMER QR MENU
 ------------------------------------------------------- */
 
-function getCustomerGreeting() {
-  const hour = new Date().getHours();
-
-  if (hour >= 5 && hour < 11) {
-    return "Доброе утро";
-  }
-
-  if (hour >= 11 && hour < 17) {
-    return "Добрый день";
-  }
-
-  if (hour >= 17 && hour < 23) {
-    return "Добрый вечер";
-  }
-
-  return "Доброй ночи";
-}
-
 function CustomerApp({
   restaurant,
   categories,
@@ -3036,173 +3341,60 @@ function CustomerApp({
   publicData = null,
 }) {
   const params = new URLSearchParams(window.location.search);
-  const hashMatch = String(window.location.hash || "").match(
-    /^#\/menu\/([^/]+)\/([^/]+)\/?$/
+  const tableId = params.get("table");
+  const restaurantIdFromUrl = params.get("restaurant");
+  const publicRestaurant = publicData?.restaurant || restaurant;
+  const publicCategories = publicData?.categories || categories;
+  const publicDishes = publicData?.dishes || dishes;
+  const publicTable = publicData?.table || null;
+
+  const table = publicTable || tables.find(
+    (item) =>
+      item.id === tableId &&
+      item.restaurantId === restaurant.id &&
+      (!restaurantIdFromUrl || item.restaurantId === restaurantIdFromUrl)
   );
-
-  const tableId =
-    params.get("table") ||
-    (hashMatch ? decodeURIComponent(hashMatch[2]) : null);
-
-  const publicRestaurant =
-    publicData?.restaurant || restaurant;
-
-  const publicCategories =
-    publicData?.categories || categories;
-
-  const publicDishes =
-    publicData?.dishes || dishes;
-
-  const publicTable =
-    publicData?.table || null;
-
-  const table =
-    publicTable ||
-    tables.find(
-      (item) =>
-        item.id === tableId &&
-        item.restaurantId === publicRestaurant.id
-    );
 
   const [activeCategory, setActiveCategory] =
     useState("all");
 
   const [cart, setCart] = useState([]);
-
-  const [checkoutStep, setCheckoutStep] =
-    useState("menu");
-
+  const [showCart, setShowCart] = useState(false);
   const [orderComplete, setOrderComplete] =
     useState(false);
+  const [orderComment, setOrderComment] = useState("");
+  const [submittedOrder, setSubmittedOrder] = useState(null);
 
-  const [orderComment, setOrderComment] =
-    useState("");
+  const restaurantCategories = publicCategories
+    .filter((c) => c.restaurantId === publicRestaurant.id || publicData)
+    .sort((a, b) => a.sort - b.sort);
 
-  const [submittedOrder, setSubmittedOrder] =
-    useState(null);
-
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-
-  const restaurantCategories =
-    (publicCategories || [])
-      .filter(
-        (c) =>
-          c.restaurantId === publicRestaurant.id ||
-          publicData
-      )
-      .sort(
-        (a, b) =>
-          Number(a.sort || 0) -
-          Number(b.sort || 0)
-      );
-
-  const restaurantDishes =
-    (publicDishes || []).filter(
-      (d) =>
-        d.active !== false &&
-        (publicData ||
-          d.restaurantId === publicRestaurant.id)
-    );
+  const restaurantDishes = publicData
+    ? publicDishes.filter((d) => d.active !== false)
+    : publicDishes.filter((d) => d.restaurantId === publicRestaurant.id && d.active !== false);
 
   const filteredDishes =
     activeCategory === "all"
       ? restaurantDishes
       : restaurantDishes.filter(
-          (d) =>
-            d.categoryId === activeCategory
+          (d) => d.categoryId === activeCategory
         );
 
   const cartTotal = cart.reduce(
     (sum, item) =>
-      sum +
-      Number(item.price || 0) *
-        Number(item.quantity || 0),
+      sum + item.price * item.quantity,
     0
   );
 
   const cartCount = cart.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.quantity || 0),
+    (sum, item) => sum + item.quantity,
     0
   );
-
-  const upsellDishes = useMemo(() => {
-    const cartIds = new Set(
-      cart.map((item) => item.dishId)
-    );
-
-    const available =
-      restaurantDishes.filter(
-        (dish) =>
-          !cartIds.has(dish.id)
-      );
-
-    const categoryMap =
-      new Map(
-        restaurantCategories.map(
-          (category) => [
-            category.id,
-            String(
-              category.name || ""
-            ).toLowerCase(),
-          ]
-        )
-      );
-
-    const priorityWords = [
-      "напит",
-      "drink",
-      "соус",
-      "sauce",
-      "закуск",
-      "snack",
-      "карто",
-      "десерт",
-      "слад",
-    ];
-
-    const priority = [];
-    const regular = [];
-
-    available.forEach((dish) => {
-      const categoryName =
-        categoryMap.get(
-          dish.categoryId
-        ) || "";
-
-      const text =
-        `${dish.name || ""} ${categoryName}`
-          .toLowerCase();
-
-      if (
-        priorityWords.some(
-          (word) =>
-            text.includes(word)
-        )
-      ) {
-        priority.push(dish);
-      } else {
-        regular.push(dish);
-      }
-    });
-
-    return [
-      ...priority,
-      ...regular,
-    ].slice(0, 6);
-  }, [
-    cart,
-    restaurantDishes,
-    restaurantCategories,
-  ]);
 
   function addToCart(dish) {
     setCart((prev) => {
       const exists = prev.find(
-        (item) =>
-          item.dishId === dish.id
+        (item) => item.dishId === dish.id
       );
 
       if (exists) {
@@ -3210,8 +3402,7 @@ function CustomerApp({
           item.dishId === dish.id
             ? {
                 ...item,
-                quantity:
-                  item.quantity + 1,
+                quantity: item.quantity + 1,
               }
             : item
         );
@@ -3229,137 +3420,53 @@ function CustomerApp({
     });
   }
 
-  function changeQuantity(
-    dishId,
-    delta
-  ) {
+  function changeQuantity(dishId, delta) {
     setCart((prev) =>
       prev
         .map((item) =>
           item.dishId === dishId
             ? {
                 ...item,
-                quantity:
-                  item.quantity + delta,
+                quantity: item.quantity + delta,
               }
             : item
         )
-        .filter(
-          (item) =>
-            item.quantity > 0
-        )
+        .filter((item) => item.quantity > 0)
     );
   }
 
-  function openCheckout() {
-    if (!cart.length) {
-      return;
-    }
-
-    setCheckoutStep("cart");
-  }
-
-  function continueFromCart() {
-    if (!cart.length) {
-      return;
-    }
-
-    setCheckoutStep("upsell");
-  }
-
-  function continueFromUpsell() {
-    setCheckoutStep("review");
-  }
-
   async function submitOrder() {
-    if (
-      !cart.length ||
-      !table ||
-      isSubmitting
-    ) {
-      return;
-    }
+    if (!cart.length) return;
 
-    setIsSubmitting(true);
-
-    const orderDraft = {
+    const order = {
       id: uid("order"),
-
-      restaurantId:
-        publicRestaurant.id,
-
-      tableId:
-        table.id,
-
-      tableName:
-        table.name ||
-        `Стол ${table.number ?? ""}`,
-
-      tableNumber:
-        table.number ??
-        table.name ??
-        "0",
-
-      items: cart.map((item) => ({
-        dishId: item.dishId,
-        name: item.name,
-        price: Number(item.price),
-        quantity:
-          Number(item.quantity),
-      })),
-
+      restaurantId: restaurant.id,
+      tableId: table?.id || null,
+      tableName: table?.name || "Гость",
+      tableNumber: table?.number ?? table?.name ?? "—",
+      number: Math.floor(
+        1000 + Math.random() * 9000
+      ),
+      items: cart,
       total: cartTotal,
-
-      comment:
-        orderComment.trim(),
-
+      comment: orderComment.trim(),
       status: "new",
-
-      createdAt:
-        new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
 
     try {
-      const saved =
-        await festoApi(
-          "/api/orders",
-          {
-            method: "POST",
-            body: JSON.stringify(
-              orderDraft
-            ),
-          }
-        );
-
-      setOrders((prev) => [
-        ...prev.filter(
-          (item) =>
-            item.id !== saved.id
-        ),
-        saved,
-      ]);
-
+      const saved = await festoApi("/api/orders", { method: "POST", body: JSON.stringify(order) });
+      setOrders((prev) => [...prev.filter((x) => x.id !== saved.id), saved]);
       setSubmittedOrder(saved);
-
-      setCart([]);
-
-      setOrderComment("");
-
-      setCheckoutStep("menu");
-
-      setOrderComplete(true);
-    } catch (error) {
-      console.error(
-        "FESTO customer order error:",
-        error
-      );
-
-      alert(
-        "Не удалось оформить заказ. Проверьте соединение и повторите попытку."
-      );
-    } finally {
-      setIsSubmitting(false);
+    } catch {
+      // Оставляем локальный fallback для режима разработки без сервера.
+      setOrders((prev) => [...prev, order]);
+      setSubmittedOrder(order);
     }
+    setCart([]);
+    setOrderComment("");
+    setShowCart(false);
+    setOrderComplete(true);
   }
 
   if (!table) {
@@ -3377,14 +3484,11 @@ function CustomerApp({
         className="customer-page"
         style={{
           "--customer-accent":
-            publicRestaurant.accent ||
-            "#6C4BF4",
+            publicRestaurant.accent || "#6C4BF4",
         }}
       >
         <div className="customer-success">
-          <div className="success-icon">
-            ✓
-          </div>
+          <div className="success-icon">✓</div>
 
           <div className="customer-eyebrow">
             ЗАКАЗ ПРИНЯТ
@@ -3393,10 +3497,7 @@ function CustomerApp({
           <h1>Спасибо!</h1>
 
           <div className="customer-order-number">
-            ЗАКАЗ №
-            {String(
-              submittedOrder?.number || ""
-            ).padStart(4, "0")}
+            ЗАКАЗ №{String(submittedOrder?.number || "").padStart(4, "0")}
           </div>
 
           <p>
@@ -3406,17 +3507,12 @@ function CustomerApp({
           </p>
 
           {submittedOrder && (
-            <CustomerOrderTracking
-              order={submittedOrder}
-            />
+            <CustomerOrderTracking order={submittedOrder} />
           )}
 
           <button
             className="customer-primary"
-            onClick={() =>
-              setOrderComplete(false)
-            }
-            type="button"
+            onClick={() => setOrderComplete(false)}
           >
             Вернуться в меню
           </button>
@@ -3425,124 +3521,24 @@ function CustomerApp({
     );
   }
 
-  if (checkoutStep === "cart") {
-    return (
-      <CustomerCheckoutLayout
-        publicRestaurant={
-          publicRestaurant
-        }
-        table={table}
-        cartCount={cartCount}
-        cartTotal={cartTotal}
-        onBack={() =>
-          setCheckoutStep("menu")
-        }
-      >
-        <CustomerCartPage
-          cart={cart}
-          total={cartTotal}
-          onChange={changeQuantity}
-          onContinue={
-            continueFromCart
-          }
-          comment={orderComment}
-          onCommentChange={
-            setOrderComment
-          }
-        />
-      </CustomerCheckoutLayout>
-    );
-  }
-
-  if (checkoutStep === "upsell") {
-    return (
-      <CustomerCheckoutLayout
-        publicRestaurant={
-          publicRestaurant
-        }
-        table={table}
-        cartCount={cartCount}
-        cartTotal={cartTotal}
-        onBack={() =>
-          setCheckoutStep("cart")
-        }
-      >
-        <CustomerUpsellPage
-          dishes={upsellDishes}
-          onAdd={addToCart}
-          onContinue={
-            continueFromUpsell
-          }
-          onSkip={
-            continueFromUpsell
-          }
-          cartTotal={cartTotal}
-        />
-      </CustomerCheckoutLayout>
-    );
-  }
-
-  if (checkoutStep === "review") {
-    return (
-      <CustomerCheckoutLayout
-        publicRestaurant={
-          publicRestaurant
-        }
-        table={table}
-        cartCount={cartCount}
-        cartTotal={cartTotal}
-        onBack={() =>
-          setCheckoutStep("upsell")
-        }
-      >
-        <CustomerReviewPage
-          cart={cart}
-          total={cartTotal}
-          comment={orderComment}
-          onCommentChange={
-            setOrderComment
-          }
-          onChange={changeQuantity}
-          onSubmit={submitOrder}
-          isSubmitting={
-            isSubmitting
-          }
-        />
-      </CustomerCheckoutLayout>
-    );
-  }
-
   return (
     <div
       className="customer-page"
       style={{
         "--customer-accent":
-          publicRestaurant.accent ||
-          "#6C4BF4",
+          publicRestaurant.accent || "#6C4BF4",
       }}
     >
       <header className="customer-header">
-        <div className="customer-header-brand">
-          {publicRestaurant.logo ? (
-            <img
-              className="customer-restaurant-logo"
-              src={publicRestaurant.logo}
-              alt={publicRestaurant.name}
-            />
-          ) : (
-            <div className="customer-logo">
-              F
-            </div>
-          )}
+        <div className="customer-logo">F</div>
 
-          <div className="customer-header-info">
-            <div className="customer-restaurant">
-              {publicRestaurant.name}
-            </div>
+        <div>
+          <div className="customer-restaurant">
+            {publicRestaurant.name}
+          </div>
 
-            <div className="customer-table">
-              {table.name}
-            </div>
+          <div className="customer-table">
+            {table.name}
           </div>
         </div>
       </header>
@@ -3553,9 +3549,7 @@ function CustomerApp({
             МЕНЮ
           </div>
 
-          <h1>
-            {getCustomerGreeting()}
-          </h1>
+          <h1>Что желаете?</h1>
         </div>
 
         <div className="customer-categories">
@@ -3568,7 +3562,6 @@ function CustomerApp({
             onClick={() =>
               setActiveCategory("all")
             }
-            type="button"
           >
             Всё
           </button>
@@ -3583,11 +3576,8 @@ function CustomerApp({
                     : "customer-category"
                 }
                 onClick={() =>
-                  setActiveCategory(
-                    category.id
-                  )
+                  setActiveCategory(category.id)
                 }
-                type="button"
               >
                 {category.name}
               </button>
@@ -3596,479 +3586,54 @@ function CustomerApp({
         </div>
 
         <div className="customer-dishes">
-          {filteredDishes.map(
-            (dish) => (
-              <CustomerDish
-                key={dish.id}
-                dish={dish}
-                onAdd={() =>
-                  addToCart(dish)
-                }
-              />
-            )
-          )}
+          {filteredDishes.map((dish) => (
+            <CustomerDish
+              key={dish.id}
+              dish={dish}
+              onAdd={() => addToCart(dish)}
+            />
+          ))}
         </div>
       </div>
 
-      <div
-        className={
-          cartCount > 0
-            ? "customer-bottom-bar customer-bottom-bar-with-total"
-            : "customer-bottom-bar"
-        }
-      >
+      <div className="customer-bottom-bar">
         <button
-          className="active"
-          onClick={() =>
-            setCheckoutStep("menu")
-          }
-          type="button"
+          className={!showCart ? "active" : ""}
+          onClick={() => setShowCart(false)}
         >
-          <span className="customer-nav-icon">
-            <Icon
-              name="home"
-              size={25}
-              strokeWidth={2}
-            />
-          </span>
-
-          <small>
-            Меню
-          </small>
+          <span>⌂</span>
+          <small>Меню</small>
         </button>
 
         <button
-          className={
-            cartCount > 0
-              ? "customer-order-summary-button"
-              : ""
-          }
-          onClick={openCheckout}
-          type="button"
+          className={showCart ? "active" : ""}
+          onClick={() => setShowCart(true)}
         >
-          <span className="customer-nav-icon">
-            <Icon
-              name="orders"
-              size={25}
-              strokeWidth={2}
-            />
-
+          <span>
+            □
             {cartCount > 0 && (
               <b>{cartCount}</b>
             )}
           </span>
 
-          {cartCount > 0 ? (
-            <span className="customer-order-summary-text">
-              <small>
-                Мой заказ
-              </small>
-
-              <strong>
-                {money(cartTotal)}
-              </strong>
-            </span>
-          ) : (
-            <small>
-              Мой заказ
-            </small>
-          )}
+          <small>Мой заказ</small>
         </button>
       </div>
-    </div>
-  );
-}
 
-
-function CustomerCheckoutLayout({
-  publicRestaurant,
-  table,
-  cartCount,
-  cartTotal,
-  onBack,
-  children,
-}) {
-  return (
-    <div
-      className="customer-page customer-checkout-page"
-      style={{
-        "--customer-accent":
-          publicRestaurant.accent ||
-          "#6C4BF4",
-      }}
-    >
-      <header className="customer-checkout-header">
-        <button
-          type="button"
-          className="customer-checkout-back"
-          onClick={onBack}
-          aria-label="Назад"
-        >
-          <Icon
-            name="arrow"
-            size={22}
-            strokeWidth={2}
-            className="customer-checkout-back-icon"
-          />
-        </button>
-
-        <div>
-          <div className="customer-eyebrow">
-            {publicRestaurant.name}
-          </div>
-
-          <strong>
-            {table.name}
-          </strong>
-        </div>
-
-        <div className="customer-checkout-mini-total">
-          {cartCount > 0
-            ? money(cartTotal)
-            : ""}
-        </div>
-      </header>
-
-      <main className="customer-checkout-content">
-        {children}
-      </main>
-    </div>
-  );
-}
-
-
-function CustomerCartPage({
-  cart,
-  total,
-  onChange,
-  onContinue,
-  comment,
-  onCommentChange,
-}) {
-  return (
-    <div className="customer-checkout-section">
-      <div className="customer-eyebrow">
-        МОЙ ЗАКАЗ
-      </div>
-
-      <h1 className="customer-checkout-title">
-        Ваш заказ
-      </h1>
-
-      <div className="customer-cart-page-items">
-        {cart.map((item) => (
-          <div
-            className="customer-cart-page-item"
-            key={item.dishId}
-          >
-            <div className="customer-cart-page-item-main">
-              <strong>
-                {item.name}
-              </strong>
-
-              <span>
-                {money(item.price)}
-                {" × "}
-                {item.quantity}
-              </span>
-            </div>
-
-            <div className="quantity-control">
-              <button
-                type="button"
-                onClick={() =>
-                  onChange(
-                    item.dishId,
-                    -1
-                  )
-                }
-              >
-                −
-              </button>
-
-              <strong>
-                {item.quantity}
-              </strong>
-
-              <button
-                type="button"
-                onClick={() =>
-                  onChange(
-                    item.dishId,
-                    1
-                  )
-                }
-              >
-                +
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="customer-comment">
-        <label>
-          Комментарий к заказу
-        </label>
-
-        <textarea
-          value={comment}
-          onChange={(e) =>
-            onCommentChange(
-              e.target.value
-            )
-          }
-          placeholder="Например: без лука, соус отдельно..."
-          maxLength={300}
+      {showCart && (
+        <CustomerCart
+          cart={cart}
+          total={cartTotal}
+          onChange={changeQuantity}
+          onSubmit={submitOrder}
+          comment={orderComment}
+          onCommentChange={setOrderComment}
+          onClose={() => setShowCart(false)}
         />
-      </div>
-
-      <div className="customer-checkout-total">
-        <span>
-          Итого
-        </span>
-
-        <strong>
-          {money(total)}
-        </strong>
-      </div>
-
-      <button
-        className="customer-primary customer-checkout-main-button"
-        onClick={onContinue}
-        type="button"
-      >
-        Продолжить
-      </button>
-    </div>
-  );
-}
-
-
-function CustomerUpsellPage({
-  dishes,
-  onAdd,
-  onContinue,
-  onSkip,
-  cartTotal,
-}) {
-  return (
-    <div className="customer-checkout-section">
-      <div className="customer-eyebrow">
-        ДОПОЛНИТЕ ЗАКАЗ
-      </div>
-
-      <h1 className="customer-checkout-title">
-        Может, ещё что-нибудь?
-      </h1>
-
-      <p className="customer-checkout-description">
-        Часто к заказу добавляют
-        напитки, соусы, закуски
-        и десерты.
-      </p>
-
-      {dishes.length > 0 ? (
-        <div className="customer-upsell-grid">
-          {dishes.map((dish) => (
-            <div
-              className="customer-upsell-card"
-              key={dish.id}
-            >
-              <div className="customer-upsell-image">
-                {dish.image ? (
-                  <img
-                    src={dish.image}
-                    alt={dish.name}
-                  />
-                ) : (
-                  <div className="customer-image-placeholder">
-                    F
-                  </div>
-                )}
-              </div>
-
-              <div className="customer-upsell-body">
-                <h3>
-                  {dish.name}
-                </h3>
-
-                {dish.description && (
-                  <p>
-                    {dish.description}
-                  </p>
-                )}
-
-                <div className="customer-upsell-footer">
-                  <strong>
-                    {money(dish.price)}
-                  </strong>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onAdd(dish)
-                    }
-                  >
-                    Добавить
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="customer-no-upsell">
-          Все основные блюда уже
-          выбраны.
-        </div>
       )}
-
-      <div className="customer-upsell-actions">
-        <button
-          className="customer-secondary"
-          type="button"
-          onClick={onSkip}
-        >
-          Пропустить
-        </button>
-
-        <button
-          className="customer-primary"
-          type="button"
-          onClick={onContinue}
-        >
-          Перейти к проверке ·{" "}
-          {money(cartTotal)}
-        </button>
-      </div>
     </div>
   );
 }
-
-
-function CustomerReviewPage({
-  cart,
-  total,
-  comment,
-  onCommentChange,
-  onChange,
-  onSubmit,
-  isSubmitting,
-}) {
-  return (
-    <div className="customer-checkout-section">
-      <div className="customer-eyebrow">
-        ПОСЛЕДНИЙ ШАГ
-      </div>
-
-      <h1 className="customer-checkout-title">
-        Проверьте заказ
-      </h1>
-
-      <div className="customer-review-card">
-        {cart.map((item) => (
-          <div
-            className="customer-review-item"
-            key={item.dishId}
-          >
-            <div>
-              <strong>
-                {item.name}
-              </strong>
-
-              <span>
-                {item.quantity} ×{" "}
-                {money(item.price)}
-              </span>
-            </div>
-
-            <strong>
-              {money(
-                item.price *
-                  item.quantity
-              )}
-            </strong>
-
-            <div className="quantity-control">
-              <button
-                type="button"
-                onClick={() =>
-                  onChange(
-                    item.dishId,
-                    -1
-                  )
-                }
-              >
-                −
-              </button>
-
-              <strong>
-                {item.quantity}
-              </strong>
-
-              <button
-                type="button"
-                onClick={() =>
-                  onChange(
-                    item.dishId,
-                    1
-                  )
-                }
-              >
-                +
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="customer-comment">
-        <label>
-          Комментарий
-        </label>
-
-        <textarea
-          value={comment}
-          onChange={(e) =>
-            onCommentChange(
-              e.target.value
-            )
-          }
-          placeholder="Например: без лука, соус отдельно..."
-          maxLength={300}
-        />
-      </div>
-
-      <div className="customer-checkout-total customer-review-total">
-        <span>
-          Итого
-        </span>
-
-        <strong>
-          {money(total)}
-        </strong>
-      </div>
-
-      <button
-        className="customer-primary customer-checkout-main-button"
-        onClick={onSubmit}
-        disabled={isSubmitting}
-        type="button"
-      >
-        {isSubmitting
-          ? "Оформляем заказ..."
-          : "Оформить заказ"}
-      </button>
-
-      <p className="customer-final-note">
-        После нажатия заказ сразу
-        поступит в ресторан.
-      </p>
-    </div>
-  );
-}
-
 
 function CustomerDish({ dish, onAdd }) {
   return (
@@ -4339,8 +3904,10 @@ function EmptyState({
    PROFILE / QR STANDS / INVOICES
 ------------------------------------------------------- */
 
-function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoices }) {
+function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoices, onLogout }) {
   const [section, setSection] = useState("home");
+  const [, forceClock] = useState(Date.now());
+  useEffect(() => { const timer = window.setInterval(() => forceClock(Date.now()), 30000); return () => window.clearInterval(timer); }, []);
   const [standOrders, setStandOrders] = useState(() =>
     readStorage(STORAGE.qrStands, []).filter((x) => x.restaurantId === restaurant.id)
   );
@@ -4353,34 +3920,88 @@ function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoi
     ]);
   }, [standOrders, restaurant.id]);
 
-  if (section === "orders") {
-    return <div className="profile-subpage"><SubpageHeader title="Заказы" onBack={() => setSection("home")} /><OrdersManager restaurant={restaurant} orders={orders} setOrders={setOrders} /></div>;
-  }
-  if (section === "stands") {
-    return <QRStandOrderPage restaurant={restaurant} tables={tables} onBack={() => setSection("home")} standOrders={standOrders} setStandOrders={setStandOrders} />;
-  }
-  if (section === "invoices") {
-    return <InvoicesPage restaurant={restaurant} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
-  }
+  if (section === "orders") return <div className="profile-subpage"><SubpageHeader title="Заказы" onBack={() => setSection("home")} /><OrdersManager restaurant={restaurant} orders={orders} setOrders={setOrders} /></div>;
+  if (section === "stands") return <QRStandOrderPage restaurant={restaurant} tables={tables} onBack={() => setSection("home")} standOrders={standOrders} setStandOrders={setStandOrders} />;
+  if (section === "invoices") return <InvoicesPage restaurant={restaurant} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
+  if (section === "reports") return <ReportsPage restaurant={restaurant} orders={orders} onBack={() => setSection("home")} />;
 
   const pending = invoices.filter((x) => x.restaurantId === restaurant.id && x.status !== "paid").length;
+  const trialStarted = restaurant.trialStartedAt ? new Date(restaurant.trialStartedAt).getTime() : null;
+  const trialLeft = trialStarted ? Math.max(0, TRIAL_HOURS * 60 - Math.floor((Date.now() - trialStarted) / 60000)) : TRIAL_HOURS * 60;
+  const trialLabel = trialStarted ? `${Math.floor(trialLeft / 60)} ч ${trialLeft % 60} мин` : "5 часов";
+
   return (
     <div className="profile-page">
-      <div className="page-heading">
-        <div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>{restaurant.name} · управление аккаунтом</p></div>
-      </div>
+      <div className="page-heading"><div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>{restaurant.name} · управление аккаунтом</p></div></div>
+      {restaurant.subscriptionType === "perpetual" && restaurant.subscriptionActive ? (
+        <div className="profile-trial-banner profile-perpetual-banner"><div><span>ЛИЦЕНЗИЯ FESTO</span><strong>Бессрочная</strong></div><p>Оплата подтверждена администратором. Пробный период отключен.</p></div>
+      ) : (
+        <div className="profile-trial-banner"><div><span>ПРОБНЫЙ ДОСТУП</span><strong>{trialLabel}</strong></div><p>После завершения пробного периода оплатите счет в разделе «Счета и оплаты».</p></div>
+      )}
       <div className="profile-grid">
         <button className="profile-card" onClick={() => setSection("orders")}><span className="profile-card-icon"><Icon name="orders" size={26}/></span><strong>Заказы</strong><span>История и статусы заказов гостей</span><b>{orders.length}</b></button>
-        <button className="profile-card" onClick={() => setSection("stands")}><span className="profile-card-icon"><Icon name="qr" size={26}/></span><strong>Заказать QR подставки</strong><span>Дизайн, логотип, цвет и столы</span><b>{standOrders.length}</b></button>
+        <button className="profile-card" onClick={() => setSection("stands")}><span className="profile-card-icon"><Icon name="qr" size={26}/></span><strong>Заказать QR подставки</strong><span>Дизайн, логотип, цвет и конкретные столы</span><b>{standOrders.length}</b></button>
         <button className="profile-card" onClick={() => setSection("invoices")}><span className="profile-card-icon"><Icon name="bank" size={26}/></span><strong>Счета и оплаты</strong><span>Реквизиты, чеки и проверка платежей</span><b>{pending}</b></button>
+        <button className="profile-card" onClick={() => setSection("reports")}><span className="profile-card-icon"><Icon name="chart" size={26}/></span><strong>Отчеты</strong><span>Скорость приготовления и товарооборот</span><b>↗</b></button>
       </div>
+      <div className="profile-logout-wrap"><button className="profile-logout-button" onClick={onLogout}><Icon name="logout" size={18}/>Выйти из аккаунта</button></div>
     </div>
   );
 }
 
-function AdminProfilePage({ restaurants, invoices, setInvoices }) {
+
+function reportIntervalLabel(interval) {
+  return ({last_hour:"Последний час", today:"Сегодня", yesterday:"Прошедший день", month:"Текущий месяц"}[interval] || interval);
+}
+
+function getReportRange(interval) {
+  const now = Date.now();
+  const d = new Date(now);
+  if (interval === "last_hour") return { from: now - 60 * 60 * 1000, to: now };
+  if (interval === "today") return { from: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), to: now };
+  if (interval === "yesterday") {
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1).getTime();
+    return { from: start, to: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() };
+  }
+  return { from: new Date(d.getFullYear(), d.getMonth(), 1).getTime(), to: now };
+}
+
+function ReportsPage({ restaurant, orders, onBack }) {
+  const [interval, setInterval] = useState("today");
+  const [type, setType] = useState("speed");
+  const [report, setReport] = useState(null);
+
+  function buildReport() {
+    const range = getReportRange(interval);
+    const filtered = orders.filter((o) => {
+      const t = new Date(o.createdAt).getTime();
+      return o.restaurantId === restaurant.id && t >= range.from && t < range.to && o.status !== "cancelled";
+    });
+    if (type === "turnover") {
+      const turnover = filtered.reduce((sum, o) => sum + Number(o.total || 0), 0);
+      const avg = filtered.length ? turnover / filtered.length : 0;
+      setReport({ type, interval, range, orders: filtered, turnover, avg });
+      return;
+    }
+    const measured = filtered.map((o) => {
+      const start = new Date(o.createdAt).getTime();
+      const end = o.readyAt ? new Date(o.readyAt).getTime() : (o.statusChangedAt && o.status === "ready" ? new Date(o.statusChangedAt).getTime() : null);
+      return end && end >= start ? (end - start) / 60000 : null;
+    }).filter((x) => x != null);
+    const avg = measured.length ? measured.reduce((a,b) => a+b, 0) / measured.length : 0;
+    const fastest = measured.length ? Math.min(...measured) : 0;
+    const slowest = measured.length ? Math.max(...measured) : 0;
+    setReport({ type, interval, range, orders: filtered, measured, avg, fastest, slowest });
+  }
+
+  if (report) return <div className="profile-subpage report-result-page"><SubpageHeader title={report.type === "speed" ? "Отчет · Скорость приготовления" : "Отчет · Товарооборот"} onBack={() => setReport(null)} /><div className="report-result-head"><div><div className="eyebrow">{reportIntervalLabel(report.interval)}</div><h2>{restaurant.name}</h2><p>{new Date(report.range.from).toLocaleString("ru-RU")} — {new Date(report.range.to).toLocaleString("ru-RU")}</p></div><button className="secondary-button" onClick={() => setReport(null)}>Изменить отчет</button></div>{report.type === "speed" ? <div className="report-metrics"><div className="report-metric"><span>СРЕДНЕЕ ВРЕМЯ</span><strong>{report.avg.toFixed(1)} мин</strong><p>от создания до готовности</p></div><div className="report-metric"><span>САМЫЙ БЫСТРЫЙ</span><strong>{report.fastest.toFixed(1)} мин</strong><p>из измеренных заказов</p></div><div className="report-metric"><span>САМЫЙ ДОЛГИЙ</span><strong>{report.slowest.toFixed(1)} мин</strong><p>из измеренных заказов</p></div><div className="report-metric"><span>ЗАКАЗОВ</span><strong>{report.orders.length}</strong><p>в выбранном интервале</p></div></div> : <div className="report-metrics"><div className="report-metric"><span>ТОВАРООБОРОТ</span><strong>{money(report.turnover)}</strong><p>сумма заказов</p></div><div className="report-metric"><span>СРЕДНИЙ ЧЕК</span><strong>{money(report.avg)}</strong><p>на один заказ</p></div><div className="report-metric"><span>ЗАКАЗОВ</span><strong>{report.orders.length}</strong><p>в выбранном интервале</p></div></div>}<div className="glass-panel report-table-panel"><h3>Заказы в отчете</h3>{report.orders.length ? <div className="report-order-list">{report.orders.map(o => <div key={o.id}><span>#{String(o.number).padStart(4,"0")}</span><span>{new Date(o.createdAt).toLocaleString("ru-RU")}</span><span>{money(o.total)}</span><b>{o.status === "ready" || o.status === "completed" ? "Готов" : "В работе"}</b></div>)}</div> : <EmptyState icon="chart" title="Нет данных" text="В выбранном интервале нет заказов для формирования отчета."/>}</div></div>;
+
+  return <div className="profile-subpage"><SubpageHeader title="Отчеты" onBack={onBack}/><div className="glass-panel reports-builder"><div className="eyebrow">АНАЛИТИКА РЕСТОРАНА</div><h2>Сформировать отчет</h2><p className="muted">Выберите интервал и тип отчета. После формирования откроется отдельная страница с результатами.</p><div className="report-form-grid"><div className="input-group"><label>Интервал</label><select value={interval} onChange={e=>setInterval(e.target.value)}><option value="last_hour">Последний час</option><option value="today">Сегодня</option><option value="yesterday">Прошедший день</option><option value="month">Текущий месяц</option></select></div><div className="input-group"><label>Отчет</label><select value={type} onChange={e=>setType(e.target.value)}><option value="speed">По скорости приготовления</option><option value="turnover">По товарообороту</option></select></div></div><button className="primary-button report-generate" onClick={buildReport}><Icon name="chart" size={18}/>Сформировать отчет</button></div></div>;
+}
+
+function AdminProfilePage({ restaurants, setRestaurants, invoices, setInvoices }) {
   const [section, setSection] = useState("home");
-  if (section === "invoices") return <AdminInvoicesPage restaurants={restaurants} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
+  if (section === "invoices") return <AdminInvoicesPage restaurants={restaurants} setRestaurants={setRestaurants} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
   return <div className="profile-page"><div className="page-heading"><div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>Управление аккаунтом администратора</p></div></div><div className="profile-grid"><button className="profile-card" onClick={() => setSection("invoices")}><span className="profile-card-icon"><Icon name="bank" size={26}/></span><strong>Счета и оплаты</strong><span>Выставляйте счета ресторанам и проверяйте платежи</span><b>{invoices.filter(x => x.status === "payment_submitted").length}</b></button></div></div>;
 }
 
@@ -4404,7 +4025,7 @@ function QRStandOrderPage({ restaurant, tables, onBack, standOrders, setStandOrd
     setStandOrders(prev => [order, ...prev]); setSent(true);
   }
   const previewTable = tables.find(t => selectedTables.includes(t.id)) || tables[0];
-  const previewValue = previewTable ? customerUrl(previewTable.id) : `${window.location.origin}/?table=table-1`;
+  const previewValue = previewTable ? customerUrl(previewTable.id, previewTable.restaurantId) : `${window.location.origin}/?restaurant=demo-restaurant&table=table-1`;
 
   if (sent) return <div className="profile-subpage"><SubpageHeader title="QR подставки" onBack={onBack}/><div className="success-card"><div className="success-icon"><Icon name="check" size={30}/></div><h2>Заявка отправлена</h2><p>Мы получили дизайн и список столов. Заказ будет обработан после подтверждения.</p><div className="info-box"><span>Столы</span><strong>{selectedTables.map(id => tables.find(t => t.id === id)?.name).filter(Boolean).join(", ")}</strong></div><button className="primary-button" onClick={onBack}>Вернуться в профиль</button></div></div>;
 
@@ -4415,7 +4036,7 @@ function QRStandOrderPage({ restaurant, tables, onBack, standOrders, setStandOrd
         <div className="stand-form">
           <div className="glass-panel"><div className="eyebrow">1 · СТОЛЫ</div><h2>Для каких столов нужны подставки?</h2><p className="muted">QR берутся напрямую со страницы «Столы», поэтому каждый выбранный стол получает свой QR.</p><div className="table-select-grid">{tables.map(t => <button key={t.id} type="button" className={`table-select ${selectedTables.includes(t.id) ? "selected" : ""}`} onClick={() => toggleTable(t.id)}><span>{t.name}</span><small>Стол {t.number}</small>{selectedTables.includes(t.id) && <Icon name="check" size={18}/>}</button>)}</div></div>
           <div className="glass-panel"><div className="eyebrow">2 · ДИЗАЙН</div><h2>Оформление подставки</h2><div className="form-row"><div className="input-group"><label>Шрифт</label><select value={font} onChange={e => setFont(e.target.value)}><option>Inter</option><option>Georgia</option><option>Arial</option><option>Montserrat</option></select></div><div className="input-group"><label>Количество</label><input type="number" min="1" value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value) || 1))}/></div></div><div className="form-row"><div className="input-group"><label>Цвет подставки</label><input className="color-input" type="color" value={color} onChange={e => setColor(e.target.value)}/></div><div className="input-group"><label>Цвет QR</label><input className="color-input" type="color" value={accent} onChange={e => setAccent(e.target.value)}/></div></div><div className="logo-upload"><input id="stand-logo" type="file" accept="image/*" onChange={loadLogo}/><label htmlFor="stand-logo"><Icon name="upload" size={18}/> {logo ? "Логотип загружен — заменить" : "Загрузить логотип"}</label><small>Логотип всегда размещается в левом верхнем углу подставки.</small></div></div>
-          <div className="glass-panel"><div className="eyebrow">3 · ПРЕДПРОСМОТР</div><h2>Так будет выглядеть подставка</h2><p className="muted">QR сразу показан вместе с выбранным оформлением.</p><div className="stand-preview" style={{ background: color, color: accent, fontFamily: font }}><div className="stand-logo-slot">{logo ? <img src={logo} alt="Логотип"/> : <span>LOGO</span>}</div><div className="stand-title">{restaurant.name}</div><div className="stand-qr"><QRCodeSVG value={previewValue} size={170} bgColor={color} fgColor={accent} level="H"/></div><div className="stand-table-label">{previewTable ? previewTable.name : "Выберите стол"}</div><div className="stand-hint">Наведите камеру, чтобы открыть меню</div></div></div>
+          <div className="glass-panel"><div className="eyebrow">3 · ПРЕДПРОСМОТР</div><h2>Так будет выглядеть подставка</h2><p className="muted">QR сразу показан вместе с выбранным оформлением.</p><div className="stand-preview" style={{ background: color, color: accent, fontFamily: font }}><div className="stand-logo-slot">{logo ? <img src={logo} alt="Логотип"/> : <span>LOGO</span>}</div><div className="stand-title">{restaurant.name}</div><div className="stand-qr"><QRCodeSVG value={previewValue} size={220} bgColor="#ffffff" fgColor={accent} level="M" marginSize={5}/></div><div className="stand-table-label">{previewTable ? previewTable.name : "Выберите стол"}</div><div className="stand-hint">Наведите камеру, чтобы открыть меню</div></div></div>
           <button className="primary-button stand-submit" onClick={submit}>Отправить заявку на подставки</button>
         </div>
         <aside className="stand-summary glass-panel"><div className="eyebrow">ЗАКАЗ</div><h3>QR подставки</h3><p>{selectedTables.length} столов · {quantity} шт.</p><div className="summary-list">{selectedTables.map(id => <div key={id}><span>{tables.find(t => t.id === id)?.name}</span><span>QR ✓</span></div>)}</div></aside>
@@ -4433,10 +4054,39 @@ function InvoicesPage({ restaurant, invoices, setInvoices, onBack }) {
   return <div className="profile-subpage"><SubpageHeader title="Счета и оплаты" onBack={onBack}/><div className="billing-note"><Icon name="bank" size={20}/><div><strong>Оплата только переводом на банковский счёт</strong><span>После перевода прикрепите чек. Администратор проверяет платеж вручную, обычно в течение 10 минут.</span></div></div>{mine.length===0?<EmptyState icon="bank" title="Счетов пока нет" text="Когда администратор выставит счет, он появится здесь."/>:<div className="invoice-list">{mine.map(inv=><div className="invoice-card" key={inv.id}><div><div className="eyebrow">СЧЕТ · {inv.number}</div><h3>{inv.title}</h3><p>{inv.description}</p><strong>{money(inv.amount)}</strong></div><div className={`invoice-status status-${inv.status}`}>{invoiceStatus(inv.status)}</div>{inv.status !== "paid" && inv.status !== "payment_submitted" && <button className="primary-button" onClick={()=>{setSelected(inv);setReceipt("")}}>Оплатить и отправить чек</button>}{inv.status === "payment_submitted" && <div className="invoice-wait">Чек отправлен · проверка до 10 минут</div>}{inv.status === "paid" && <div className="invoice-paid">Оплата подтверждена</div>}<div className="requisites"><b>Реквизиты для перевода</b><span>{inv.requisites}</span></div></div>)}</div>}{selected&&<div className="modal-backdrop"><div className="modal-card"><button className="icon-button modal-close" onClick={()=>setSelected(null)}><Icon name="close"/></button><div className="eyebrow">ОПЛАТА СЧЕТА</div><h2>{selected.title}</h2><div className="payment-amount">{money(selected.amount)}</div><div className="requisites"><b>Переведите средства по реквизитам</b><span>{selected.requisites}</span></div><div className="logo-upload"><input id="receipt-upload" type="file" accept="image/*,.pdf" onChange={uploadReceipt}/><label htmlFor="receipt-upload"><Icon name="upload" size={18}/> {receipt?"Чек загружен":"Загрузить чек"}</label></div><button className="primary-button" onClick={submitPayment}>Отправить платеж на проверку</button></div></div>}</div>;
 }
 
-function AdminInvoicesPage({ restaurants, invoices, setInvoices, onBack }) {
-  const [form, setForm] = useState({restaurantId: restaurants[0]?.id || "", title:"", amount:"", description:"", requisites:""});
-  function createInvoice(){ if(!form.restaurantId||!form.title||!form.amount||!form.requisites){alert("Заполните ресторан, название, сумму и реквизиты.");return;} setInvoices(prev=>[{id:uid("invoice"),number:String(Math.floor(1000+Math.random()*9000)),...form,amount:Number(form.amount),status:"pending_payment",createdAt:new Date().toISOString()},...prev]);setForm({...form,title:"",amount:"",description:""}); }
-  function review(id,status){setInvoices(prev=>prev.map(x=>x.id===id?{...x,status,reviewedAt:new Date().toISOString()}:x));}
+function AdminInvoicesPage({ restaurants, setRestaurants, invoices, setInvoices, onBack }) {
+  const [form, setForm] = useState({restaurantId: restaurants[0]?.id || "", title:"", amount:"", description:"", requisites:DEFAULT_PAYMENT_REQUISITES});
+
+  function createInvoice(){
+    if(!form.restaurantId||!form.title||!form.amount||!form.requisites){alert("Заполните ресторан, название, сумму и реквизиты.");return;}
+    setInvoices(prev=>[{id:uid("invoice"),number:String(Math.floor(1000+Math.random()*9000)),...form,amount:Number(form.amount),status:"pending_payment",createdAt:new Date().toISOString()},...prev]);
+    setForm({...form,title:"",amount:"",description:"",requisites:DEFAULT_PAYMENT_REQUISITES});
+  }
+
+  function review(id,status){
+    const invoice = invoices.find(x => x.id === id);
+    if (!invoice) return;
+    const reviewedAt = new Date().toISOString();
+    setInvoices(prev=>prev.map(x=>x.id===id?{...x,status,reviewedAt}:x));
+    const isSubscriptionInvoice =
+      invoice.type === "subscription" ||
+      invoice.title === "Лицензия и программное обеспечение FESTO";
+
+    if (status === "paid" && isSubscriptionInvoice) {
+      // A confirmed subscription payment permanently activates the restaurant.
+      // Explicitly remove every trial marker so the trial gate can never return.
+      setRestaurants(prev => prev.map(r => r.id === invoice.restaurantId ? {
+        ...r,
+        subscriptionActive: true,
+        subscriptionType: "perpetual",
+        trialStartedAt: null,
+        trialDurationHours: 0,
+        trialEndsAt: null,
+        subscriptionPaidAt: reviewedAt,
+        paidInvoiceId: invoice.id,
+      } : r));
+    }
+  }
   return <div className="profile-subpage"><SubpageHeader title="Счета и оплаты" onBack={onBack}/><div className="admin-billing-layout"><div className="glass-panel"><div className="eyebrow">АДМИНИСТРАТОР</div><h2>Выставить новый счет</h2><div className="input-group"><label>Ресторан</label><select value={form.restaurantId} onChange={e=>setForm({...form,restaurantId:e.target.value})}>{restaurants.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div><div className="input-group"><label>Название счета</label><input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Например: QR-подставки"/></div><div className="form-row"><div className="input-group"><label>Сумма, ₽</label><input type="number" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/></div><div className="input-group"><label>Описание</label><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="За что выставлен счет"/></div></div><div className="input-group"><label>Реквизиты для перевода</label><textarea value={form.requisites} onChange={e=>setForm({...form,requisites:e.target.value})} placeholder="Банк, получатель, номер счета..."/></div><button className="primary-button" onClick={createInvoice}>Выставить счет</button></div><div className="invoice-list admin-invoice-list">{invoices.length===0?<EmptyState icon="bank" title="Счетов нет" text="Создайте первый счет для ресторана."/>:invoices.map(inv=><div className="invoice-card" key={inv.id}><div><div className="eyebrow">СЧЕТ · {inv.number}</div><h3>{inv.title}</h3><p>{restaurants.find(r=>r.id===inv.restaurantId)?.name}</p><strong>{money(inv.amount)}</strong></div><div className={`invoice-status status-${inv.status}`}>{invoiceStatus(inv.status)}</div><div className="requisites"><b>Реквизиты</b><span>{inv.requisites}</span></div>{inv.receiptData&&<div className="receipt-preview"><span>Чек приложен</span>{String(inv.receiptData).startsWith("data:image")&&<img src={inv.receiptData} alt="Чек"/>}</div>}{inv.status === "payment_submitted"&&<div className="review-actions"><button className="primary-button" onClick={()=>review(inv.id,"paid")}>Подтвердить оплату</button><button className="danger-button" onClick={()=>review(inv.id,"rejected")}>Отклонить</button></div>}</div>)}</div></div></div>;
 }
 
@@ -4506,7 +4156,7 @@ function LiveOrdersScreen({
   function normalizeLiveOrders(source, restaurantId) {
     return source
       .filter((order) => order.restaurantId === restaurantId)
-      .filter((order) => order.status !== "completed" && order.status !== "cancelled")
+      .filter((order) => order.status !== "completed" && order.status !== "cancelled" && order.status !== "ready")
       .map((order) => ({
         ...order,
         // В кухонном режиме новый/принятый заказ сразу считается готовящимся.
@@ -4653,10 +4303,18 @@ function LiveOrdersScreen({
               ...order,
               status,
               statusChangedAt: new Date().toISOString(),
+              ...(status === "assembled" && !order.assembledAt ? { assembledAt: new Date().toISOString() } : {}),
+              ...(status === "ready" ? { readyAt: new Date().toISOString() } : {}),
+              ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}),
             }
           : order
       )
     );
+    const next = orders.find((order) => order.id === id);
+    if (next) {
+      const updated = { ...next, status, statusChangedAt: new Date().toISOString(), ...(status === "assembled" && !next.assembledAt ? { assembledAt: new Date().toISOString() } : {}), ...(status === "ready" ? { readyAt: new Date().toISOString() } : {}), ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}) };
+      festoApi(`/api/orders/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(updated) }).catch(() => {});
+    }
   }
 
   function handleOrderClick(order) {
@@ -4903,84 +4561,123 @@ export default function App() {
   );
 
   const [session, setSession] = useState(null);
+  const [now, setNow] = useState(Date.now());
 
-  const urlParams = useMemo(() => {
-    return new URLSearchParams(window.location.search);
-  }, []);
+  // Safety net: every newly created restaurant automatically receives one subscription invoice.
+  useEffect(() => {
+    const missing = restaurants.filter(r => r.id !== "demo-restaurant" && !invoices.some(i => i.restaurantId === r.id && i.type === "subscription"));
+    if (!missing.length) return;
+    setInvoices(prev => [
+      ...missing.map(r => ({
+        id: uid("invoice"),
+        number: `F-${new Date().getFullYear()}-${String(Date.now() + Math.random()).slice(-6)}`,
+        restaurantId: r.id,
+        title: "Лицензия и программное обеспечение FESTO",
+        amount: SUBSCRIPTION_PRICE,
+        description: "Подключение ресторана и бессрочная лицензия FESTO после подтверждения оплаты.",
+        requisites: DEFAULT_PAYMENT_REQUISITES,
+        status: "pending_payment",
+        type: "subscription",
+        createdAt: new Date().toISOString(),
+      })),
+      ...prev,
+    ]);
+  }, [restaurants, invoices]);
 
-  const publicRoute = useMemo(() => {
-    const hash = String(window.location.hash || "");
-    const match = hash.match(/^#\/menu\/([^/]+)\/([^/]+)\/?$/);
+  // Migration/safety net: if an older build already stored a paid subscription
+  // invoice without the current restaurant flags, activate it now as perpetual.
+  useEffect(() => {
+    const paidSubscriptions = invoices.filter(i =>
+      i.status === "paid" &&
+      (i.type === "subscription" || i.title === "Лицензия и программное обеспечение FESTO")
+    );
+    if (!paidSubscriptions.length) return;
 
-    if (!match) {
-      return { restaurantId: "", tableId: "" };
-    }
-
-    return {
-      restaurantId: decodeURIComponent(match[1]),
-      tableId: decodeURIComponent(match[2]),
-    };
-  }, []);
-
-  // Старые QR-коды с ?table=... продолжают работать.
-  const tableFromUrl = urlParams.get("table");
-  const liveOrdersRestaurantId = urlParams.get("liveOrders");
-
-  const [publicMenuData, setPublicMenuData] = useState(null);
-  const [publicMenuLoading, setPublicMenuLoading] = useState(
-    Boolean(publicRoute.restaurantId && publicRoute.tableId)
-  );
-  const [publicMenuError, setPublicMenuError] = useState("");
+    setRestaurants(prev => {
+      let changed = false;
+      const next = prev.map(r => {
+        const paid = paidSubscriptions
+          .filter(i => i.restaurantId === r.id)
+          .sort((a, b) => String(b.reviewedAt || b.createdAt || "").localeCompare(String(a.reviewedAt || a.createdAt || "")))[0];
+        if (!paid) return r;
+        if (r.subscriptionActive === true && r.subscriptionType === "perpetual" &&
+            r.trialStartedAt == null && r.trialDurationHours === 0 && r.trialEndsAt == null) return r;
+        changed = true;
+        return {
+          ...r,
+          subscriptionActive: true,
+          subscriptionType: "perpetual",
+          trialStartedAt: null,
+          trialDurationHours: 0,
+          trialEndsAt: null,
+          subscriptionPaidAt: r.subscriptionPaidAt || paid.reviewedAt || paid.createdAt || new Date().toISOString(),
+          paidInvoiceId: paid.id,
+        };
+      });
+      return changed ? next : prev;
+    });
+  }, [invoices]);
 
   useEffect(() => {
-    if (!publicRoute.restaurantId || !publicRoute.tableId) {
-      setPublicMenuLoading(false);
-      return;
-    }
+    const timer = window.setInterval(() => setNow(Date.now()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
+  function handleLogin(nextSession) {
+    if (nextSession.role === "director") {
+      setRestaurants((prev) => prev.map((r) => r.id === nextSession.restaurantId && !r.trialStartedAt ? { ...r, trialStartedAt: new Date().toISOString() } : r));
+    }
+    setSession(nextSession);
+  }
+
+  const urlParams = useMemo(() => {
+    return new URLSearchParams(
+      window.location.search
+    );
+  }, []);
+
+  const tableFromUrl = urlParams.get("table");
+  const restaurantFromUrl = urlParams.get("restaurant");
+  const publicMenuPayload = urlParams.get("festoMenu");
+  const publicMenuData = publicMenuPayload ? festoBase64Decode(publicMenuPayload) : null;
+  const liveOrdersRestaurantId =
+    urlParams.get("liveOrders");
+  const menuPathMatch = window.location.pathname.match(/\/menu\/([^/]+)\/([^/]+)\/?$/);
+  const hashMenuMatch = window.location.hash.match(/^#\/menu\/([^/]+)\/([^/]+)\/?$/);
+  const publicMenuMatch = menuPathMatch || hashMenuMatch;
+  const publicMenuRoute = publicMenuMatch ? { restaurantId: decodeURIComponent(publicMenuMatch[1]), tableId: decodeURIComponent(publicMenuMatch[2]) } : null;
+  const [publicRouteData, setPublicRouteData] = useState(null);
+  const [publicRouteError, setPublicRouteError] = useState("");
+
+  useEffect(() => {
+    if (!publicMenuRoute) return;
     let cancelled = false;
+    festoApi(`/api/public-menu/${encodeURIComponent(publicMenuRoute.restaurantId)}/${encodeURIComponent(publicMenuRoute.tableId)}`)
+      .then((data) => { if (!cancelled) setPublicRouteData(data); })
+      .catch(() => { if (!cancelled) setPublicRouteError("Не удалось загрузить меню. Проверьте, что сервер FESTO запущен."); });
+    return () => { cancelled = true; };
+  }, [publicMenuRoute?.restaurantId, publicMenuRoute?.tableId]);
 
-    async function loadPublicMenu() {
-      setPublicMenuLoading(true);
-      setPublicMenuError("");
+  useEffect(() => {
+    if (!session?.role) return;
+    // Синхронизируем справочники с общим сервером. Гость никогда не отправляет
+    // свои локальные данные обратно на сервер и не может затереть меню ресторана.
+    const timer = window.setTimeout(() => {
+      festoApi("/api/sync", { method: "POST", body: JSON.stringify({ restaurants, categories, dishes, tables }) }).catch(() => {});
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [session?.role, restaurants, categories, dishes, tables]);
 
-      try {
-        const response = await fetch(
-          `/api/public-menu/${encodeURIComponent(publicRoute.restaurantId)}/${encodeURIComponent(publicRoute.tableId)}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const payload = await response.json();
-
-        if (!payload?.restaurant || !payload?.table) {
-          throw new Error("Публичное меню не найдено");
-        }
-
-        if (!cancelled) {
-          setPublicMenuData(payload);
-        }
-      } catch (error) {
-        console.error("FESTO public menu error:", error);
-        if (!cancelled) {
-          setPublicMenuData(null);
-          setPublicMenuError("Не удалось открыть меню. QR-код может быть устаревшим.");
-        }
-      } finally {
-        if (!cancelled) {
-          setPublicMenuLoading(false);
-        }
-      }
-    }
-
-    loadPublicMenu();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [publicRoute.restaurantId, publicRoute.tableId]);
+  useEffect(() => {
+    if (session?.role !== "director" || !session.restaurantId) return;
+    let cancelled = false;
+    const load = () => festoApi(`/api/orders?restaurantId=${encodeURIComponent(session.restaurantId)}`)
+      .then((remote) => { if (!cancelled && Array.isArray(remote)) setOrders(remote); })
+      .catch(() => {});
+    load();
+    const timer = window.setInterval(load, 1500);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [session?.role, session?.restaurantId]);
 
   useEffect(() => {
     writeStorage(
@@ -5038,46 +4735,49 @@ export default function App() {
     );
   }, []);
 
-  // Новый QR: #/menu/<restaurantId>/<tableId>.
-  // Он загружает данные с Redis/API и поэтому работает на любом телефоне.
-  if (publicRoute.restaurantId && publicRoute.tableId) {
-    if (publicMenuLoading) {
-      return (
-        <CustomerError
-          title="Открываем меню…"
-          text="Загружаем меню ресторана."
-        />
-      );
-    }
-
-    if (publicMenuData) {
-      return (
-        <CustomerApp
-          restaurant={publicMenuData.restaurant}
-          categories={publicMenuData.categories || []}
-          dishes={publicMenuData.dishes || []}
-          tables={publicMenuData.table ? [publicMenuData.table] : []}
-          setOrders={setOrders}
-          publicData={publicMenuData}
-        />
-      );
-    }
-
+  if (publicMenuRoute) {
+    if (publicRouteError) return <CustomerError title="Меню временно недоступно" text={publicRouteError} />;
+    if (!publicRouteData) return <div className="customer-page"><div className="customer-content"><div className="glass-panel"><h2>Загружаем меню…</h2><p className="muted">Подключаемся к FESTO.</p></div></div></div>;
     return (
-      <CustomerError
-        title="Меню не найдено"
-        text={publicMenuError || "QR-код недействителен или данные ресторана недоступны."}
+      <CustomerApp
+        restaurant={publicRouteData.restaurant}
+        categories={publicRouteData.categories || []}
+        dishes={publicRouteData.dishes || []}
+        tables={[publicRouteData.table]}
+        setOrders={setOrders}
+        publicData={publicRouteData}
       />
     );
   }
 
-  // Старые QR с ?table=... сохраняем для обратной совместимости.
+  // Новый QR содержит публичный снимок меню и стола прямо в URL.
+  // Он работает на телефоне гостя независимо от localStorage директора.
+  if (publicMenuData?.restaurant?.id && publicMenuData?.table?.id) {
+    return (
+      <CustomerApp
+        restaurant={publicMenuData.restaurant}
+        categories={publicMenuData.categories || []}
+        dishes={publicMenuData.dishes || []}
+        tables={[publicMenuData.table]}
+        setOrders={setOrders}
+        publicData={publicMenuData}
+      />
+    );
+  }
+
+  // Совместимость со старыми QR.
   if (tableFromUrl) {
-    const table = tables.find((item) => item.id === tableFromUrl);
+    const table = tables.find(
+      (item) =>
+        item.id === tableFromUrl &&
+        (!restaurantFromUrl || item.restaurantId === restaurantFromUrl)
+    );
 
     if (table) {
       const restaurant = restaurants.find(
-        (item) => item.id === table.restaurantId
+        (item) =>
+          item.id === table.restaurantId &&
+          (!restaurantFromUrl || item.id === restaurantFromUrl)
       );
 
       if (restaurant) {
@@ -5115,7 +4815,7 @@ export default function App() {
     return (
       <Auth
         restaurants={restaurants}
-        onLogin={setSession}
+        onLogin={handleLogin}
       />
     );
   }
@@ -5146,6 +4846,17 @@ export default function App() {
     (restaurant) =>
       restaurant.id === session.restaurantId
   );
+
+  if (directorRestaurant) {
+    const trialStarted = directorRestaurant.trialStartedAt ? new Date(directorRestaurant.trialStartedAt).getTime() : Date.now();
+    const trialExpired = now - trialStarted >= TRIAL_HOURS * 60 * 60 * 1000;
+    if (!directorRestaurant.licenseAcceptedAt) {
+      return <LicenseAgreementGate restaurant={directorRestaurant} onAccept={() => { setRestaurants(prev => prev.map(r => r.id === directorRestaurant.id ? { ...r, licenseAcceptedAt: new Date().toISOString() } : r)); }} onLogout={logout} />;
+    }
+    if (trialExpired && !directorRestaurant.subscriptionActive) {
+      return <TrialExpiredGate restaurant={directorRestaurant} invoices={invoices} setInvoices={setInvoices} onLogout={logout} />;
+    }
+  }
 
   return (
     <DirectorApp
