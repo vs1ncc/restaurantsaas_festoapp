@@ -6464,3 +6464,608 @@ button {
 }
 
  
+/* =========================================================
+   FESTO CUSTOMER — FINAL MOBILE GLASS UI
+   Visual-only patch. Does not change customer functionality.
+   ========================================================= */
+
+.customer-page {
+  min-height: 100svh !important;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(108, 75, 244, .13), transparent 30%),
+    radial-gradient(circle at 92% 88%, rgba(150, 175, 255, .15), transparent 34%),
+    #f3f4fb !important;
+  color: #17171b !important;
+  padding-bottom: 108px !important;
+}
+
+/* ---------- CUSTOMER MENU HEADER ---------- */
+
+.customer-header {
+  position: sticky !important;
+  top: 10px !important;
+  z-index: 30 !important;
+  width: min(1100px, calc(100% - 24px)) !important;
+  min-height: 76px !important;
+  margin: 10px auto 0 !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(255,255,255,.9) !important;
+  border-radius: 24px !important;
+  background: rgba(255,255,255,.68) !important;
+  backdrop-filter: blur(26px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(150%) !important;
+  box-shadow: 0 16px 45px rgba(54,48,100,.10) !important;
+}
+
+.customer-brand {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+.customer-brand-text {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 2px !important;
+}
+
+.customer-restaurant-logo {
+  width: 50px !important;
+  height: 50px !important;
+  flex: 0 0 50px !important;
+  object-fit: cover !important;
+  border-radius: 15px !important;
+}
+
+.customer-logo {
+  width: 50px !important;
+  height: 50px !important;
+  flex: 0 0 50px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #17171b !important;
+  color: #fff !important;
+  border-radius: 15px !important;
+  font-size: 21px !important;
+  font-weight: 800 !important;
+}
+
+.customer-restaurant {
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  color: #17171b !important;
+}
+
+.customer-table {
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  color: #77768a !important;
+}
+
+/* ---------- CUSTOMER CONTENT ---------- */
+
+.customer-main {
+  width: min(1100px, calc(100% - 24px)) !important;
+  margin: 18px auto 0 !important;
+}
+
+.customer-title {
+  padding: 18px 2px 12px !important;
+}
+
+.customer-eyebrow {
+  margin-bottom: 5px !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  letter-spacing: .20em !important;
+  font-weight: 800 !important;
+  color: #9997a8 !important;
+  text-transform: uppercase !important;
+}
+
+.customer-title h1 {
+  margin: 0 !important;
+  font-size: clamp(32px, 8vw, 46px) !important;
+  line-height: .98 !important;
+  letter-spacing: -1.8px !important;
+  font-weight: 850 !important;
+  color: #17171b !important;
+}
+
+/* ---------- CATEGORIES ---------- */
+
+.customer-categories {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  overflow-x: auto !important;
+  padding: 4px 0 15px !important;
+  scrollbar-width: none !important;
+}
+
+.customer-categories::-webkit-scrollbar {
+  display: none !important;
+}
+
+.customer-category {
+  flex: 0 0 auto !important;
+  min-height: 44px !important;
+  padding: 0 17px !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.70) !important;
+  color: #77768a !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 7px 20px rgba(64,58,110,.06) !important;
+}
+
+.customer-category.active {
+  background: #6c4bf4 !important;
+  border-color: #6c4bf4 !important;
+  color: #fff !important;
+  box-shadow: 0 10px 25px rgba(108,75,244,.24) !important;
+}
+
+/* ---------- DISHES ---------- */
+
+.customer-dishes {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.customer-dish {
+  display: grid !important;
+  grid-template-columns: 150px minmax(0, 1fr) !important;
+  gap: 14px !important;
+  min-height: 150px !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 25px !important;
+  background: rgba(255,255,255,.72) !important;
+  box-shadow: 0 16px 42px rgba(57,51,103,.08) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+}
+
+.customer-dish-image {
+  width: 150px !important;
+  height: 150px !important;
+  border-radius: 19px !important;
+  overflow: hidden !important;
+  background: #eeeef5 !important;
+}
+
+.customer-dish-image img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.customer-dish-info {
+  min-width: 0 !important;
+  padding: 5px 4px 3px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.customer-dish-info h2 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  line-height: 1.15 !important;
+  letter-spacing: -.5px !important;
+  font-weight: 800 !important;
+}
+
+.customer-dish-info p {
+  margin: 7px 0 0 !important;
+  color: #858394 !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+.customer-dish-bottom {
+  margin-top: auto !important;
+  padding-top: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+
+.add-dish-button {
+  width: 46px !important;
+  height: 46px !important;
+  flex: 0 0 46px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 15px !important;
+  background: #6c4bf4 !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(108,75,244,.25) !important;
+}
+
+/* ---------- CUSTOMER BOTTOM NAV ---------- */
+
+.customer-bottom-bar {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 14px !important;
+  z-index: 50 !important;
+  transform: translateX(-50%) !important;
+  width: min(420px, calc(100% - 24px)) !important;
+  min-height: 70px !important;
+  padding: 7px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 25px !important;
+  background: rgba(255,255,255,.78) !important;
+  backdrop-filter: blur(25px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+  box-shadow: 0 20px 60px rgba(40,35,75,.16) !important;
+}
+
+.customer-bottom-bar button {
+  flex: 1 !important;
+  min-height: 56px !important;
+  border: 0 !important;
+  border-radius: 19px !important;
+  background: transparent !important;
+  color: #77768a !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.customer-bottom-bar button.active {
+  background: rgba(108,75,244,.10) !important;
+  color: #5b43cf !important;
+}
+
+/* =========================================================
+   CHECKOUT / CART
+   ========================================================= */
+
+.customer-checkout-page {
+  padding-bottom: 30px !important;
+}
+
+.customer-checkout-header {
+  position: sticky !important;
+  top: 10px !important;
+  z-index: 40 !important;
+  width: min(760px, calc(100% - 24px)) !important;
+  min-height: 66px !important;
+  margin: 10px auto 0 !important;
+  padding: 10px 12px !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: 44px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 22px !important;
+  background: rgba(255,255,255,.72) !important;
+  backdrop-filter: blur(25px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+  box-shadow: 0 16px 45px rgba(54,48,100,.10) !important;
+}
+
+.customer-checkout-back {
+  width: 44px !important;
+  height: 44px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: rgba(108,75,244,.10) !important;
+  color: #5b43cf !important;
+}
+
+.customer-checkout-mini-total {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #5b43cf !important;
+  white-space: nowrap !important;
+}
+
+.customer-checkout-content {
+  width: min(760px, calc(100% - 24px)) !important;
+  margin: 22px auto 0 !important;
+}
+
+.customer-checkout-content h1 {
+  margin: 0 !important;
+  font-size: clamp(32px, 8vw, 46px) !important;
+  line-height: 1 !important;
+  letter-spacing: -1.7px !important;
+  font-weight: 850 !important;
+}
+
+.customer-checkout-content p {
+  line-height: 1.45 !important;
+}
+
+.customer-cart-item,
+.customer-review-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 8px !important;
+  padding: 14px !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(255,255,255,.90) !important;
+  border-radius: 19px !important;
+  background: rgba(255,255,255,.72) !important;
+  box-shadow: 0 10px 28px rgba(55,50,100,.06) !important;
+}
+
+.customer-cart-item button,
+.customer-review-item button {
+  min-width: 34px !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: rgba(108,75,244,.10) !important;
+  color: #5b43cf !important;
+  font-weight: 800 !important;
+}
+
+.customer-cart-page,
+.customer-upsell-page,
+.customer-review-page {
+  width: 100% !important;
+}
+
+.customer-cart-page > *,
+.customer-upsell-page > *,
+.customer-review-page > * {
+  max-width: 100% !important;
+}
+
+.customer-cart-page textarea,
+.customer-review-page textarea {
+  width: 100% !important;
+  min-height: 120px !important;
+  margin-top: 7px !important;
+  padding: 15px !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+  border: 1px solid rgba(255,255,255,.94) !important;
+  border-radius: 20px !important;
+  outline: none !important;
+  background: rgba(255,255,255,.70) !important;
+  color: #17171b !important;
+  font: inherit !important;
+  box-shadow: 0 10px 30px rgba(55,50,100,.05) !important;
+}
+
+.customer-cart-page textarea:focus,
+.customer-review-page textarea:focus {
+  border-color: rgba(108,75,244,.35) !important;
+  box-shadow: 0 0 0 4px rgba(108,75,244,.08) !important;
+}
+
+.customer-upsell-page .customer-upsell-dish,
+.customer-upsell-page .customer-dish {
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 21px !important;
+  background: rgba(255,255,255,.72) !important;
+  box-shadow: 0 12px 34px rgba(55,50,100,.07) !important;
+}
+
+.customer-cart-page button,
+.customer-upsell-page button,
+.customer-review-page button {
+  font: inherit !important;
+}
+
+.customer-cart-page button[type="button"],
+.customer-upsell-page button[type="button"] {
+  min-height: 46px !important;
+  padding: 0 18px !important;
+  border-radius: 15px !important;
+}
+
+.customer-cart-page button:not([disabled]),
+.customer-review-page button:not([disabled]) {
+  border-radius: 15px !important;
+}
+
+.customer-review-page button[type="submit"],
+.customer-cart-page button[type="submit"] {
+  width: 100% !important;
+  min-height: 52px !important;
+  margin-top: 12px !important;
+  border: 0 !important;
+  border-radius: 17px !important;
+  background: #6c4bf4 !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 12px 28px rgba(108,75,244,.23) !important;
+}
+
+/* ---------- SUCCESS ---------- */
+
+.customer-success {
+  width: min(700px, calc(100% - 24px)) !important;
+  margin: 25px auto !important;
+  padding: 28px 20px !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 28px !important;
+  background: rgba(255,255,255,.70) !important;
+  box-shadow: 0 20px 60px rgba(55,50,100,.08) !important;
+}
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width: 700px) {
+
+  .customer-header {
+    top: 8px !important;
+    min-height: 68px !important;
+    margin-top: 8px !important;
+    padding: 9px 11px !important;
+    border-radius: 21px !important;
+  }
+
+  .customer-logo,
+  .customer-restaurant-logo {
+    width: 46px !important;
+    height: 46px !important;
+    flex-basis: 46px !important;
+    border-radius: 14px !important;
+  }
+
+  .customer-brand {
+    gap: 10px !important;
+  }
+
+  .customer-main {
+    width: calc(100% - 20px) !important;
+    margin-top: 12px !important;
+  }
+
+  .customer-title {
+    padding: 15px 1px 10px !important;
+  }
+
+  .customer-title h1 {
+    font-size: 36px !important;
+    letter-spacing: -1.9px !important;
+  }
+
+  .customer-categories {
+    padding-bottom: 13px !important;
+  }
+
+  .customer-category {
+    min-height: 42px !important;
+    padding: 0 16px !important;
+  }
+
+  .customer-dishes {
+    grid-template-columns: 1fr !important;
+    gap: 11px !important;
+  }
+
+  .customer-dish {
+    grid-template-columns: 96px minmax(0, 1fr) !important;
+    min-height: 120px !important;
+    gap: 11px !important;
+    padding: 10px !important;
+    border-radius: 21px !important;
+  }
+
+  .customer-dish-image {
+    width: 96px !important;
+    height: 96px !important;
+    border-radius: 16px !important;
+  }
+
+  .customer-dish-info {
+    padding: 3px 2px 2px 0 !important;
+  }
+
+  .customer-dish-info h2 {
+    font-size: 18px !important;
+  }
+
+  .customer-dish-info p {
+    margin-top: 5px !important;
+    font-size: 13px !important;
+  }
+
+  .customer-dish-bottom {
+    padding-top: 7px !important;
+  }
+
+  .add-dish-button {
+    width: 43px !important;
+    height: 43px !important;
+    flex-basis: 43px !important;
+    border-radius: 14px !important;
+  }
+
+  .customer-bottom-bar {
+    bottom: 10px !important;
+    width: calc(100% - 20px) !important;
+    min-height: 66px !important;
+    border-radius: 22px !important;
+  }
+
+  .customer-bottom-bar button {
+    min-height: 52px !important;
+    border-radius: 17px !important;
+  }
+
+  .customer-checkout-header {
+    top: 8px !important;
+    width: calc(100% - 20px) !important;
+    margin-top: 8px !important;
+    min-height: 60px !important;
+    padding: 8px !important;
+    border-radius: 20px !important;
+    grid-template-columns: 40px minmax(0, 1fr) auto !important;
+  }
+
+  .customer-checkout-back {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 13px !important;
+  }
+
+  .customer-checkout-content {
+    width: calc(100% - 20px) !important;
+    margin-top: 17px !important;
+  }
+
+  .customer-checkout-content h1 {
+    font-size: 35px !important;
+    letter-spacing: -1.8px !important;
+  }
+
+  .customer-cart-item,
+  .customer-review-item {
+    padding: 12px !important;
+    border-radius: 17px !important;
+  }
+}
+
+/* ---------- VERY SMALL PHONES ---------- */
+
+@media (max-width: 390px) {
+
+  .customer-title h1,
+  .customer-checkout-content h1 {
+    font-size: 32px !important;
+  }
+
+  .customer-dish-info h2 {
+    font-size: 17px !important;
+  }
+
+  .customer-dish-info p {
+    font-size: 12px !important;
+  }
+
+  .customer-checkout-mini-total {
+    font-size: 14px !important;
+  }
+}
+
