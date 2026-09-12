@@ -155,7 +155,7 @@ function getInitials(name = "") {
 function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
   const paths = {
     home: <><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/></>,
-    restaurant: <><path d="M6 3v7"/><path d="M3.5 3v4.5a2.5 2.5 0 0 0 5 0V3"/><path d="M6 10v11"/><path d="M15.5 3v18"/><path d="M15.5 3c3.2 1.2 3.2 5.8 0 7"/></>,
+    restaurant: <><path d="M7 3v7"/><path d="M4.5 3v4.5a2.5 2.5 0 0 0 5 0V3"/><path d="M7 10v11"/><path d="m14 4 7 7"/><path d="M16.5 2.8c1.8 1.8 1.8 4.7 0 6.5L14 11.8"/><path d="m14 11 7 10"/></>,
     license: <><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></>,
     settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V20H10v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4v-2h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1L7 7.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V6h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v2h-.1a1.7 1.7 0 0 0-1.5 1Z"/></>,
     menu: <><path d="M5 6h14M5 12h14M5 18h14"/></>,
@@ -3460,7 +3460,7 @@ function MobileBar({ page, setPage, role }) {
   const items = role === "admin"
     ? [["dashboard", "Главная", "home"], ["restaurants", "Рестораны", "restaurant"], ["licenses", "Лицензии", "license"], ["settings", "Настройки", "settings"]]
     : [["dashboard", "Главная", "home"], ["menu", "Меню", "menu"], ["tables", "Столы", "grid"], ["orders", "Заказы", "orders"]];
-  return <div className="mobile-bar">{items.map(([id, label, icon]) => <button key={id} className={page === id ? "mobile-active" : ""} onClick={() => setPage(id)} type="button"><Icon name={icon} size={17} /><span>{label}</span></button>)}</div>;
+  return <div className="mobile-bar">{items.map(([id, label, icon]) => <button key={id} className={page === id ? "mobile-active" : ""} onClick={() => setPage(id)} type="button"><Icon name={icon} size={22} strokeWidth={1.9} /><span>{label}</span></button>)}</div>;
 }
 
 /* -------------------------------------------------------

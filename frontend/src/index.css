@@ -5763,3 +5763,117 @@ button {
     height: 26px;
   }
 }
+
+
+/* -------------------------------------------------------
+   MOBILE NAV / LIVE PILL — FINAL PROPORTION TUNING
+------------------------------------------------------- */
+@media (max-width: 900px) {
+  .app-shell .mobile-bar {
+    /* Previous mobile width was controlled by 80px side margins.
+       This keeps the same centering while making the bar 50% wider. */
+    left: 50%;
+    right: auto;
+    width: min(calc((100vw - 160px) * 1.5), calc(100vw - 20px));
+    transform: translateX(-50%);
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .app-shell .mobile-bar button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .app-shell .mobile-bar button .festo-icon {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px;
+    min-height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+    flex: 0 0 30px;
+    display: block;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    transform: none;
+  }
+
+  /* The reference uses compact, human-readable line icons rather than tall glyphs. */
+  .app-shell .mobile-bar button svg {
+    width: 30px !important;
+    height: 30px !important;
+    aspect-ratio: 1 / 1;
+  }
+
+  .app-shell .live-orders-button {
+    width: 214px;
+    min-width: 214px;
+    max-width: 214px;
+    padding-left: 15px;
+    padding-right: 12px;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .app-shell .live-orders-button .live-dot {
+    width: 11px;
+    height: 11px;
+    flex-basis: 11px;
+  }
+
+  .app-shell .live-orders-button .live-count {
+    min-width: 31px;
+    width: 31px;
+    height: 31px;
+    font-size: 13px;
+  }
+
+  .app-shell .live-orders-button .live-arrow {
+    transform: scale(.9);
+  }
+}
+
+@media (max-width: 430px) {
+  .app-shell .mobile-bar {
+    left: 50%;
+    right: auto;
+    width: min(calc((100vw - 156px) * 1.5), calc(100vw - 18px));
+    transform: translateX(-50%);
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .app-shell .mobile-bar button {
+    min-height: 60px;
+    height: 60px;
+    border-radius: 22px;
+  }
+
+  .app-shell .mobile-bar button .festo-icon,
+  .app-shell .mobile-bar button svg {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px;
+    min-height: 28px;
+    max-width: 28px;
+    max-height: 28px;
+    flex-basis: 28px;
+  }
+
+  .app-shell .live-orders-button {
+    width: 204px;
+    min-width: 204px;
+    max-width: 204px;
+    right: 30px;
+    padding-left: 14px;
+    padding-right: 10px;
+    gap: 7px;
+  }
+}
