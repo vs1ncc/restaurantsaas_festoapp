@@ -794,28 +794,7 @@ function DirectorDashboard({
           </div>
         </div>
 
-        <div className="dashboard-grid">
-          <QuickAction
-            title="Меню"
-            text="Блюда и категории"
-            icon="menu"
-            onClick={() => onPage("menu")}
-          />
 
-          <QuickAction
-            title="Столы"
-            text="QR-коды для гостей"
-            icon="table"
-            onClick={() => onPage("tables")}
-          />
-
-          <QuickAction
-            title="Заказы"
-            text="Заказы гостей"
-            icon="orders"
-            onClick={() => onPage("orders")}
-          />
-        </div>
       </div>
     </>
   );
@@ -1545,7 +1524,7 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
       </div>
 
       <div className="menu-toolbar">
-        <div className="menu-search"><Icon name="search" size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск блюда, описания или состава" /></div>
+        <div className="menu-search"><Icon name="search" size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск" /></div>
         <div className="menu-toolbar-count">{visibleDishes.length} из {dishes.length} блюд</div>
       </div>
 
@@ -2084,13 +2063,6 @@ function TablesManager({
 
                 <button
                   className="secondary-button"
-                  onClick={() => copyLink(table)}
-                >
-                  Скопировать ссылку
-                </button>
-
-                <button
-                  className="secondary-button"
                   onClick={() => printQR(table)}
                 >
                   Печать QR
@@ -2274,13 +2246,6 @@ function QRModal({ table, onClose }) {
         </div>
 
         <div className="modal-actions">
-          <button
-            className="secondary-button"
-            onClick={copy}
-          >
-            Скопировать ссылку
-          </button>
-
           <a
             className="primary-button"
             href={link}
@@ -2442,13 +2407,17 @@ function OrdersManager({
           )}
         </select>
 
-        <input
-          className="order-date"
-          type="date"
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-          title="Фильтр по дате"
-        />
+        <label className="order-date-control">
+          <span>{dateFilter ? new Date(`${dateFilter}T00:00:00`).toLocaleDateString("ru-RU") : "Дата"}</span>
+          <input
+            className="order-date"
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            title="Фильтр по дате"
+            aria-label="Дата"
+          />
+        </label>
 
         {(search || dateFilter || filter !== "all") && (
           <button

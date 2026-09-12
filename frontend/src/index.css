@@ -2557,3 +2557,308 @@ button {
   .customer-title h1 { font-size: 27px; }
   .heading-actions button { font-size: 12px; }
 }
+
+/* =======================================================
+   FESTO — requested UI refinements
+   Desktop layout remains structurally unchanged.
+======================================================= */
+
+/* Main quick-access block: navigation remains available in the mini sidebar/bar,
+   while the large quick-access cards are intentionally hidden. */
+.quick-action { display: none !important; }
+
+/* Menu action buttons: one visual size, rounded and clean. */
+.heading-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.heading-actions > button {
+  height: 46px;
+  min-width: 176px;
+  padding: 0 18px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid transparent;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.heading-actions .ai-menu-button {
+  min-width: 176px;
+  height: 46px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+}
+
+.heading-actions .primary-button,
+.heading-actions .secondary-button,
+.heading-actions .ai-menu-button {
+  box-sizing: border-box;
+}
+
+/* Menu search: compact rounded control with a short placeholder. */
+.menu-search {
+  min-height: 46px;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.menu-search input {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* QR actions: keep only QR / print / delete and prevent text overflow. */
+.table-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px !important;
+  width: 100%;
+}
+
+.table-actions > button,
+.table-actions > a {
+  min-width: 0;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 10px !important;
+  border-radius: 14px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+/* Orders controls. */
+.orders-view-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.orders-view-tabs button {
+  min-width: 138px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid #e1e1e5;
+  border-radius: 16px;
+  background: #fff;
+  color: #777;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.orders-view-tabs button.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.orders-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.order-search {
+  min-width: 0;
+  flex: 1;
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid #dedee2;
+  border-radius: 16px;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.order-search::placeholder {
+  color: #999;
+}
+
+.order-filter,
+.order-date-control {
+  height: 46px;
+  border-radius: 16px;
+}
+
+.order-filter {
+  min-width: 138px;
+  padding: 0 14px;
+}
+
+.order-date-control {
+  position: relative;
+  min-width: 118px;
+  padding: 0 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dedee2;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.order-date-control span {
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.order-date-control .order-date {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Mobile refinement only — desktop proportions above stay intact. */
+@media (max-width: 800px) {
+  .heading-actions {
+    grid-template-columns: 1fr 1fr;
+    display: grid;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .heading-actions > button,
+  .heading-actions .ai-menu-button {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 10px;
+    border-radius: 17px;
+    font-size: 12px;
+  }
+
+  .heading-actions .ai-menu-button {
+    grid-column: 1 / -1;
+  }
+
+  .menu-search {
+    min-height: 48px;
+    height: 48px;
+    border-radius: 17px !important;
+  }
+
+  .menu-search input {
+    font-size: 14px;
+  }
+
+  .table-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px !important;
+  }
+
+  .table-actions > button,
+  .table-actions > a {
+    min-height: 42px;
+    height: 42px;
+    padding: 0 6px !important;
+    border-radius: 14px !important;
+    font-size: 11px;
+  }
+
+  .orders-view-tabs {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .orders-view-tabs button {
+    flex: 1;
+    min-width: 0;
+    min-height: 50px;
+    height: 50px;
+    padding: 0 14px;
+    border-radius: 17px;
+    font-size: 13px;
+  }
+
+  .orders-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .order-search {
+    grid-column: 1 / 2;
+    width: 100%;
+    height: 46px;
+    border-radius: 16px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+
+  .order-filter {
+    grid-column: 2 / 3;
+    min-width: 92px;
+    height: 46px;
+    margin-left: 2px;
+    padding: 0 10px;
+    border-radius: 16px;
+    font-size: 12px;
+  }
+
+  .order-date-control {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 46px;
+    min-height: 46px;
+    border-radius: 16px;
+    margin-top: 2px;
+  }
+
+  .order-date-control span {
+    font-size: 13px;
+  }
+
+  .orders-toolbar > .secondary-button {
+    grid-column: 1 / -1;
+    min-height: 44px;
+    border-radius: 15px;
+  }
+}
+
+@media (max-width: 380px) {
+  .heading-actions > button,
+  .heading-actions .ai-menu-button {
+    font-size: 11px;
+    padding: 0 7px;
+  }
+
+  .table-actions > button,
+  .table-actions > a {
+    font-size: 10px;
+    padding: 0 4px !important;
+  }
+}
