@@ -187,10 +187,13 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
 }
 
-function customerUrl(tableId) {
-  return `${window.location.origin}${window.location.pathname}?table=${encodeURIComponent(
-    tableId
-  )}`;
+function customerUrl(tableId, restaurantId = null) {
+  // QR-код всегда ведет в корень приложения, а не на текущую страницу
+  // (например, /login). Это важно, если QR генерируется из админки.
+  const params = new URLSearchParams();
+  params.set("table", tableId);
+  if (restaurantId) params.set("restaurant", restaurantId);
+  return `${window.location.origin}/?${params.toString()}`;
 }
 
 /* -------------------------------------------------------
@@ -2481,7 +2484,7 @@ function TablesManager({
 
               <div className="qr-box">
                 <QRCodeSVG
-                  value={customerUrl(table.id)}
+                  value={customerUrl(table.id, table.restaurantId)}
                   size={170}
                   bgColor="#ffffff"
                   fgColor="#111111"
@@ -2490,7 +2493,7 @@ function TablesManager({
               </div>
 
               <div className="table-url">
-                {customerUrl(table.id)}
+                {customerUrl(table.id, table.restaurantId)}
               </div>
 
               <div className="table-actions">
@@ -2634,7 +2637,7 @@ function AddTableModal({
 ------------------------------------------------------- */
 
 function QRModal({ table, onClose }) {
-  const link = customerUrl(table.id);
+  const link = customerUrl(table.id, table.restaurantId);
 
   return (
     <div className="modal-overlay">
@@ -4586,6 +4589,7 @@ export default function App() {
   }, []);
 
   const tableFromUrl = urlParams.get("table");
+  const restaurantFromUrl = urlParams.get("restaurant");
   const liveOrdersRestaurantId =
     urlParams.get("liveOrders");
 
@@ -4648,12 +4652,16 @@ export default function App() {
   // QR URL всегда открывает клиентское меню.
   if (tableFromUrl) {
     const table = tables.find(
-      (item) => item.id === tableFromUrl
+      (item) =>
+        item.id === tableFromUrl &&
+        (!restaurantFromUrl || item.restaurantId === restaurantFromUrl)
     );
 
     if (table) {
       const restaurant = restaurants.find(
-        (item) => item.id === table.restaurantId
+        (item) =>
+          item.id === table.restaurantId &&
+          (!restaurantFromUrl || item.id === restaurantFromUrl)
       );
 
       if (restaurant) {
