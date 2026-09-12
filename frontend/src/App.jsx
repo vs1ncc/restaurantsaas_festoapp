@@ -3624,7 +3624,7 @@ function CustomerApp({
       >
         <div className="customer-success-card">
           <div className="customer-success-icon">
-            ✓
+            <span className="customer-success-check">✓</span>
           </div>
 
           <div className="customer-eyebrow">

@@ -10192,3 +10192,118 @@ button {
   }
 }
 
+
+
+/* =========================================================
+   SUCCESS CHECK — REAL ELEMENT ANIMATION
+   ========================================================= */
+
+.customer-success-icon {
+  position: relative !important;
+  overflow: visible !important;
+  font-size: 0 !important;
+}
+
+.customer-success-icon::before {
+  content: none !important;
+  animation: none !important;
+}
+
+.customer-success-icon::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: -16px !important;
+  border-radius: 38px !important;
+  border: 2px solid rgba(108, 75, 244, 0.20) !important;
+  opacity: 0 !important;
+  transform: scale(.45) !important;
+  pointer-events: none !important;
+  animation: festo-success-wave-final .8s cubic-bezier(.16,1,.3,1) .08s forwards !important;
+  z-index: 0 !important;
+}
+
+.customer-success-check {
+  position: relative !important;
+  z-index: 3 !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  color: #fff !important;
+  font-size: 58px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  opacity: 0 !important;
+  transform: scale(.04) rotate(-25deg) !important;
+  transform-origin: center !important;
+
+  animation: festo-success-check-final
+    .9s
+    cubic-bezier(.16,1.45,.35,1)
+    .12s
+    forwards !important;
+}
+
+@keyframes festo-success-check-final {
+  0% {
+    opacity: 0;
+    transform: scale(.04) rotate(-25deg);
+  }
+
+  20% {
+    opacity: 1;
+    transform: scale(.55) rotate(-10deg);
+  }
+
+  45% {
+    opacity: 1;
+    transform: scale(1.25) rotate(5deg);
+  }
+
+  65% {
+    opacity: 1;
+    transform: scale(.9) rotate(-2deg);
+  }
+
+  82% {
+    opacity: 1;
+    transform: scale(1.07) rotate(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes festo-success-wave-final {
+  0% {
+    opacity: 0;
+    transform: scale(.45);
+  }
+
+  35% {
+    opacity: .65;
+    transform: scale(.75);
+  }
+
+  70% {
+    opacity: .20;
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+@media (max-width: 640px) {
+  .customer-success-check {
+    font-size: 52px !important;
+  }
+}
