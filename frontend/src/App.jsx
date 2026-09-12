@@ -187,12 +187,13 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
 }
 
-function customerUrl(tableId, restaurantId = null) {
-  // QR-код всегда ведет в корень приложения, а не на текущую страницу
-  // (например, /login). Это важно, если QR генерируется из админки.
+function customerUrl(tableId, restaurantId) {
+  // QR должен вести на публичную точку входа приложения, а не на
+  // текущую страницу (например, /login или /admin).
+  // В URL обязательно передаём и ресторан, и столик.
   const params = new URLSearchParams();
-  params.set("table", tableId);
   if (restaurantId) params.set("restaurant", restaurantId);
+  params.set("table", tableId);
   return `${window.location.origin}/?${params.toString()}`;
 }
 
@@ -3309,11 +3310,13 @@ function CustomerApp({
 }) {
   const params = new URLSearchParams(window.location.search);
   const tableId = params.get("table");
+  const restaurantIdFromUrl = params.get("restaurant");
 
   const table = tables.find(
     (item) =>
       item.id === tableId &&
-      item.restaurantId === restaurant.id
+      item.restaurantId === restaurant.id &&
+      (!restaurantIdFromUrl || item.restaurantId === restaurantIdFromUrl)
   );
 
   const [activeCategory, setActiveCategory] =
@@ -3982,7 +3985,7 @@ function QRStandOrderPage({ restaurant, tables, onBack, standOrders, setStandOrd
     setStandOrders(prev => [order, ...prev]); setSent(true);
   }
   const previewTable = tables.find(t => selectedTables.includes(t.id)) || tables[0];
-  const previewValue = previewTable ? customerUrl(previewTable.id) : `${window.location.origin}/?table=table-1`;
+  const previewValue = previewTable ? customerUrl(previewTable.id, previewTable.restaurantId) : `${window.location.origin}/?restaurant=demo-restaurant&table=table-1`;
 
   if (sent) return <div className="profile-subpage"><SubpageHeader title="QR подставки" onBack={onBack}/><div className="success-card"><div className="success-icon"><Icon name="check" size={30}/></div><h2>Заявка отправлена</h2><p>Мы получили дизайн и список столов. Заказ будет обработан после подтверждения.</p><div className="info-box"><span>Столы</span><strong>{selectedTables.map(id => tables.find(t => t.id === id)?.name).filter(Boolean).join(", ")}</strong></div><button className="primary-button" onClick={onBack}>Вернуться в профиль</button></div></div>;
 
