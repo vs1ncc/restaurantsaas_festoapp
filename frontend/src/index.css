@@ -2938,3 +2938,1346 @@ button {
     margin-bottom: 5px;
   }
 }
+
+/* =======================================================
+   FESTO ADMIN UI 2.0 — HUMAN SAAS REDESIGN
+   Keeps existing functionality and component structure.
+   Scoped to the admin/director application so customer and
+   live-order screens keep their own visual systems.
+======================================================= */
+
+.app-shell {
+  --ui-bg: #f6f7f9;
+  --ui-surface: #ffffff;
+  --ui-surface-soft: #fafbfc;
+  --ui-line: #e7e9ee;
+  --ui-line-strong: #dfe2e8;
+  --ui-text: #17181c;
+  --ui-muted: #777c87;
+  --ui-subtle: #a0a4ad;
+  --ui-accent: #6c4bf4;
+  --ui-accent-soft: #f1eeff;
+  min-height: 100vh;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+}
+
+.app-shell .sidebar {
+  width: 238px;
+  padding: 22px 14px 16px;
+  background: #fff;
+  border-right: 1px solid var(--ui-line);
+  box-shadow: none;
+}
+
+.app-shell .brand {
+  height: 44px;
+  padding: 0 9px;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.app-shell .brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #17181c;
+  font-size: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.app-shell .brand > span {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #17181c;
+}
+
+.app-shell .sidebar nav {
+  gap: 3px;
+}
+
+.app-shell .nav-item {
+  min-height: 42px;
+  width: 100%;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #737782;
+  font-size: 13px;
+  font-weight: 600;
+  justify-content: flex-start;
+  gap: 11px;
+  transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+
+.app-shell .nav-item svg {
+  flex: 0 0 auto;
+  opacity: .82;
+}
+
+.app-shell .nav-item:hover {
+  background: #f6f6f8;
+  color: #26272c;
+}
+
+.app-shell .nav-item.active {
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent);
+}
+
+.app-shell .nav-item.active svg {
+  opacity: 1;
+}
+
+.app-shell .sidebar-restaurant {
+  margin: auto 5px 12px;
+  padding: 12px 11px;
+  border: 1px solid var(--ui-line);
+  border-radius: 12px;
+  background: #fafbfc;
+}
+
+.app-shell .sidebar-restaurant strong {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #25262b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell .sidebar-restaurant span {
+  display: block;
+  margin-top: 4px;
+  color: #9498a1;
+  font-size: 10px;
+}
+
+.app-shell .logout {
+  min-height: 40px;
+  margin: 0 2px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #8b8e96;
+  font-size: 12px;
+  font-weight: 600;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.app-shell .logout:hover {
+  background: #f6f6f8;
+  color: #292a2f;
+}
+
+.app-shell .main-content {
+  max-width: none;
+  padding: 0 34px 48px;
+  background: var(--ui-bg);
+}
+
+.app-shell .topbar {
+  min-height: 76px;
+  margin: 0 -34px 34px;
+  padding: 0 34px;
+  background: rgba(255,255,255,.88);
+  border-bottom: 1px solid var(--ui-line);
+  box-shadow: none;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.app-shell .topbar h2 {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.15px;
+  color: #2a2b30;
+}
+
+.app-shell .profile {
+  padding: 5px 8px 5px 6px;
+  gap: 8px;
+  border: 1px solid var(--ui-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.app-shell .avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #17181c;
+  font-size: 11px;
+}
+
+.app-shell .profile strong {
+  display: block;
+  color: #27282d;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.app-shell .profile span {
+  display: block;
+  margin-top: 2px;
+  color: #9a9da5;
+  font-size: 9px;
+}
+
+.app-shell .page-heading {
+  align-items: flex-end;
+  margin-bottom: 22px;
+  gap: 24px;
+}
+
+.app-shell .page-heading h1,
+.app-shell .settings-card h1 {
+  margin: 0;
+  color: #17181c;
+  font-size: 30px;
+  font-weight: 760;
+  letter-spacing: -.9px;
+  line-height: 1.1;
+}
+
+.app-shell .page-heading p,
+.app-shell .settings-card > p {
+  margin-top: 7px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.app-shell .eyebrow {
+  margin: 0 0 7px;
+  color: #a0a3ab;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .12em;
+}
+
+.app-shell .heading-actions {
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.app-shell .primary-button,
+.app-shell .secondary-button,
+.app-shell .ai-menu-button,
+.app-shell .danger-button,
+.app-shell .add-dish-button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 680;
+  box-shadow: none;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.app-shell .primary-button {
+  background: #17181c;
+  color: #fff;
+  border: 1px solid #17181c;
+}
+
+.app-shell .primary-button:hover {
+  background: #2a2b30;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(0,0,0,.10);
+}
+
+.app-shell .secondary-button {
+  background: #fff;
+  color: #35363c;
+  border: 1px solid var(--ui-line-strong);
+}
+
+.app-shell .secondary-button:hover {
+  background: #fafbfc;
+  border-color: #cfd2d9;
+}
+
+.app-shell .ai-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent);
+  border: 1px solid #e1dbff;
+}
+
+.app-shell .ai-menu-button:hover {
+  background: #e9e4ff;
+  transform: translateY(-1px);
+}
+
+.app-shell .danger-button,
+.app-shell .card-delete {
+  background: #fff5f5;
+  color: #b53d45;
+  border: 1px solid #f3dfe1;
+}
+
+/* Dashboard */
+.app-shell .welcome-card,
+.app-shell .director-hero {
+  position: relative;
+  min-height: 180px;
+  padding: 28px 30px;
+  border: 1px solid #e3e5ea;
+  border-radius: 18px;
+  background: #17181c;
+  box-shadow: 0 10px 28px rgba(17,18,22,.08);
+  overflow: hidden;
+}
+
+.app-shell .welcome-card::after,
+.app-shell .director-hero::after {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  right: -90px;
+  top: -150px;
+  border-radius: 50%;
+  background: rgba(108,75,244,.28);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.app-shell .welcome-card > div:first-child,
+.app-shell .director-hero > div:first-child {
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell .welcome-card .card-label,
+.app-shell .director-hero .card-label {
+  color: rgba(255,255,255,.52);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .12em;
+}
+
+.app-shell .welcome-card h1,
+.app-shell .director-hero h1 {
+  margin-top: 9px;
+  color: #fff;
+  font-size: 25px;
+  line-height: 1.12;
+  letter-spacing: -.7px;
+}
+
+.app-shell .welcome-card p,
+.app-shell .director-hero p {
+  max-width: 520px;
+  margin-top: 8px;
+  color: rgba(255,255,255,.63);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.app-shell .welcome-card .primary-button,
+.app-shell .director-hero .primary-button {
+  margin-top: 20px;
+  background: #fff;
+  color: #17181c;
+  border-color: #fff;
+}
+
+.app-shell .welcome-mark,
+.app-shell .hero-logo {
+  position: absolute;
+  z-index: 1;
+  right: 30px;
+  bottom: 20px;
+  width: 86px;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 24px;
+  color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.07);
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.app-shell .dashboard-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.app-shell .dashboard-card {
+  min-height: 108px;
+  padding: 18px 20px;
+  border: 1px solid var(--ui-line);
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.app-shell .dashboard-card:hover {
+  border-color: #d8dae1;
+  box-shadow: 0 8px 24px rgba(0,0,0,.035);
+}
+
+.app-shell .dashboard-card > span {
+  color: #9b9fa8;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .1em;
+}
+
+.app-shell .dashboard-card > strong {
+  display: block;
+  margin-top: 10px;
+  color: #1b1c20;
+  font-size: 25px;
+  font-weight: 760;
+  letter-spacing: -.8px;
+}
+
+.app-shell .dashboard-card > p {
+  margin-top: 4px;
+  color: #888c95;
+  font-size: 10px;
+}
+
+/* Restaurants / licenses / settings */
+.app-shell .restaurant-grid,
+.app-shell .license-list {
+  gap: 10px;
+}
+
+.app-shell .restaurant-card,
+.app-shell .license-card,
+.app-shell .settings-card,
+.app-shell .details-block,
+.app-shell .table-card,
+.app-shell .order-card {
+  border: 1px solid var(--ui-line);
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.app-shell .restaurant-card:hover,
+.app-shell .table-card:hover,
+.app-shell .order-card:hover {
+  border-color: #d9dce2;
+  box-shadow: 0 8px 24px rgba(0,0,0,.035);
+}
+
+.app-shell .restaurant-accent {
+  height: 4px;
+  border-radius: 15px 15px 0 0;
+}
+
+.app-shell .restaurant-card-body {
+  padding: 17px;
+}
+
+.app-shell .restaurant-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: #f1f2f5;
+  color: #45474e;
+  font-size: 12px;
+}
+
+.app-shell .restaurant-info h3 {
+  color: #25262b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.app-shell .restaurant-info p,
+.app-shell .restaurant-info > span {
+  color: #8a8e97;
+  font-size: 10px;
+}
+
+.app-shell .license-badge {
+  display: inline-flex;
+  margin-top: 9px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #f0f8f2;
+  color: #3d8150;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.app-shell .settings-card,
+.app-shell .details-block {
+  padding: 20px;
+}
+
+.app-shell .form-section {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--ui-line);
+}
+
+.app-shell .form-section:last-child {
+  border-bottom: 0;
+}
+
+.app-shell .input-group {
+  margin-bottom: 14px;
+}
+
+.app-shell .input-group label,
+.app-shell .color-row label {
+  margin-bottom: 6px;
+  color: #646872;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.app-shell .input-group input,
+.app-shell .details-edit input,
+.app-shell .password-section input,
+.app-shell .details-edit textarea,
+.app-shell textarea,
+.app-shell select {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: #27282d;
+  font-size: 12px;
+  outline: none;
+  box-shadow: none;
+}
+
+.app-shell textarea,
+.app-shell .details-edit textarea {
+  min-height: 90px;
+  padding: 11px 12px;
+}
+
+.app-shell .input-group input:focus,
+.app-shell .details-edit input:focus,
+.app-shell .password-section input:focus,
+.app-shell textarea:focus,
+.app-shell select:focus {
+  border-color: #bdb4f7;
+  box-shadow: 0 0 0 3px rgba(108,75,244,.08);
+}
+
+/* Menu */
+.app-shell .menu-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.app-shell .menu-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.app-shell .menu-search {
+  width: min(440px, 100%);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: #8b8f98;
+  box-shadow: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.app-shell .menu-search:focus-within {
+  border-color: #bdb4f7;
+  box-shadow: 0 0 0 3px rgba(108,75,244,.08);
+}
+
+.app-shell .menu-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #292a2f;
+  font-size: 11px;
+}
+
+.app-shell .menu-search input::placeholder,
+.app-shell .order-search::placeholder {
+  color: #a0a4ad;
+}
+
+.app-shell .menu-toolbar-count {
+  margin-left: auto;
+  color: #9a9ea7;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.app-shell .heading-actions .secondary-button,
+.app-shell .heading-actions .primary-button,
+.app-shell .heading-actions .ai-menu-button {
+  min-width: 128px;
+}
+
+.app-shell .category-panel {
+  padding: 9px 11px;
+  border: 1px solid var(--ui-line);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.app-shell .category-row {
+  gap: 6px;
+}
+
+.app-shell .category-item {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #777b84;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.app-shell .category-item:hover {
+  background: #f5f5f7;
+}
+
+.app-shell .category-row.active .category-item,
+.app-shell .category-item.active {
+  background: #f0edff;
+  border-color: #e2dcff;
+  color: #6345df;
+}
+
+.app-shell .dish-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.app-shell .dish-card {
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--ui-line);
+  border-radius: 15px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: none;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.app-shell .dish-card:hover {
+  border-color: #d9dce2;
+  box-shadow: 0 8px 22px rgba(0,0,0,.04);
+  transform: translateY(-1px);
+}
+
+.app-shell .dish-image {
+  width: 100%;
+  height: 142px;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.app-shell .dish-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.app-shell .dish-image-placeholder {
+  height: 100%;
+  border-radius: 0;
+  background: #f2f3f5;
+}
+
+.app-shell .dish-body {
+  min-width: 0;
+  padding: 13px 14px 12px;
+}
+
+.app-shell .dish-category {
+  color: #9b9fa8;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.app-shell .dish-body h3 {
+  margin-top: 5px;
+  color: #24252a;
+  font-size: 13px;
+  line-height: 1.25;
+  letter-spacing: -.15px;
+}
+
+.app-shell .dish-body > p {
+  margin-top: 5px;
+  color: #858992;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.app-shell .dish-ingredients {
+  margin-top: 6px;
+  color: #a0a4ad;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.app-shell .dish-bottom {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f1f3;
+}
+
+.app-shell .dish-bottom > strong {
+  color: #17181c;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.app-shell .dish-actions {
+  gap: 4px;
+}
+
+.app-shell .dish-actions button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--ui-line);
+  border-radius: 9px;
+  background: #fafbfc;
+  color: #686c75;
+}
+
+/* Tables */
+.app-shell .table-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.app-shell .table-card {
+  padding: 16px;
+}
+
+.app-shell .table-top {
+  align-items: flex-start;
+}
+
+.app-shell .table-number {
+  color: #202126;
+  font-size: 21px;
+  letter-spacing: -.5px;
+}
+
+.app-shell .table-url,
+.app-shell .qr-link {
+  margin-top: 8px;
+  color: #a0a4ad;
+  font-size: 9px;
+}
+
+.app-shell .table-actions {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 5px;
+}
+
+.app-shell .table-actions button {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 7px;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-shell .qr-box {
+  padding: 15px;
+  border: 1px solid var(--ui-line);
+  border-radius: 12px;
+}
+
+/* Orders */
+.app-shell .orders-heading {
+  align-items: flex-end;
+}
+
+.app-shell .orders-view-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--ui-line);
+  border-radius: 11px;
+  background: #fff;
+}
+
+.app-shell .orders-view-tabs button {
+  min-width: 102px;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #858992;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.app-shell .orders-view-tabs button.active {
+  background: #17181c;
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(0,0,0,.10);
+}
+
+.app-shell .orders-view-tabs b {
+  margin-left: 4px;
+  font-size: 9px;
+  opacity: .65;
+}
+
+.app-shell .orders-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.app-shell .order-search,
+.app-shell .order-filter,
+.app-shell .order-date-wrap {
+  height: 38px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: #36373d;
+  box-shadow: none;
+}
+
+.app-shell .order-search {
+  width: min(330px, 100%);
+  padding: 0 12px;
+  outline: none;
+  font-size: 10px;
+}
+
+.app-shell .order-search:focus {
+  border-color: #bdb4f7;
+  box-shadow: 0 0 0 3px rgba(108,75,244,.08);
+}
+
+.app-shell .order-filter {
+  min-width: 120px;
+  padding: 0 11px;
+  outline: none;
+  font-size: 10px;
+}
+
+.app-shell .order-date-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 92px;
+  padding: 0 11px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.app-shell .order-date-wrap > span {
+  color: #656971;
+  font-size: 10px;
+  font-weight: 650;
+  pointer-events: none;
+}
+
+.app-shell .order-date {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.app-shell .orders-toolbar > .secondary-button {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.app-shell .orders-list {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.app-shell .order-card {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) 130px 110px 105px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 15px;
+}
+
+.app-shell .order-card:hover {
+  transform: none;
+}
+
+.app-shell .order-main {
+  min-width: 0;
+}
+
+.app-shell .order-number {
+  min-width: 54px;
+  color: #17181c;
+  font-size: 16px;
+  font-weight: 760;
+  letter-spacing: -.3px;
+}
+
+.app-shell .order-main h3 {
+  color: #303137;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.app-shell .order-main p {
+  margin-top: 3px;
+  color: #9b9fa7;
+  font-size: 9px;
+}
+
+.app-shell .order-items-count {
+  margin: 0;
+  color: #898d96;
+  font-size: 9px;
+}
+
+.app-shell .order-total {
+  margin: 0;
+  color: #202126;
+  font-size: 13px;
+  font-weight: 750;
+  text-align: right;
+}
+
+.app-shell .order-status {
+  justify-self: end;
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+/* Modals */
+.app-shell .modal-overlay {
+  background: rgba(19,20,24,.34);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.app-shell .modal,
+.app-shell .large-modal,
+.app-shell .ai-import-modal,
+.app-shell .order-detail-modal {
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 18px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 24px 70px rgba(0,0,0,.16);
+}
+
+.app-shell .modal-header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ui-line);
+}
+
+.app-shell .modal-header h2 {
+  color: #1b1c20;
+  font-size: 16px;
+  letter-spacing: -.3px;
+}
+
+.app-shell .modal-subtitle,
+.app-shell .order-modal-subtitle {
+  color: #8d919a;
+  font-size: 10px;
+}
+
+.app-shell .modal-actions {
+  gap: 7px;
+  padding-top: 16px;
+}
+
+.app-shell .close-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--ui-line);
+  border-radius: 9px;
+  background: #fafbfc;
+  color: #666a73;
+}
+
+/* Empty states */
+.app-shell .empty-state {
+  padding: 48px 20px;
+  border: 1px dashed #dfe2e7;
+  border-radius: 15px;
+  background: rgba(255,255,255,.55);
+}
+
+.app-shell .empty-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #f0edff;
+  color: var(--ui-accent);
+}
+
+.app-shell .empty-state h3 {
+  margin-top: 13px;
+  color: #34353a;
+  font-size: 13px;
+}
+
+.app-shell .empty-state p {
+  margin-top: 5px;
+  color: #9498a1;
+  font-size: 10px;
+}
+
+/* Keep the customer menu and live KDS visually independent. */
+.app-shell .customer-page,
+.app-shell .customer-content,
+.app-shell .customer-bottom-bar {
+  font-family: inherit;
+}
+
+/* =======================================================
+   MOBILE — same design language, redesigned for touch
+======================================================= */
+@media (max-width: 800px) {
+  .app-shell {
+    background: #f6f7f9;
+  }
+
+  .app-shell .sidebar {
+    display: none;
+  }
+
+  .app-shell .main-content {
+    width: 100%;
+    padding: 0 14px calc(86px + env(safe-area-inset-bottom));
+  }
+
+  .app-shell .topbar {
+    min-height: 58px;
+    margin: 0 -14px 22px;
+    padding: 0 14px;
+  }
+
+  .app-shell .topbar h2 {
+    font-size: 13px;
+  }
+
+  .app-shell .profile {
+    padding: 4px 6px;
+  }
+
+  .app-shell .profile span {
+    display: none;
+  }
+
+  .app-shell .page-heading,
+  .app-shell .orders-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 13px;
+    margin-bottom: 16px;
+  }
+
+  .app-shell .page-heading h1,
+  .app-shell .settings-card h1 {
+    font-size: 25px;
+  }
+
+  .app-shell .page-heading p {
+    font-size: 11px;
+  }
+
+  .app-shell .heading-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 7px;
+  }
+
+  .app-shell .heading-actions .ai-menu-button {
+    grid-column: 1 / -1;
+  }
+
+  .app-shell .heading-actions .primary-button,
+  .app-shell .heading-actions .secondary-button,
+  .app-shell .heading-actions .ai-menu-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    border-radius: 11px;
+    padding: 0 9px;
+  }
+
+  .app-shell .welcome-card,
+  .app-shell .director-hero {
+    min-height: 205px;
+    padding: 22px;
+    border-radius: 17px;
+  }
+
+  .app-shell .welcome-card h1,
+  .app-shell .director-hero h1 {
+    max-width: 75%;
+    font-size: 23px;
+  }
+
+  .app-shell .welcome-mark,
+  .app-shell .hero-logo {
+    right: 18px;
+    bottom: 18px;
+    width: 62px;
+    height: 62px;
+    border-radius: 18px;
+    font-size: 22px;
+  }
+
+  .app-shell .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .app-shell .dashboard-card {
+    min-height: 82px;
+    padding: 15px;
+    border-radius: 13px;
+  }
+
+  .app-shell .dashboard-card > strong {
+    margin-top: 6px;
+    font-size: 22px;
+  }
+
+  .app-shell .menu-toolbar {
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 9px;
+  }
+
+  .app-shell .menu-search {
+    height: 40px;
+    min-width: 0;
+    border-radius: 11px;
+  }
+
+  .app-shell .menu-toolbar-count {
+    display: none;
+  }
+
+  .app-shell .category-panel {
+    overflow-x: auto;
+    scrollbar-width: none;
+    border: 0;
+    padding: 2px 0;
+    background: transparent;
+  }
+
+  .app-shell .category-panel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-shell .category-row {
+    flex: 0 0 auto;
+  }
+
+  .app-shell .dish-grid {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .app-shell .dish-card {
+    display: grid;
+    grid-template-columns: 82px minmax(0,1fr);
+    min-height: 98px;
+    border-radius: 14px;
+  }
+
+  .app-shell .dish-image {
+    width: 82px;
+    height: 98px;
+  }
+
+  .app-shell .dish-body {
+    padding: 11px 11px 9px 0;
+  }
+
+  .app-shell .dish-body h3 {
+    font-size: 12px;
+  }
+
+  .app-shell .dish-body > p {
+    font-size: 9px;
+  }
+
+  .app-shell .dish-bottom {
+    margin-top: 7px;
+    padding-top: 7px;
+  }
+
+  .app-shell .dish-actions button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .app-shell .table-grid,
+  .app-shell .restaurant-grid,
+  .app-shell .license-list {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell .orders-view-tabs {
+    width: 100%;
+  }
+
+  .app-shell .orders-view-tabs button {
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+  }
+
+  .app-shell .orders-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto auto;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  .app-shell .order-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .app-shell .order-filter,
+  .app-shell .order-date-wrap,
+  .app-shell .orders-toolbar > .secondary-button {
+    min-width: 0;
+    height: 38px;
+  }
+
+  .app-shell .order-filter {
+    width: 92px;
+  }
+
+  .app-shell .order-date-wrap {
+    min-width: 68px;
+    width: 68px;
+  }
+
+  .app-shell .orders-list {
+    gap: 7px;
+  }
+
+  .app-shell .order-card {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    min-height: 76px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .app-shell .order-items-count {
+    grid-column: 1;
+  }
+
+  .app-shell .order-total {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .app-shell .order-status {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .app-shell .mobile-bar {
+    border: 1px solid rgba(224,226,232,.9);
+    background: rgba(255,255,255,.91);
+    box-shadow: 0 -8px 28px rgba(0,0,0,.07);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+
+  .app-shell .mobile-bar button.mobile-active {
+    background: #f0edff;
+    color: var(--ui-accent);
+  }
+}
+
+@media (max-width: 420px) {
+  .app-shell .main-content {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+
+  .app-shell .topbar {
+    margin-left: -11px;
+    margin-right: -11px;
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+
+  .app-shell .orders-toolbar {
+    grid-template-columns: minmax(0,1fr) 82px 62px;
+  }
+
+  .app-shell .order-filter {
+    width: 82px;
+  }
+
+  .app-shell .order-date-wrap {
+    width: 62px;
+    min-width: 62px;
+  }
+}
