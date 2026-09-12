@@ -10612,3 +10612,13 @@ button {
   object-fit: contain !important;
   margin: 0 auto 28px !important;
 }
+
+/* LOGIN LOGO — только страница входа */
+.auth-card .login-festo-logo-image {
+  display: block !important;
+  width: 180px !important;
+  height: auto !important;
+  max-height: 72px !important;
+  object-fit: contain !important;
+  margin: 0 auto 28px !important;
+}

@@ -276,9 +276,11 @@ function Auth({ restaurants, onLogin }) {
       <div className="auth-glow glow-two" />
 
       <form className="auth-card" onSubmit={submit}>
-        <div className="login-festo-logo" aria-label="FESTO">
-          FESTO
-        </div>
+        <img
+          className="login-festo-logo-image"
+          src="/festo-logo.png"
+          alt="FESTO"
+        />
 
         <h1>Добро пожаловать</h1>
 
