@@ -10592,3 +10592,23 @@ button {
     margin-bottom: 24px !important;
   }
 }
+
+/* FESTO logo — login */
+.auth-festo-logo {
+  display: block !important;
+  width: 170px !important;
+  height: auto !important;
+  max-width: 100% !important;
+  object-fit: contain !important;
+  margin: 0 auto 28px !important;
+}
+
+/* LOGIN — только страница входа FESTO */
+.auth-card .auth-logo-image {
+  display: block !important;
+  width: 180px !important;
+  height: auto !important;
+  max-height: 70px !important;
+  object-fit: contain !important;
+  margin: 0 auto 28px !important;
+}
