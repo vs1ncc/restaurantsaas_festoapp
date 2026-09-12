@@ -8397,3 +8397,1068 @@ button {
   }
 }
 
+
+/* =========================================================
+   FESTO CUSTOMER — TWO PAGE GLASS UI
+   MENU + MY ORDER
+   Visual only. Order logic is untouched.
+   ========================================================= */
+
+.customer-page {
+  min-height: 100svh !important;
+  box-sizing: border-box !important;
+
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(130, 105, 255, 0.16),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 90% 82%,
+      rgba(190, 200, 255, 0.22),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      #f7f7ff 0%,
+      #eef0ff 48%,
+      #f8f8ff 100%
+    ) !important;
+
+  color: #17171c !important;
+  padding-bottom: 118px !important;
+}
+
+/* =========================
+   GLASS TOP RESTAURANT CARD
+   ========================= */
+
+.customer-header {
+  position: relative !important;
+
+  width: calc(100% - 40px) !important;
+  max-width: 1100px !important;
+
+  min-height: 96px !important;
+  margin: 28px auto 0 !important;
+  padding: 18px 22px !important;
+
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 30px !important;
+
+  background: rgba(255,255,255,.62) !important;
+
+  backdrop-filter: blur(30px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(150%) !important;
+
+  box-shadow:
+    0 18px 60px rgba(76,68,145,.10),
+    inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+.customer-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.customer-restaurant-logo,
+.customer-logo {
+  width: 58px !important;
+  height: 58px !important;
+
+  flex: 0 0 58px !important;
+
+  border-radius: 19px !important;
+
+  object-fit: cover !important;
+
+  box-shadow:
+    0 8px 24px rgba(40,35,70,.10) !important;
+}
+
+.customer-logo {
+  display: grid !important;
+  place-items: center !important;
+
+  background: #15151b !important;
+  color: #fff !important;
+
+  font-size: 28px !important;
+  font-weight: 900 !important;
+}
+
+.customer-brand-text {
+  min-width: 0 !important;
+}
+
+.customer-brand-text .customer-eyebrow {
+  margin: 0 0 5px !important;
+}
+
+.customer-table {
+  font-size: 18px !important;
+  font-weight: 650 !important;
+  color: #25252b !important;
+}
+
+/* =========================
+   EYEBROW
+   ========================= */
+
+.customer-eyebrow {
+  color: #77758a !important;
+
+  font-size: 13px !important;
+  line-height: 1.1 !important;
+
+  font-weight: 800 !important;
+  letter-spacing: 4px !important;
+
+  text-transform: uppercase !important;
+}
+
+/* =========================
+   MENU CONTENT
+   ========================= */
+
+.customer-main {
+  width: calc(100% - 56px) !important;
+  max-width: 1050px !important;
+
+  margin: 30px auto 0 !important;
+}
+
+.customer-title {
+  padding: 8px 0 24px !important;
+}
+
+.customer-title h1 {
+  margin: 10px 0 0 !important;
+
+  max-width: 720px !important;
+
+  font-size: clamp(42px, 7vw, 72px) !important;
+  line-height: .92 !important;
+
+  letter-spacing: -4px !important;
+  font-weight: 900 !important;
+}
+
+/* =========================
+   CATEGORY PILLS
+   ========================= */
+
+.customer-categories {
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 12px !important;
+
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+
+  padding: 0 0 28px !important;
+}
+
+.customer-categories::-webkit-scrollbar {
+  display: none !important;
+}
+
+.customer-category {
+  flex: 0 0 auto !important;
+
+  height: 52px !important;
+
+  padding: 0 25px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 20px !important;
+
+  background: rgba(255,255,255,.62) !important;
+
+  color: #6e6d80 !important;
+
+  font-size: 16px !important;
+  font-weight: 700 !important;
+
+  box-shadow:
+    0 8px 24px rgba(70,65,120,.05),
+    inset 0 1px 0 rgba(255,255,255,.85) !important;
+
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+}
+
+.customer-category.active {
+  color: #fff !important;
+
+  border-color: transparent !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7750ff 0%,
+      #6336e9 100%
+    ) !important;
+
+  box-shadow:
+    0 12px 28px rgba(105,70,240,.25) !important;
+}
+
+/* =========================
+   MENU DISHES
+   ========================= */
+
+.customer-dishes {
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 16px !important;
+}
+
+.customer-dish {
+  width: 100% !important;
+  min-height: 170px !important;
+
+  box-sizing: border-box !important;
+
+  display: grid !important;
+  grid-template-columns: 150px minmax(0,1fr) !important;
+
+  gap: 20px !important;
+
+  padding: 16px !important;
+
+  border: 1px solid rgba(255,255,255,.94) !important;
+  border-radius: 28px !important;
+
+  background: rgba(255,255,255,.66) !important;
+
+  backdrop-filter: blur(22px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+
+  box-shadow:
+    0 16px 42px rgba(70,65,120,.07),
+    inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+.customer-dish-image {
+  width: 150px !important;
+  height: 138px !important;
+
+  border-radius: 22px !important;
+
+  overflow: hidden !important;
+
+  background: rgba(255,255,255,.72) !important;
+}
+
+.customer-dish-image img {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: cover !important;
+
+  display: block !important;
+}
+
+.customer-image-placeholder {
+  width: 100% !important;
+  height: 100% !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  background: #15151b !important;
+  color: #fff !important;
+
+  font-size: 38px !important;
+  font-weight: 900 !important;
+}
+
+.customer-dish-info {
+  min-width: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  padding: 6px 2px 3px 0 !important;
+}
+
+.customer-dish-info h2 {
+  margin: 0 0 7px !important;
+
+  font-size: 22px !important;
+  line-height: 1.08 !important;
+
+  letter-spacing: -.7px !important;
+  font-weight: 850 !important;
+}
+
+.customer-dish-info p {
+  margin: 0 !important;
+
+  max-width: 520px !important;
+
+  color: #73748c !important;
+
+  font-size: 16px !important;
+  line-height: 1.42 !important;
+}
+
+.customer-dish-bottom {
+  margin-top: auto !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  gap: 16px !important;
+}
+
+.customer-dish-bottom strong {
+  font-size: 21px !important;
+  font-weight: 850 !important;
+}
+
+.add-dish-button {
+  width: 56px !important;
+  height: 56px !important;
+
+  min-width: 56px !important;
+  min-height: 56px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 19px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7952ff 0%,
+      #6237e8 100%
+    ) !important;
+
+  color: #fff !important;
+
+  font-size: 30px !important;
+  font-weight: 500 !important;
+
+  box-shadow:
+    0 12px 25px rgba(103,66,235,.24) !important;
+}
+
+/* =========================
+   CHECKOUT PAGE
+   ========================= */
+
+.customer-checkout-page {
+  padding-bottom: 40px !important;
+}
+
+.customer-checkout-header {
+  width: calc(100% - 40px) !important;
+  max-width: 760px !important;
+
+  min-height: 88px !important;
+
+  margin: 24px auto 0 !important;
+  padding: 12px 16px !important;
+
+  box-sizing: border-box !important;
+
+  display: grid !important;
+  grid-template-columns: 58px minmax(0,1fr) auto !important;
+
+  align-items: center !important;
+
+  gap: 14px !important;
+
+  border: 1px solid rgba(255,255,255,.94) !important;
+  border-radius: 28px !important;
+
+  background: rgba(255,255,255,.64) !important;
+
+  backdrop-filter: blur(28px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
+
+  box-shadow:
+    0 18px 55px rgba(70,65,120,.09),
+    inset 0 1px 0 rgba(255,255,255,.92) !important;
+}
+
+.customer-checkout-back {
+  width: 58px !important;
+  height: 58px !important;
+
+  min-width: 58px !important;
+  min-height: 58px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  padding: 0 !important;
+
+  border: 1px solid rgba(255,255,255,.95) !important;
+  border-radius: 20px !important;
+
+  background: rgba(255,255,255,.42) !important;
+
+  color: #643de8 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+.customer-checkout-header > div:nth-child(2) {
+  min-width: 0 !important;
+}
+
+.customer-checkout-header strong {
+  display: block !important;
+
+  margin-top: 4px !important;
+
+  font-size: 18px !important;
+  font-weight: 750 !important;
+}
+
+.customer-checkout-mini-total {
+  font-size: 21px !important;
+  font-weight: 850 !important;
+
+  color: #6238e4 !important;
+
+  white-space: nowrap !important;
+}
+
+.customer-checkout-content {
+  width: min(680px, calc(100% - 40px)) !important;
+
+  margin: 0 auto !important;
+  padding: 42px 0 50px !important;
+
+  box-sizing: border-box !important;
+}
+
+.customer-checkout-content h1 {
+  margin: 10px 0 30px !important;
+
+  font-size: clamp(42px, 8vw, 64px) !important;
+  line-height: .92 !important;
+
+  letter-spacing: -3.5px !important;
+  font-weight: 900 !important;
+}
+
+.customer-checkout-content h2 {
+  letter-spacing: -.8px !important;
+}
+
+/* =========================
+   REAL CART ROWS
+   ========================= */
+
+.customer-order-list,
+.customer-review-card {
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 14px !important;
+
+  width: 100% !important;
+}
+
+.customer-order-row,
+.customer-review-row {
+  width: 100% !important;
+
+  min-height: 122px !important;
+
+  box-sizing: border-box !important;
+
+  display: grid !important;
+
+  grid-template-columns: minmax(0,1fr) auto !important;
+
+  align-items: center !important;
+
+  gap: 18px !important;
+
+  padding: 18px 20px !important;
+
+  border: 1px solid rgba(255,255,255,.94) !important;
+  border-radius: 25px !important;
+
+  background: rgba(255,255,255,.67) !important;
+
+  backdrop-filter: blur(22px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+
+  box-shadow:
+    0 14px 36px rgba(70,65,120,.065),
+    inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+.customer-order-row-main,
+.customer-review-row > div:first-child {
+  min-width: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 6px !important;
+}
+
+.customer-order-row-main strong,
+.customer-review-row strong {
+  font-size: 19px !important;
+  line-height: 1.15 !important;
+
+  font-weight: 800 !important;
+}
+
+.customer-order-row-main span,
+.customer-review-row span {
+  color: #77778d !important;
+
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+}
+
+/* =========================
+   QUANTITY — − 1 +
+   ========================= */
+
+.customer-quantity {
+  display: inline-flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 12px !important;
+
+  white-space: nowrap !important;
+}
+
+.customer-quantity button {
+  width: 52px !important;
+  height: 52px !important;
+
+  min-width: 52px !important;
+  min-height: 52px !important;
+
+  padding: 0 !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border: 1px solid rgba(255,255,255,.96) !important;
+  border-radius: 18px !important;
+
+  background: rgba(255,255,255,.70) !important;
+
+  color: #6238e7 !important;
+
+  font-size: 25px !important;
+  font-weight: 700 !important;
+
+  box-shadow:
+    0 7px 18px rgba(70,65,120,.06),
+    inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+.customer-quantity span {
+  width: 28px !important;
+
+  text-align: center !important;
+
+  color: #17171c !important;
+
+  font-size: 18px !important;
+  font-weight: 750 !important;
+}
+
+/* =========================
+   COMMENT
+   ========================= */
+
+.customer-comment {
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 11px !important;
+
+  margin-top: 26px !important;
+}
+
+.customer-comment > span,
+.customer-comment > label {
+  color: #26252c !important;
+
+  font-size: 17px !important;
+  font-weight: 650 !important;
+}
+
+.customer-comment textarea,
+.customer-checkout-content textarea {
+  width: 100% !important;
+
+  min-height: 150px !important;
+
+  box-sizing: border-box !important;
+
+  padding: 20px !important;
+
+  resize: vertical !important;
+
+  border: 1px solid rgba(255,255,255,.95) !important;
+  border-radius: 26px !important;
+
+  outline: none !important;
+
+  background: rgba(255,255,255,.70) !important;
+
+  color: #17171c !important;
+
+  font: inherit !important;
+  font-size: 17px !important;
+  line-height: 1.45 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.85),
+    0 12px 34px rgba(70,65,120,.055) !important;
+
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.customer-comment textarea::placeholder,
+.customer-checkout-content textarea::placeholder {
+  color: #a09eaa !important;
+}
+
+.customer-comment textarea:focus,
+.customer-checkout-content textarea:focus {
+  border-color: rgba(103,66,235,.35) !important;
+
+  box-shadow:
+    0 0 0 4px rgba(103,66,235,.07),
+    0 12px 34px rgba(70,65,120,.07) !important;
+}
+
+/* =========================
+   TOTAL
+   ========================= */
+
+.customer-total-row {
+  width: 100% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  margin: 22px 0 !important;
+
+  font-size: 18px !important;
+}
+
+.customer-total-row strong {
+  font-size: 26px !important;
+  font-weight: 900 !important;
+}
+
+/* =========================
+   PRIMARY ACTION
+   ========================= */
+
+.customer-primary-button {
+  width: 100% !important;
+
+  min-height: 60px !important;
+
+  padding: 0 24px !important;
+
+  border: 0 !important;
+  border-radius: 20px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7b52ff 0%,
+      #6236e8 100%
+    ) !important;
+
+  color: #fff !important;
+
+  font-size: 18px !important;
+  font-weight: 800 !important;
+
+  box-shadow:
+    0 14px 32px rgba(103,66,235,.25),
+    inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+
+.customer-primary-button:disabled {
+  opacity: .55 !important;
+}
+
+/* =========================
+   FINAL NOTE
+   ========================= */
+
+.customer-final-note {
+  margin: 18px 0 0 !important;
+
+  color: #737286 !important;
+
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+}
+
+/* =========================
+   BOTTOM GLASS NAV
+   ========================= */
+
+.customer-bottom-bar {
+  position: fixed !important;
+
+  left: 50% !important;
+  bottom: 16px !important;
+
+  transform: translateX(-50%) !important;
+
+  z-index: 100 !important;
+
+  width: min(550px, calc(100% - 40px)) !important;
+
+  min-height: 82px !important;
+
+  padding: 8px !important;
+
+  box-sizing: border-box !important;
+
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+
+  gap: 6px !important;
+
+  border: 1px solid rgba(255,255,255,.95) !important;
+  border-radius: 28px !important;
+
+  background: rgba(255,255,255,.68) !important;
+
+  backdrop-filter: blur(28px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
+
+  box-shadow:
+    0 22px 65px rgba(40,35,75,.16),
+    inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+.customer-bottom-bar button {
+  min-height: 64px !important;
+
+  border: 0 !important;
+  border-radius: 21px !important;
+
+  background: transparent !important;
+
+  color: #727188 !important;
+
+  font-size: 16px !important;
+  font-weight: 650 !important;
+}
+
+.customer-bottom-bar button.active {
+  background: rgba(103,66,235,.10) !important;
+  color: #6238e7 !important;
+}
+
+.customer-bottom-order-meta {
+  display: inline-flex !important;
+
+  align-items: center !important;
+
+  gap: 7px !important;
+}
+
+.customer-bottom-badge {
+  display: inline-grid !important;
+  place-items: center !important;
+
+  min-width: 20px !important;
+  height: 20px !important;
+
+  padding: 0 5px !important;
+
+  border-radius: 999px !important;
+
+  background: #ef3150 !important;
+  color: #fff !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 640px) {
+
+  .customer-page {
+    padding-bottom: 112px !important;
+  }
+
+  .customer-header {
+    width: calc(100% - 32px) !important;
+
+    min-height: 94px !important;
+
+    margin-top: 16px !important;
+
+    padding: 16px 18px !important;
+
+    border-radius: 27px !important;
+  }
+
+  .customer-brand {
+    gap: 14px !important;
+  }
+
+  .customer-restaurant-logo,
+  .customer-logo {
+    width: 56px !important;
+    height: 56px !important;
+
+    flex-basis: 56px !important;
+
+    border-radius: 18px !important;
+  }
+
+  .customer-table {
+    font-size: 17px !important;
+  }
+
+  .customer-main {
+    width: calc(100% - 48px) !important;
+    margin-top: 26px !important;
+  }
+
+  .customer-title {
+    padding-bottom: 22px !important;
+  }
+
+  .customer-title h1 {
+    font-size: 45px !important;
+    letter-spacing: -2.8px !important;
+  }
+
+  .customer-categories {
+    gap: 10px !important;
+    padding-bottom: 22px !important;
+  }
+
+  .customer-category {
+    height: 52px !important;
+    padding: 0 21px !important;
+    border-radius: 19px !important;
+  }
+
+  .customer-dishes {
+    gap: 14px !important;
+  }
+
+  .customer-dish {
+    min-height: 151px !important;
+
+    grid-template-columns: 136px minmax(0,1fr) !important;
+
+    gap: 14px !important;
+
+    padding: 13px !important;
+
+    border-radius: 25px !important;
+  }
+
+  .customer-dish-image {
+    width: 136px !important;
+    height: 125px !important;
+
+    border-radius: 20px !important;
+  }
+
+  .customer-dish-info h2 {
+    font-size: 19px !important;
+  }
+
+  .customer-dish-info p {
+    font-size: 14px !important;
+  }
+
+  .customer-dish-bottom strong {
+    font-size: 19px !important;
+  }
+
+  .add-dish-button {
+    width: 52px !important;
+    height: 52px !important;
+
+    min-width: 52px !important;
+    min-height: 52px !important;
+
+    border-radius: 18px !important;
+  }
+
+  .customer-checkout-header {
+    width: calc(100% - 32px) !important;
+
+    min-height: 82px !important;
+
+    margin-top: 14px !important;
+
+    padding: 10px 12px !important;
+
+    grid-template-columns: 52px minmax(0,1fr) auto !important;
+
+    gap: 11px !important;
+
+    border-radius: 25px !important;
+  }
+
+  .customer-checkout-back {
+    width: 52px !important;
+    height: 52px !important;
+
+    min-width: 52px !important;
+    min-height: 52px !important;
+
+    border-radius: 18px !important;
+  }
+
+  .customer-checkout-mini-total {
+    font-size: 18px !important;
+  }
+
+  .customer-checkout-content {
+    width: calc(100% - 48px) !important;
+
+    padding-top: 32px !important;
+  }
+
+  .customer-checkout-content h1 {
+    font-size: 45px !important;
+
+    letter-spacing: -2.8px !important;
+
+    margin-bottom: 25px !important;
+  }
+
+  .customer-order-row,
+  .customer-review-row {
+    min-height: 118px !important;
+
+    grid-template-columns: minmax(0,1fr) auto !important;
+
+    gap: 10px !important;
+
+    padding: 16px !important;
+
+    border-radius: 23px !important;
+  }
+
+  .customer-order-row-main strong,
+  .customer-review-row strong {
+    font-size: 17px !important;
+  }
+
+  .customer-order-row-main span,
+  .customer-review-row span {
+    font-size: 14px !important;
+  }
+
+  .customer-quantity {
+    gap: 7px !important;
+  }
+
+  .customer-quantity button {
+    width: 48px !important;
+    height: 48px !important;
+
+    min-width: 48px !important;
+    min-height: 48px !important;
+
+    border-radius: 16px !important;
+  }
+
+  .customer-quantity span {
+    width: 20px !important;
+    font-size: 17px !important;
+  }
+
+  .customer-comment {
+    margin-top: 22px !important;
+  }
+
+  .customer-comment textarea,
+  .customer-checkout-content textarea {
+    min-height: 148px !important;
+
+    padding: 18px !important;
+
+    border-radius: 23px !important;
+  }
+
+  .customer-total-row {
+    margin: 19px 0 !important;
+  }
+
+  .customer-total-row strong {
+    font-size: 24px !important;
+  }
+
+  .customer-primary-button {
+    min-height: 58px !important;
+
+    border-radius: 19px !important;
+  }
+
+  .customer-final-note {
+    font-size: 14px !important;
+  }
+
+  .customer-bottom-bar {
+    width: calc(100% - 32px) !important;
+
+    min-height: 76px !important;
+
+    bottom: 12px !important;
+
+    border-radius: 25px !important;
+  }
+
+  .customer-bottom-bar button {
+    min-height: 60px !important;
+
+    border-radius: 19px !important;
+
+    font-size: 15px !important;
+  }
+}
+

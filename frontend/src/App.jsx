@@ -3681,26 +3681,6 @@ function CustomerApp({
     );
   }
 
-  if (checkoutStep === "upsell") {
-    return (
-      <CustomerCheckoutLayout
-        publicRestaurant={publicRestaurant}
-        table={table}
-        cartCount={cartCount}
-        cartTotal={cartTotal}
-        onBack={() => setCheckoutStep("cart")}
-      >
-        <CustomerUpsellPage
-          dishes={upsellDishes}
-          cartTotal={cartTotal}
-          onAdd={addToCart}
-          onSkip={continueFromUpsell}
-          onContinue={continueFromUpsell}
-        />
-      </CustomerCheckoutLayout>
-    );
-  }
-
   if (checkoutStep === "review") {
     return (
       <CustomerCheckoutLayout
@@ -3708,7 +3688,7 @@ function CustomerApp({
         table={table}
         cartCount={cartCount}
         cartTotal={cartTotal}
-        onBack={() => setCheckoutStep("upsell")}
+        onBack={() => setCheckoutStep("cart")}
       >
         <CustomerReviewPage
           cart={cart}
