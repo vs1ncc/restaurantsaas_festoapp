@@ -1773,7 +1773,7 @@ function loadFestoTesseract() {
     }
     const script = document.createElement("script");
     script.dataset.festoTesseract = "1";
-    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js";
     script.async = true;
     script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error("OCR-модуль FESTO AI не найден."));
     script.onerror = () => reject(new Error("Не удалось загрузить OCR-модуль. Проверьте интернет-соединение и повторите попытку."));
@@ -1881,11 +1881,30 @@ function festoClusterColumns(lines, imageWidth) {
 
 async function festoRecognizeImage(file, onProgress) {
   const Tesseract = await loadFestoTesseract();
-  const result = await Tesseract.recognize(file, "rus+eng", {
-    logger: message => {
-      if (message?.status === "recognizing text" && Number.isFinite(message.progress)) onProgress?.(message.progress);
-    },
-  });
+  let result;
+  try {
+    result = await Tesseract.recognize(file, "rus+eng", {
+      logger: message => {
+        if (message?.status === "recognizing text" && Number.isFinite(message.progress)) onProgress?.(message.progress);
+      },
+      tessedit_pageseg_mode: 6,
+      preserve_interword_spaces: 1,
+    });
+  } catch (firstError) {
+    // Some browsers/CDN caches fail while loading one of the language packs.
+    // Retry with English OCR so the importer still works instead of silently dying.
+    try {
+      result = await Tesseract.recognize(file, "eng", {
+        logger: message => {
+          if (message?.status === "recognizing text" && Number.isFinite(message.progress)) onProgress?.(message.progress);
+        },
+        tessedit_pageseg_mode: 6,
+        preserve_interword_spaces: 1,
+      });
+    } catch (secondError) {
+      throw new Error(`FESTO AI не смог запустить OCR: ${secondError?.message || firstError?.message || "ошибка OCR"}`);
+    }
+  }
   const data = result?.data || {};
   const size = await festoImageSize(file);
   const imageWidth = size.width;

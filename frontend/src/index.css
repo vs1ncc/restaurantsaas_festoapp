@@ -6000,3 +6000,57 @@ button {
 @media (max-width: 800px) {
   .ai-review-image { width: 82px; height: 70px; flex-basis: 82px; }
 }
+
+
+/* MOBILE LIVE ORDERS — keep the button inside the glass top header. */
+@media (max-width: 800px) {
+  .app-shell .topbar {
+    position: relative !important;
+  }
+  .app-shell .topbar-actions {
+    position: absolute !important;
+    top: 50% !important;
+    right: 24px !important;
+    left: auto !important;
+    transform: translate(15%, -50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+  }
+  .app-shell .topbar-actions .live-orders-button {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 52px !important;
+    padding: 0 14px !important;
+    gap: 7px !important;
+    white-space: nowrap !important;
+  }
+  .app-shell .topbar-actions .profile {
+    display: none !important;
+  }
+  .app-shell .topbar h2 {
+    max-width: 42% !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-shell .topbar-actions {
+    right: 20px !important;
+  }
+  .app-shell .topbar-actions .live-orders-button {
+    height: 48px !important;
+    font-size: 11px !important;
+    padding: 0 11px !important;
+  }
+  .app-shell .topbar-actions .live-orders-button .live-count {
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
+  }
+}
