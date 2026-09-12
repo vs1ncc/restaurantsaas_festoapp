@@ -9608,3 +9608,430 @@ button {
   }
 }
 
+
+/* =========================================================
+   FESTO CUSTOMER — ORDER SUCCESS
+   Финальная страница после оформления заказа.
+   Только визуал.
+   ========================================================= */
+
+.customer-success-page {
+  min-height: 100svh !important;
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 32px 20px 120px !important;
+
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(108, 75, 244, .16),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 15% 90%,
+      rgba(170, 180, 255, .15),
+      transparent 38%
+    ),
+    #f4f4fb !important;
+
+  overflow: hidden !important;
+}
+
+/* ---------- GLASS CARD ---------- */
+
+.customer-success-card {
+  position: relative !important;
+
+  width: min(560px, 100%) !important;
+
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+
+  padding: 48px 36px 38px !important;
+
+  text-align: center !important;
+
+  border-radius: 36px !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.78),
+      rgba(255,255,255,.58)
+    ) !important;
+
+  backdrop-filter: blur(30px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(125%) !important;
+
+  box-shadow:
+    0 35px 90px rgba(55,48,105,.14),
+    0 10px 30px rgba(75,65,140,.07),
+    inset 0 1px 0 rgba(255,255,255,.96) !important;
+
+  animation: festo-success-card-in .55s cubic-bezier(.22,1,.36,1) both !important;
+}
+
+/* ---------- CHECK ICON ---------- */
+
+.customer-success-icon {
+  position: relative !important;
+
+  width: 104px !important;
+  height: 104px !important;
+
+  margin-bottom: 30px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border-radius: 32px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      #7b4cff 0%,
+      #6338e8 100%
+    ) !important;
+
+  color: #fff !important;
+
+  font-size: 58px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+
+  box-shadow:
+    0 22px 45px rgba(103,66,235,.28),
+    0 7px 18px rgba(103,66,235,.14),
+    inset 0 2px 0 rgba(255,255,255,.28) !important;
+
+  transform: scale(0) !important;
+
+  animation:
+    festo-success-check-pop
+    .75s
+    cubic-bezier(.16,1.35,.35,1)
+    .15s
+    forwards !important;
+}
+
+/* Светящийся ореол — появляется вместе с галочкой */
+.customer-success-icon::before {
+  content: "" !important;
+
+  position: absolute !important;
+  inset: -12px !important;
+
+  border-radius: 38px !important;
+
+  border: 1px solid rgba(108,75,244,.20) !important;
+
+  opacity: 0 !important;
+  transform: scale(.55) !important;
+
+  animation:
+    festo-success-ring
+    .8s
+    cubic-bezier(.16,1,.3,1)
+    .15s
+    forwards !important;
+}
+
+/* Мягкий свет внутри */
+.customer-success-icon::after {
+  content: "" !important;
+
+  position: absolute !important;
+  inset: 0 !important;
+
+  border-radius: inherit !important;
+
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      rgba(255,255,255,.32),
+      transparent 38%
+    ) !important;
+
+  pointer-events: none !important;
+}
+
+/* ---------- TEXT ---------- */
+
+.customer-success-card .customer-eyebrow {
+  margin: 0 0 13px !important;
+
+  color: #817e91 !important;
+
+  font-size: 14px !important;
+  font-weight: 850 !important;
+
+  letter-spacing: 5px !important;
+  line-height: 1.2 !important;
+}
+
+.customer-success-card h1 {
+  margin: 0 0 16px !important;
+
+  color: #17171b !important;
+
+  font-size: clamp(42px, 9vw, 58px) !important;
+  line-height: .98 !important;
+  letter-spacing: -2.8px !important;
+
+  font-weight: 900 !important;
+
+  animation:
+    festo-success-text-in
+    .55s
+    cubic-bezier(.22,1,.36,1)
+    .28s
+    both !important;
+}
+
+.customer-success-card > p {
+  margin: 0 !important;
+
+  max-width: 430px !important;
+
+  color: #575461 !important;
+
+  font-size: 18px !important;
+  line-height: 1.5 !important;
+
+  animation:
+    festo-success-text-in
+    .55s
+    cubic-bezier(.22,1,.36,1)
+    .36s
+    both !important;
+}
+
+/* ---------- ORDER NUMBER ---------- */
+
+.customer-success-order {
+  margin-top: 22px !important;
+  padding: 11px 17px !important;
+
+  border-radius: 16px !important;
+
+  border: 1px solid rgba(255,255,255,.92) !important;
+
+  background: rgba(255,255,255,.58) !important;
+
+  color: #777382 !important;
+
+  font-size: 14px !important;
+  font-weight: 700 !important;
+
+  box-shadow:
+    0 8px 22px rgba(70,65,120,.06),
+    inset 0 1px 0 rgba(255,255,255,.9) !important;
+
+  animation:
+    festo-success-text-in
+    .55s
+    cubic-bezier(.22,1,.36,1)
+    .42s
+    both !important;
+}
+
+/* ---------- RETURN BUTTON ---------- */
+
+.customer-success-card .customer-primary-button {
+  width: 100% !important;
+
+  min-height: 62px !important;
+
+  margin-top: 30px !important;
+
+  border: 0 !important;
+  border-radius: 22px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #754aff 0%,
+      #6339e7 100%
+    ) !important;
+
+  color: #fff !important;
+
+  font-size: 18px !important;
+  font-weight: 850 !important;
+
+  box-shadow:
+    0 18px 38px rgba(103,66,235,.24),
+    0 5px 12px rgba(103,66,235,.10),
+    inset 0 1px 0 rgba(255,255,255,.25) !important;
+
+  animation:
+    festo-success-button-in
+    .6s
+    cubic-bezier(.22,1,.36,1)
+    .48s
+    both !important;
+
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease !important;
+}
+
+.customer-success-card .customer-primary-button:hover {
+  transform: translateY(-2px) !important;
+
+  box-shadow:
+    0 22px 44px rgba(103,66,235,.28),
+    0 6px 14px rgba(103,66,235,.11),
+    inset 0 1px 0 rgba(255,255,255,.27) !important;
+}
+
+.customer-success-card .customer-primary-button:active {
+  transform: translateY(1px) scale(.985) !important;
+
+  box-shadow:
+    0 10px 22px rgba(103,66,235,.18),
+    inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+
+/* ---------- ANIMATIONS ---------- */
+
+@keyframes festo-success-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/*
+   Галочка буквально "вылетает" изнутри:
+   маленькая -> большая -> мягко садится на место.
+*/
+@keyframes festo-success-check-pop {
+  0% {
+    opacity: 0;
+    transform: scale(.05) rotate(-8deg);
+  }
+
+  45% {
+    opacity: 1;
+    transform: scale(1.12) rotate(2deg);
+  }
+
+  72% {
+    transform: scale(.96) rotate(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes festo-success-ring {
+  0% {
+    opacity: 0;
+    transform: scale(.55);
+  }
+
+  45% {
+    opacity: .9;
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes festo-success-text-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes festo-success-button-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width: 640px) {
+
+  .customer-success-page {
+    align-items: center !important;
+
+    padding:
+      28px 16px
+      calc(90px + env(safe-area-inset-bottom))
+      !important;
+  }
+
+  .customer-success-card {
+    width: 100% !important;
+
+    padding: 38px 24px 26px !important;
+
+    border-radius: 30px !important;
+  }
+
+  .customer-success-icon {
+    width: 92px !important;
+    height: 92px !important;
+
+    margin-bottom: 26px !important;
+
+    border-radius: 28px !important;
+
+    font-size: 52px !important;
+  }
+
+  .customer-success-card .customer-eyebrow {
+    font-size: 12px !important;
+    letter-spacing: 4px !important;
+  }
+
+  .customer-success-card h1 {
+    font-size: 46px !important;
+    letter-spacing: -2.4px !important;
+  }
+
+  .customer-success-card > p {
+    font-size: 17px !important;
+  }
+
+  .customer-success-card .customer-primary-button {
+    min-height: 60px !important;
+    margin-top: 26px !important;
+
+    border-radius: 20px !important;
+  }
+}
+
