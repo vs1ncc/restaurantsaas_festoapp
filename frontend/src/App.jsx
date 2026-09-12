@@ -187,26 +187,23 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
 }
 
-function festoBase64Encode(value) {
-  const bytes = new TextEncoder().encode(JSON.stringify(value));
-  let binary = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+const FESTO_API_BASE = (typeof window !== "undefined" && window.__FESTO_API_BASE__) || "";
+
+async function festoApi(path, options = {}) {
+  const response = await fetch(`${FESTO_API_BASE}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+  });
+  if (!response.ok) throw new Error(`FESTO API ${response.status}`);
+  return response.json();
 }
 
-function festoBase64Decode(value) {
-  try {
-    const normalized = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
-    const binary = atob(padded);
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    return JSON.parse(new TextDecoder().decode(bytes));
-  } catch {
-    return null;
-  }
+function customerUrl(tableId, restaurantId) {
+  // Короткий hash-URL: iPhone легко считывает такой QR, а SPA-хостингу
+  // не нужен отдельный server rewrite для /menu/...
+  const path = window.location.pathname || "/";
+  const basePath = path.endsWith("/") ? path : path.slice(0, path.lastIndexOf("/") + 1) || "/";
+  return `${window.location.origin}${basePath}#/menu/${encodeURIComponent(restaurantId)}/${encodeURIComponent(tableId)}`;
 }
 
 function getPublicMenuSnapshot(tableId, restaurantId) {
@@ -218,26 +215,15 @@ function getPublicMenuSnapshot(tableId, restaurantId) {
   const table = tables.find((item) => item.id === tableId && item.restaurantId === restaurantId);
   if (!restaurant || !table) return null;
   return {
-    version: 2,
+    version: 3,
     restaurant: { id: restaurant.id, name: restaurant.name, accent: restaurant.accent || "#6C4BF4" },
     table: { id: table.id, name: table.name, number: table.number, restaurantId: table.restaurantId },
-    categories: categories.filter((item) => item.restaurantId === restaurantId).map((item) => ({ id: item.id, name: item.name, sort: item.sort })),
+    categories: categories.filter((item) => item.restaurantId === restaurantId).map(({ id, name, sort }) => ({ id, name, sort })),
     dishes: dishes.filter((item) => item.restaurantId === restaurantId && item.active !== false).map((item) => ({
-      id: item.id,
-      categoryId: item.categoryId,
-      name: item.name,
-      description: item.description || "",
-      price: Number(item.price || 0),
+      id: item.id, categoryId: item.categoryId, name: item.name, description: item.description || "", price: Number(item.price || 0),
       image: String(item.image || "").startsWith("http") ? item.image : "",
     })),
   };
-}
-
-function customerUrl(tableId, restaurantId) {
-  const snapshot = getPublicMenuSnapshot(tableId, restaurantId);
-  if (!snapshot) return `${window.location.origin}${window.location.pathname}?table=${encodeURIComponent(tableId)}&restaurant=${encodeURIComponent(restaurantId || "")}`;
-  const payload = festoBase64Encode(snapshot);
-  return `${window.location.origin}${window.location.pathname}?festoMenu=${encodeURIComponent(payload)}`;
 }
 
 /* -------------------------------------------------------
@@ -2529,10 +2515,11 @@ function TablesManager({
               <div className="qr-box">
                 <QRCodeSVG
                   value={customerUrl(table.id, table.restaurantId)}
-                  size={170}
+                  size={240}
                   bgColor="#ffffff"
                   fgColor="#111111"
-                  level="H"
+                  level="M"
+                  marginSize={4}
                 />
               </div>
 
@@ -2703,10 +2690,11 @@ function QRModal({ table, onClose }) {
         <div className="qr-large">
           <QRCodeSVG
             value={link}
-            size={270}
+            size={320}
             bgColor="#ffffff"
             fgColor="#111111"
-            level="H"
+            level="M"
+            marginSize={5}
           />
         </div>
 
@@ -3447,7 +3435,7 @@ function CustomerApp({
     );
   }
 
-  function submitOrder() {
+  async function submitOrder() {
     if (!cart.length) return;
 
     const order = {
@@ -3466,9 +3454,15 @@ function CustomerApp({
       createdAt: new Date().toISOString(),
     };
 
-    setOrders((prev) => [...prev, order]);
-
-    setSubmittedOrder(order);
+    try {
+      const saved = await festoApi("/api/orders", { method: "POST", body: JSON.stringify(order) });
+      setOrders((prev) => [...prev.filter((x) => x.id !== saved.id), saved]);
+      setSubmittedOrder(saved);
+    } catch {
+      // Оставляем локальный fallback для режима разработки без сервера.
+      setOrders((prev) => [...prev, order]);
+      setSubmittedOrder(order);
+    }
     setCart([]);
     setOrderComment("");
     setShowCart(false);
@@ -4042,7 +4036,7 @@ function QRStandOrderPage({ restaurant, tables, onBack, standOrders, setStandOrd
         <div className="stand-form">
           <div className="glass-panel"><div className="eyebrow">1 · СТОЛЫ</div><h2>Для каких столов нужны подставки?</h2><p className="muted">QR берутся напрямую со страницы «Столы», поэтому каждый выбранный стол получает свой QR.</p><div className="table-select-grid">{tables.map(t => <button key={t.id} type="button" className={`table-select ${selectedTables.includes(t.id) ? "selected" : ""}`} onClick={() => toggleTable(t.id)}><span>{t.name}</span><small>Стол {t.number}</small>{selectedTables.includes(t.id) && <Icon name="check" size={18}/>}</button>)}</div></div>
           <div className="glass-panel"><div className="eyebrow">2 · ДИЗАЙН</div><h2>Оформление подставки</h2><div className="form-row"><div className="input-group"><label>Шрифт</label><select value={font} onChange={e => setFont(e.target.value)}><option>Inter</option><option>Georgia</option><option>Arial</option><option>Montserrat</option></select></div><div className="input-group"><label>Количество</label><input type="number" min="1" value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value) || 1))}/></div></div><div className="form-row"><div className="input-group"><label>Цвет подставки</label><input className="color-input" type="color" value={color} onChange={e => setColor(e.target.value)}/></div><div className="input-group"><label>Цвет QR</label><input className="color-input" type="color" value={accent} onChange={e => setAccent(e.target.value)}/></div></div><div className="logo-upload"><input id="stand-logo" type="file" accept="image/*" onChange={loadLogo}/><label htmlFor="stand-logo"><Icon name="upload" size={18}/> {logo ? "Логотип загружен — заменить" : "Загрузить логотип"}</label><small>Логотип всегда размещается в левом верхнем углу подставки.</small></div></div>
-          <div className="glass-panel"><div className="eyebrow">3 · ПРЕДПРОСМОТР</div><h2>Так будет выглядеть подставка</h2><p className="muted">QR сразу показан вместе с выбранным оформлением.</p><div className="stand-preview" style={{ background: color, color: accent, fontFamily: font }}><div className="stand-logo-slot">{logo ? <img src={logo} alt="Логотип"/> : <span>LOGO</span>}</div><div className="stand-title">{restaurant.name}</div><div className="stand-qr"><QRCodeSVG value={previewValue} size={170} bgColor={color} fgColor={accent} level="H"/></div><div className="stand-table-label">{previewTable ? previewTable.name : "Выберите стол"}</div><div className="stand-hint">Наведите камеру, чтобы открыть меню</div></div></div>
+          <div className="glass-panel"><div className="eyebrow">3 · ПРЕДПРОСМОТР</div><h2>Так будет выглядеть подставка</h2><p className="muted">QR сразу показан вместе с выбранным оформлением.</p><div className="stand-preview" style={{ background: color, color: accent, fontFamily: font }}><div className="stand-logo-slot">{logo ? <img src={logo} alt="Логотип"/> : <span>LOGO</span>}</div><div className="stand-title">{restaurant.name}</div><div className="stand-qr"><QRCodeSVG value={previewValue} size={220} bgColor="#ffffff" fgColor={accent} level="M" marginSize={5}/></div><div className="stand-table-label">{previewTable ? previewTable.name : "Выберите стол"}</div><div className="stand-hint">Наведите камеру, чтобы открыть меню</div></div></div>
           <button className="primary-button stand-submit" onClick={submit}>Отправить заявку на подставки</button>
         </div>
         <aside className="stand-summary glass-panel"><div className="eyebrow">ЗАКАЗ</div><h3>QR подставки</h3><p>{selectedTables.length} столов · {quantity} шт.</p><div className="summary-list">{selectedTables.map(id => <div key={id}><span>{tables.find(t => t.id === id)?.name}</span><span>QR ✓</span></div>)}</div></aside>
@@ -4316,6 +4310,11 @@ function LiveOrdersScreen({
           : order
       )
     );
+    const next = orders.find((order) => order.id === id);
+    if (next) {
+      const updated = { ...next, status, statusChangedAt: new Date().toISOString(), ...(status === "assembled" && !next.assembledAt ? { assembledAt: new Date().toISOString() } : {}), ...(status === "ready" ? { readyAt: new Date().toISOString() } : {}), ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}) };
+      festoApi(`/api/orders/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(updated) }).catch(() => {});
+    }
   }
 
   function handleOrderClick(order) {
@@ -4643,6 +4642,42 @@ export default function App() {
   const publicMenuData = publicMenuPayload ? festoBase64Decode(publicMenuPayload) : null;
   const liveOrdersRestaurantId =
     urlParams.get("liveOrders");
+  const menuPathMatch = window.location.pathname.match(/\/menu\/([^/]+)\/([^/]+)\/?$/);
+  const hashMenuMatch = window.location.hash.match(/^#\/menu\/([^/]+)\/([^/]+)\/?$/);
+  const publicMenuMatch = menuPathMatch || hashMenuMatch;
+  const publicMenuRoute = publicMenuMatch ? { restaurantId: decodeURIComponent(publicMenuMatch[1]), tableId: decodeURIComponent(publicMenuMatch[2]) } : null;
+  const [publicRouteData, setPublicRouteData] = useState(null);
+  const [publicRouteError, setPublicRouteError] = useState("");
+
+  useEffect(() => {
+    if (!publicMenuRoute) return;
+    let cancelled = false;
+    festoApi(`/api/public-menu/${encodeURIComponent(publicMenuRoute.restaurantId)}/${encodeURIComponent(publicMenuRoute.tableId)}`)
+      .then((data) => { if (!cancelled) setPublicRouteData(data); })
+      .catch(() => { if (!cancelled) setPublicRouteError("Не удалось загрузить меню. Проверьте, что сервер FESTO запущен."); });
+    return () => { cancelled = true; };
+  }, [publicMenuRoute?.restaurantId, publicMenuRoute?.tableId]);
+
+  useEffect(() => {
+    if (!session?.role) return;
+    // Синхронизируем справочники с общим сервером. Гость никогда не отправляет
+    // свои локальные данные обратно на сервер и не может затереть меню ресторана.
+    const timer = window.setTimeout(() => {
+      festoApi("/api/sync", { method: "POST", body: JSON.stringify({ restaurants, categories, dishes, tables }) }).catch(() => {});
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [session?.role, restaurants, categories, dishes, tables]);
+
+  useEffect(() => {
+    if (session?.role !== "director" || !session.restaurantId) return;
+    let cancelled = false;
+    const load = () => festoApi(`/api/orders?restaurantId=${encodeURIComponent(session.restaurantId)}`)
+      .then((remote) => { if (!cancelled && Array.isArray(remote)) setOrders(remote); })
+      .catch(() => {});
+    load();
+    const timer = window.setInterval(load, 1500);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [session?.role, session?.restaurantId]);
 
   useEffect(() => {
     writeStorage(
@@ -4699,6 +4734,21 @@ export default function App() {
       })
     );
   }, []);
+
+  if (publicMenuRoute) {
+    if (publicRouteError) return <CustomerError title="Меню временно недоступно" text={publicRouteError} />;
+    if (!publicRouteData) return <div className="customer-page"><div className="customer-content"><div className="glass-panel"><h2>Загружаем меню…</h2><p className="muted">Подключаемся к FESTO.</p></div></div></div>;
+    return (
+      <CustomerApp
+        restaurant={publicRouteData.restaurant}
+        categories={publicRouteData.categories || []}
+        dishes={publicRouteData.dishes || []}
+        tables={[publicRouteData.table]}
+        setOrders={setOrders}
+        publicData={publicRouteData}
+      />
+    );
+  }
 
   // Новый QR содержит публичный снимок меню и стола прямо в URL.
   // Он работает на телефоне гостя независимо от localStorage директора.
