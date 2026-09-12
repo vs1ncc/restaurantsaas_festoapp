@@ -1,4 +1,4 @@
-import { getData } from "../../../_redis.js";
+import { getData } from "../../../../lib/redis.js";
 
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     const data = await getData();
 
-    const restaurant = data.restaurants.find(
+    const restaurant = (data.restaurants || []).find(
       (item) =>
         String(item.id) === restaurantId
     );
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const table = data.tables.find(
+    const table = (data.tables || []).find(
       (item) =>
         String(item.id) === tableId &&
         String(item.restaurantId) === restaurantId
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const categories = data.categories
+    const categories = (data.categories || [])
       .filter(
         (item) =>
           String(item.restaurantId) === restaurantId
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
         sort: item.sort,
       }));
 
-    const dishes = data.dishes
+    const dishes = (data.dishes || [])
       .filter(
         (item) =>
           String(item.restaurantId) === restaurantId &&
@@ -95,6 +95,7 @@ export default async function handler(req, res) {
         name: restaurant.name,
         accent:
           restaurant.accent || "#6C4BF4",
+        logo: restaurant.logo || null,
       },
 
       table: {
@@ -105,7 +106,6 @@ export default async function handler(req, res) {
       },
 
       categories,
-
       dishes,
     });
   } catch (error) {

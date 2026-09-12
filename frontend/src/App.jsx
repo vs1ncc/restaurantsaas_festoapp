@@ -155,6 +155,24 @@ function getInitials(name = "") {
     .toUpperCase() || "F";
 }
 
+function getCustomerGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour >= 5 && hour < 11) {
+    return "Доброе утро";
+  }
+
+  if (hour >= 11 && hour < 17) {
+    return "Добрый день";
+  }
+
+  if (hour >= 17 && hour < 23) {
+    return "Добрый вечер";
+  }
+
+  return "Доброй ночи";
+}
+
 function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
   const paths = {
     home: <><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/></>,
@@ -216,7 +234,12 @@ function getPublicMenuSnapshot(tableId, restaurantId) {
   if (!restaurant || !table) return null;
   return {
     version: 3,
-    restaurant: { id: restaurant.id, name: restaurant.name, accent: restaurant.accent || "#6C4BF4" },
+    restaurant: {
+      id: restaurant.id,
+      name: restaurant.name,
+      accent: restaurant.accent || "#6C4BF4",
+      logo: restaurant.logo || null,
+    },
     table: { id: table.id, name: table.name, number: table.number, restaurantId: table.restaurantId },
     categories: categories.filter((item) => item.restaurantId === restaurantId).map(({ id, name, sort }) => ({ id, name, sort })),
     dishes: dishes.filter((item) => item.restaurantId === restaurantId && item.active !== false).map((item) => ({
@@ -1361,6 +1384,34 @@ function RestaurantDetails({
     setEditing(false);
   }
 
+  function loadLogo(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Выберите изображение.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setForm((prev) => ({
+        ...prev,
+        logo: String(reader.result),
+      }));
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  function removeLogo() {
+    setForm((prev) => ({
+      ...prev,
+      logo: null,
+    }));
+  }
+
   return (
     <>
       <div className="page-heading">
@@ -1454,7 +1505,7 @@ function RestaurantDetails({
             <input
               type="color"
               className="color-input"
-              value={form.accent}
+              value={form.accent || "#6C4BF4"}
               onChange={(e) =>
                 setForm({
                   ...form,
@@ -1462,6 +1513,59 @@ function RestaurantDetails({
                 })
               }
             />
+          </div>
+
+          <div className="details-edit restaurant-logo-editor">
+            <h3>Логотип ресторана</h3>
+
+            <p className="muted">
+              Логотип будет показан в стеклянной шапке клиентского QR-меню.
+            </p>
+
+            <div className="restaurant-logo-preview">
+              {form.logo ? (
+                <img
+                  src={form.logo}
+                  alt="Логотип ресторана"
+                />
+              ) : (
+                <div className="restaurant-logo-empty">
+                  ЛОГО
+                </div>
+              )}
+            </div>
+
+            <div className="restaurant-logo-actions">
+              <input
+                id="restaurant-logo-upload"
+                type="file"
+                accept="image/*"
+                onChange={loadLogo}
+                hidden
+              />
+
+              <label
+                htmlFor="restaurant-logo-upload"
+                className="secondary-button"
+              >
+                <Icon name="upload" size={17} />
+                {form.logo ? "Заменить логотип" : "Загрузить логотип"}
+              </label>
+
+              {form.logo && (
+                <button
+                  type="button"
+                  className="danger-button"
+                  onClick={removeLogo}
+                >
+                  Удалить
+                </button>
+              )}
+            </div>
+
+            <small className="muted">
+              Лучше использовать горизонтальный или прямоугольный логотип.
+            </small>
           </div>
 
           <div className="modal-actions">
@@ -3530,15 +3634,25 @@ function CustomerApp({
       }}
     >
       <header className="customer-header">
-        <div className="customer-logo">F</div>
+        <div className="customer-header-brand">
+          {publicRestaurant.logo ? (
+            <img
+              className="customer-restaurant-logo"
+              src={publicRestaurant.logo}
+              alt={publicRestaurant.name}
+            />
+          ) : (
+            <div className="customer-logo">F</div>
+          )}
 
-        <div>
-          <div className="customer-restaurant">
-            {publicRestaurant.name}
-          </div>
+          <div className="customer-header-info">
+            <div className="customer-restaurant">
+              {publicRestaurant.name}
+            </div>
 
-          <div className="customer-table">
-            {table.name}
+            <div className="customer-table">
+              {table.name}
+            </div>
           </div>
         </div>
       </header>
@@ -3549,7 +3663,7 @@ function CustomerApp({
             МЕНЮ
           </div>
 
-          <h1>Что желаете?</h1>
+          <h1>{getCustomerGreeting()}</h1>
         </div>
 
         <div className="customer-categories">
@@ -3600,17 +3714,25 @@ function CustomerApp({
         <button
           className={!showCart ? "active" : ""}
           onClick={() => setShowCart(false)}
+          type="button"
+          aria-label="Меню"
         >
-          <span>⌂</span>
+          <span className="customer-nav-icon">
+            <Icon name="home" size={23} strokeWidth={1.9} />
+          </span>
+
           <small>Меню</small>
         </button>
 
         <button
           className={showCart ? "active" : ""}
           onClick={() => setShowCart(true)}
+          type="button"
+          aria-label="Мой заказ"
         >
-          <span>
-            □
+          <span className="customer-nav-icon">
+            <Icon name="orders" size={23} strokeWidth={1.9} />
+
             {cartCount > 0 && (
               <b>{cartCount}</b>
             )}
