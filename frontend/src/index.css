@@ -5957,3 +5957,29 @@ button {
     z-index: 2;
   }
 }
+
+
+/* Desktop sidebar navigation vertical centering */
+@media (min-width: 801px) {
+  .app-shell .sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .app-shell .sidebar > nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+
+  .app-shell .sidebar > .sidebar-restaurant {
+    margin-top: 12px !important;
+  }
+
+  .app-shell .sidebar > .logout {
+    flex: 0 0 auto !important;
+  }
+}
