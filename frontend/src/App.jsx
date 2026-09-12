@@ -3436,18 +3436,31 @@ function CustomerApp({
   }
 
   async function submitOrder() {
-    if (!cart.length) return;
+    if (!cart.length || !table) {
+      return;
+    }
 
-    const order = {
+    const orderDraft = {
       id: uid("order"),
-      restaurantId: restaurant.id,
-      tableId: table?.id || null,
-      tableName: table?.name || "Гость",
-      tableNumber: table?.number ?? table?.name ?? "—",
-      number: Math.floor(
-        1000 + Math.random() * 9000
-      ),
-      items: cart,
+      restaurantId: publicRestaurant.id,
+      tableId: table.id,
+
+      tableName:
+        table.name ||
+        `Стол ${table.number ?? ""}`,
+
+      tableNumber:
+        table.number ??
+        table.name ??
+        "0",
+
+      items: cart.map((item) => ({
+        dishId: item.dishId,
+        name: item.name,
+        price: Number(item.price),
+        quantity: Number(item.quantity),
+      })),
+
       total: cartTotal,
       comment: orderComment.trim(),
       status: "new",
@@ -3455,18 +3468,36 @@ function CustomerApp({
     };
 
     try {
-      const saved = await festoApi("/api/orders", { method: "POST", body: JSON.stringify(order) });
-      setOrders((prev) => [...prev.filter((x) => x.id !== saved.id), saved]);
+      const saved = await festoApi(
+        "/api/orders",
+        {
+          method: "POST",
+          body: JSON.stringify(orderDraft),
+        }
+      );
+
+      setOrders((prev) => [
+        ...prev.filter(
+          (item) => item.id !== saved.id
+        ),
+        saved,
+      ]);
+
       setSubmittedOrder(saved);
-    } catch {
-      // Оставляем локальный fallback для режима разработки без сервера.
-      setOrders((prev) => [...prev, order]);
-      setSubmittedOrder(order);
+      setCart([]);
+      setOrderComment("");
+      setShowCart(false);
+      setOrderComplete(true);
+    } catch (error) {
+      console.error(
+        "FESTO customer order error:",
+        error
+      );
+
+      alert(
+        "Не удалось оформить заказ. Проверьте соединение и повторите попытку."
+      );
     }
-    setCart([]);
-    setOrderComment("");
-    setShowCart(false);
-    setOrderComplete(true);
   }
 
   if (!table) {
