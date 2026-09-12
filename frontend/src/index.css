@@ -4374,3 +4374,43 @@ button {
 @media (max-width: 800px) {
   .editor-page { padding-bottom: 88px; }
 }
+
+/* =========================================================
+   FULL-PAGE EDITORS: the form belongs to the page itself.
+   Never create an independently scrolling panel inside the
+   page. The browser/page scroll must handle the entire form,
+   including the action buttons at the bottom.
+========================================================= */
+.form-page-content {
+  width: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.form-page-content > .modal,
+.form-page-content > .modal.ai-import-modal {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+  box-sizing: border-box;
+}
+
+.form-page-content > form.modal {
+  min-height: 0;
+}
+
+.form-page-content .modal-actions {
+  position: static !important;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 800px) {
+  .form-page-content > .modal,
+  .form-page-content > .modal.ai-import-modal {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+  }
+}
