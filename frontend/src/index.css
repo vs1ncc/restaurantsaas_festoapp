@@ -5964,3 +5964,16 @@ button {
     min-height: 100vh;
   }
 }
+
+/* LIVE ORDERS — desktop: always visible above every application layer. */
+@media (min-width: 801px) {
+  .app-shell .live-orders-button {
+    position: fixed !important;
+    top: 22px !important;
+    right: 24px !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 2147483647 !important;
+    transform: none !important;
+  }
+}
