@@ -1694,7 +1694,6 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
       <div className="page-heading">
         <div><div className="eyebrow">РЕСТОРАН</div><h1>Меню</h1><p>Управляйте категориями и блюдами ресторана</p></div>
         <div className="heading-actions">
-          <button className="ai-menu-button" onClick={() => setMenuSubpage("ai")} type="button"><Icon name="spark" size={18} />Добавить меню с ИИ</button>
           <button className="secondary-button" onClick={() => setMenuSubpage("category")} type="button">Категория</button>
           <button className="primary-button" onClick={() => { setEditingDish(null); setMenuSubpage("dish"); }} type="button">Добавить блюдо</button>
         </div>
