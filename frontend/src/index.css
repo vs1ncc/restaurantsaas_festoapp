@@ -10307,3 +10307,123 @@ button {
     font-size: 52px !important;
   }
 }
+
+
+/* =========================================================
+   SUCCESS CHECK — DEFINITIVE VISIBLE VERSION
+   ========================================================= */
+
+.customer-success-icon {
+  position: relative !important;
+  overflow: visible !important;
+  font-size: 0 !important;
+}
+
+.customer-success-icon::before {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
+
+.customer-success-check {
+  position: relative !important;
+  z-index: 10 !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  color: #ffffff !important;
+  font-size: 58px !important;
+  font-family: Arial, sans-serif !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  opacity: 1 !important;
+
+  transform: scale(1) rotate(0deg) !important;
+  transform-origin: center center !important;
+
+  animation: festo-check-visible-final
+    900ms
+    cubic-bezier(.16,1.35,.35,1)
+    100ms
+    both !important;
+}
+
+.customer-success-icon::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: -16px !important;
+
+  border-radius: 38px !important;
+  border: 2px solid rgba(108,75,244,.20) !important;
+
+  opacity: 0 !important;
+  transform: scale(.45) !important;
+
+  pointer-events: none !important;
+  z-index: 1 !important;
+
+  animation: festo-check-wave-visible-final
+    800ms
+    cubic-bezier(.16,1,.3,1)
+    100ms
+    both !important;
+}
+
+@keyframes festo-check-visible-final {
+  0% {
+    transform: scale(.05) rotate(-22deg);
+  }
+
+  25% {
+    transform: scale(.62) rotate(-8deg);
+  }
+
+  50% {
+    transform: scale(1.25) rotate(5deg);
+  }
+
+  68% {
+    transform: scale(.90) rotate(-2deg);
+  }
+
+  84% {
+    transform: scale(1.07) rotate(0deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes festo-check-wave-visible-final {
+  0% {
+    opacity: 0;
+    transform: scale(.45);
+  }
+
+  35% {
+    opacity: .6;
+    transform: scale(.75);
+  }
+
+  70% {
+    opacity: .18;
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+@media (max-width: 640px) {
+  .customer-success-check {
+    font-size: 52px !important;
+  }
+}
