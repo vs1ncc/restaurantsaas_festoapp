@@ -170,6 +170,7 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
     spark: <><path d="m12 2 1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5L12 2Z"/><path d="m19 16 .6 2.4L22 19l-2.4.6L19 22l-.6-2.4L16 19l2.4-.6L19 16Z"/></>,
     search: <><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></>,
     close: <><path d="m6 6 12 12M18 6 6 18"/></>,
+    grid: <><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></>,
     check: <><path d="m5 12 4.2 4.2L19 6.5"/></>,
     file: <><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/></>,
     image: <><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="m5 17 4.5-4 3 2.5 2.5-2 4 3.5"/></>,
@@ -481,6 +482,7 @@ function DirectorApp({
       >
         <span className="live-dot" />
         LIVE ЗАКАЗЫ
+        <span className="live-count">{restaurantOrders.length}</span>
         <span className="live-arrow"><Icon name="arrow" size={15} /></span>
       </button>
 
@@ -3457,7 +3459,7 @@ function EmptyState({
 function MobileBar({ page, setPage, role }) {
   const items = role === "admin"
     ? [["dashboard", "Главная", "home"], ["restaurants", "Рестораны", "restaurant"], ["licenses", "Лицензии", "license"], ["settings", "Настройки", "settings"]]
-    : [["dashboard", "Главная", "home"], ["menu", "Меню", "menu"], ["tables", "Столы", "table"], ["orders", "Заказы", "orders"]];
+    : [["dashboard", "Главная", "home"], ["menu", "Меню", "menu"], ["tables", "Столы", "grid"], ["orders", "Заказы", "orders"]];
   return <div className="mobile-bar">{items.map(([id, label, icon]) => <button key={id} className={page === id ? "mobile-active" : ""} onClick={() => setPage(id)} type="button"><Icon name={icon} size={17} /><span>{label}</span></button>)}</div>;
 }
 
