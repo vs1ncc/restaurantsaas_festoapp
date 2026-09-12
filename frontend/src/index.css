@@ -2558,28 +2558,23 @@ button {
   .heading-actions button { font-size: 12px; }
 }
 
-/* =======================================================
-   FESTO — requested UI refinements
-   Desktop layout remains structurally unchanged.
-======================================================= */
 
-/* Main quick-access block: navigation remains available in the mini sidebar/bar,
-   while the large quick-access cards are intentionally hidden. */
-.quick-action { display: none !important; }
+/* FESTO UI refinement — requested controls */
 
-/* Menu action buttons: one visual size, rounded and clean. */
+/* MENU ACTIONS */
 .heading-actions {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .heading-actions > button {
-  height: 46px;
-  min-width: 176px;
+  width: 190px;
+  height: 48px;
+  min-width: 190px;
   padding: 0 18px;
-  border-radius: 16px;
+  border-radius: 17px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2587,152 +2582,138 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border: 1px solid transparent;
-  font-weight: 700;
-  line-height: 1;
 }
 
 .heading-actions .ai-menu-button {
-  min-width: 176px;
-  height: 46px;
-  border-radius: 16px;
+  width: 190px;
+  min-width: 190px;
+  height: 48px;
+  border-radius: 17px;
+  padding: 0 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.heading-actions .primary-button,
-.heading-actions .secondary-button,
-.heading-actions .ai-menu-button {
-  box-sizing: border-box;
-}
-
-/* Menu search: compact rounded control with a short placeholder. */
+/* MENU SEARCH */
 .menu-search {
-  min-height: 46px;
-  border-radius: 16px !important;
+  min-height: 48px;
+  border-radius: 17px !important;
+  padding: 0 17px !important;
   overflow: hidden;
 }
-
 .menu-search input {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.menu-search input::placeholder {
+  color: #777;
+  opacity: 1;
+}
 
-/* QR actions: keep only QR / print / delete and prevent text overflow. */
+/* QR ACTIONS — only QR / PRINT / DELETE */
 .table-actions {
-  display: grid !important;
+  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px !important;
+  gap: 10px;
   width: 100%;
 }
 
-.table-actions > button,
-.table-actions > a {
-  min-width: 0;
+.table-actions button {
   width: 100%;
-  min-height: 42px;
-  padding: 0 10px !important;
-  border-radius: 14px !important;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  box-sizing: border-box;
 }
 
-/* Orders controls. */
+/* ORDERS TABS */
 .orders-view-tabs {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .orders-view-tabs button {
-  min-width: 138px;
-  min-height: 48px;
+  width: 150px;
+  min-width: 150px;
+  height: 52px;
   padding: 0 20px;
-  border: 1px solid #e1e1e5;
-  border-radius: 16px;
+  border: 1px solid #dedee2;
+  border-radius: 17px;
   background: #fff;
-  color: #777;
-  font-weight: 750;
+  color: #222;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 8px;
   white-space: nowrap;
 }
 
 .orders-view-tabs button.active {
   background: #111;
-  color: #fff;
   border-color: #111;
+  color: #fff;
 }
 
 .orders-toolbar {
-  display: flex;
-  align-items: center;
   gap: 10px;
-  margin-bottom: 18px;
+  align-items: center;
 }
 
 .order-search {
-  min-width: 0;
-  flex: 1;
-  height: 46px;
-  padding: 0 16px;
-  border: 1px solid #dedee2;
-  border-radius: 16px;
-  background: #fff;
-  outline: none;
-  box-sizing: border-box;
+  height: 48px;
+  border-radius: 17px !important;
+  padding: 0 18px !important;
 }
 
 .order-search::placeholder {
-  color: #999;
-}
-
-.order-filter,
-.order-date-control {
-  height: 46px;
-  border-radius: 16px;
+  color: #777;
+  opacity: 1;
 }
 
 .order-filter {
-  min-width: 138px;
-  padding: 0 14px;
+  min-height: 48px;
+  margin-left: 3px !important;
+  border-radius: 17px !important;
 }
 
-.order-date-control {
+/* DATE */
+.order-date-wrap {
   position: relative;
-  min-width: 118px;
-  padding: 0 15px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 120px;
+  min-width: 120px;
+  height: 48px;
+  padding: 0 16px;
   border: 1px solid #dedee2;
+  border-radius: 17px;
   background: #fff;
-  color: #333;
-  font-size: 13px;
-  font-weight: 700;
+  color: #222;
   cursor: pointer;
   overflow: hidden;
-  box-sizing: border-box;
 }
 
-.order-date-control span {
+.order-date-wrap > span {
+  font-size: 14px;
+  font-weight: 650;
   pointer-events: none;
-  white-space: nowrap;
 }
 
-.order-date-control .order-date {
+.order-date-wrap .order-date {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -2741,12 +2722,11 @@ button {
   cursor: pointer;
 }
 
-/* Mobile refinement only — desktop proportions above stay intact. */
 @media (max-width: 800px) {
   .heading-actions {
-    grid-template-columns: 1fr 1fr;
-    display: grid;
     width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
 
@@ -2755,38 +2735,25 @@ button {
     width: 100%;
     min-width: 0;
     height: 48px;
-    min-height: 48px;
     padding: 0 10px;
-    border-radius: 17px;
-    font-size: 12px;
+    border-radius: 16px;
+    font-size: 13px;
   }
 
   .heading-actions .ai-menu-button {
     grid-column: 1 / -1;
   }
 
-  .menu-search {
-    min-height: 48px;
-    height: 48px;
-    border-radius: 17px !important;
-  }
-
-  .menu-search input {
-    font-size: 14px;
-  }
-
   .table-actions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px !important;
+    gap: 7px;
   }
 
-  .table-actions > button,
-  .table-actions > a {
-    min-height: 42px;
-    height: 42px;
-    padding: 0 6px !important;
-    border-radius: 14px !important;
-    font-size: 11px;
+  .table-actions button {
+    min-height: 44px;
+    padding: 8px 6px;
+    border-radius: 15px;
+    font-size: 12px;
   }
 
   .orders-view-tabs {
@@ -2796,69 +2763,50 @@ button {
 
   .orders-view-tabs button {
     flex: 1;
+    width: auto;
     min-width: 0;
-    min-height: 50px;
-    height: 50px;
-    padding: 0 14px;
+    height: 52px;
+    padding: 0 12px;
     border-radius: 17px;
-    font-size: 13px;
   }
 
   .orders-toolbar {
-    display: grid;
+    display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
   }
 
-  .order-search {
-    grid-column: 1 / 2;
+  .orders-toolbar .order-search {
     width: 100%;
-    height: 46px;
-    border-radius: 16px;
-    padding: 0 14px;
-    font-size: 14px;
   }
 
-  .order-filter {
-    grid-column: 2 / 3;
-    min-width: 92px;
-    height: 46px;
-    margin-left: 2px;
-    padding: 0 10px;
-    border-radius: 16px;
-    font-size: 12px;
+  .orders-toolbar .order-filter {
+    width: auto;
+    min-width: 116px;
+    margin-left: 3px !important;
   }
 
-  .order-date-control {
-    grid-column: 1 / -1;
+  .order-date-wrap {
     width: 100%;
-    height: 46px;
-    min-height: 46px;
-    border-radius: 16px;
-    margin-top: 2px;
-  }
-
-  .order-date-control span {
-    font-size: 13px;
-  }
-
-  .orders-toolbar > .secondary-button {
+    min-width: 0;
     grid-column: 1 / -1;
-    min-height: 44px;
-    border-radius: 15px;
   }
 }
 
 @media (max-width: 380px) {
-  .heading-actions > button,
-  .heading-actions .ai-menu-button {
-    font-size: 11px;
-    padding: 0 7px;
+  .heading-actions {
+    grid-template-columns: 1fr;
   }
 
-  .table-actions > button,
-  .table-actions > a {
-    font-size: 10px;
-    padding: 0 4px !important;
+  .heading-actions .ai-menu-button {
+    grid-column: auto;
+  }
+
+  .table-actions button {
+    font-size: 11px;
+  }
+
+  .orders-toolbar .order-filter {
+    min-width: 105px;
   }
 }

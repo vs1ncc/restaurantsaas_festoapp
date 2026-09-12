@@ -1518,8 +1518,8 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
         <div><div className="eyebrow">РЕСТОРАН</div><h1>Меню</h1><p>Управляйте категориями и блюдами ресторана</p></div>
         <div className="heading-actions">
           <button className="ai-menu-button" onClick={() => setShowAIImport(true)} type="button"><Icon name="spark" size={18} />Добавить меню с ИИ</button>
-          <button className="secondary-button" onClick={() => setCategoryModal(true)} type="button"><Icon name="plus" size={16} />Категория</button>
-          <button className="primary-button" onClick={() => { setEditingDish(null); setDishModal(true); }} type="button"><Icon name="plus" size={16} />Добавить блюдо</button>
+          <button className="secondary-button" onClick={() => setCategoryModal(true)} type="button"><Icon name="plus" size={16} />+ Категория</button>
+          <button className="primary-button" onClick={() => { setEditingDish(null); setDishModal(true); }} type="button"><Icon name="plus" size={16} />+ Добавить блюдо</button>
         </div>
       </div>
 
@@ -2382,7 +2382,7 @@ function OrdersManager({
           className="order-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Поиск по номеру или столу"
+          placeholder="Поиск"
         />
 
         <select
@@ -2407,15 +2407,14 @@ function OrdersManager({
           )}
         </select>
 
-        <label className="order-date-control">
-          <span>{dateFilter ? new Date(`${dateFilter}T00:00:00`).toLocaleDateString("ru-RU") : "Дата"}</span>
+        <label className="order-date-wrap">
+          <span>Дата</span>
           <input
             className="order-date"
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             title="Фильтр по дате"
-            aria-label="Дата"
           />
         </label>
 
