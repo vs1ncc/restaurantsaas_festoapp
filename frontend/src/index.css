@@ -4414,3 +4414,574 @@ button {
     overflow-y: visible !important;
   }
 }
+
+/* =========================================================
+   FESTO GLASS SYSTEM 2.0
+   Visual language aligned with festo-glass-dine / iOS glass
+   Scoped to admin so customer + live screens keep their own UI.
+========================================================= */
+.app-shell {
+  --ui-bg: #F2F2F7;
+  --ui-text: #1A1A1E;
+  --ui-muted: #8E8E93;
+  --ui-border: rgba(255,255,255,.68);
+  --ui-surface: rgba(255,255,255,.55);
+  --ui-surface-strong: rgba(255,255,255,.75);
+  --ui-accent: #5856D6;
+  --ui-accent-soft: rgba(88,86,214,.10);
+  min-height: 100vh;
+  color: var(--ui-text);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(88,86,214,.09), transparent 28%),
+    radial-gradient(circle at 92% 88%, rgba(120,120,128,.07), transparent 30%),
+    var(--ui-bg);
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: -18%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(88,86,214,.075), transparent 20%),
+    radial-gradient(circle at 78% 72%, rgba(255,255,255,.8), transparent 24%);
+  filter: blur(35px);
+  animation: festo-ether 22s ease-in-out infinite alternate;
+}
+
+@keyframes festo-ether {
+  from { transform: translate3d(-1%, -1%, 0) scale(1); }
+  to { transform: translate3d(1.5%, 1%, 0) scale(1.025); }
+}
+
+.app-shell .sidebar,
+.app-shell .main-content,
+.app-shell .live-orders-button,
+.app-shell .mobile-bar { position: relative; z-index: 1; }
+
+/* ---------- SIDEBAR ---------- */
+.app-shell .sidebar {
+  width: 238px;
+  margin: 14px;
+  height: calc(100vh - 28px);
+  inset: 0 auto 0 0;
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: 28px;
+  background: rgba(255,255,255,.50);
+  backdrop-filter: blur(32px) saturate(145%);
+  -webkit-backdrop-filter: blur(32px) saturate(145%);
+  box-shadow: 0 20px 55px -24px rgba(26,26,30,.24), inset 0 1px 0 rgba(255,255,255,.9);
+  padding: 17px 12px 12px;
+}
+
+.app-shell .brand {
+  height: 48px;
+  padding: 0 8px;
+  margin-bottom: 18px;
+  gap: 10px;
+}
+
+.app-shell .brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  background: #1A1A1E;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 7px 20px rgba(26,26,30,.13);
+}
+
+.app-shell .brand > span {
+  color: #1A1A1E;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -.3px;
+}
+
+.app-shell .sidebar nav { display: grid; gap: 4px; }
+
+.app-shell .nav-item {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  background: transparent;
+  color: #69696F;
+  font-size: 13px;
+  font-weight: 600;
+  transition: .2s ease;
+}
+
+.app-shell .nav-item:hover {
+  background: rgba(255,255,255,.48);
+  color: #1A1A1E;
+}
+
+.app-shell .nav-item.active {
+  background: rgba(88,86,214,.105);
+  border-color: rgba(88,86,214,.08);
+  color: #4B49C7;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+}
+
+.app-shell .nav-item .festo-icon { opacity: .9; }
+
+/* ---------- MAIN / TOPBAR ---------- */
+.app-shell .main-content {
+  margin-left: 266px;
+  padding: 22px 30px 46px;
+  min-height: 100vh;
+}
+
+.app-shell .topbar {
+  height: 54px;
+  margin: -2px 0 22px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+}
+
+.app-shell .topbar h2 {
+  color: #1A1A1E;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.75px;
+}
+
+.app-shell .profile {
+  min-height: 44px;
+  padding: 5px 8px 5px 6px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 16px;
+  background: rgba(255,255,255,.48);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 7px 24px -16px rgba(26,26,30,.25);
+}
+
+.app-shell .profile strong { color: #1A1A1E; font-size: 12px; }
+.app-shell .profile span { color: #8E8E93; font-size: 10px; }
+.app-shell .avatar { background: #1A1A1E; border-radius: 12px; }
+
+/* ---------- PAGE HEADINGS ---------- */
+.app-shell .page-heading {
+  margin-bottom: 20px;
+  gap: 18px;
+}
+
+.app-shell .eyebrow,
+.app-shell .card-label {
+  color: #8E8E93;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .17em;
+}
+
+.app-shell .page-heading h1,
+.app-shell .settings-card h1 {
+  margin-top: 5px;
+  color: #1A1A1E;
+  font-size: 34px;
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -1.25px;
+}
+
+.app-shell .page-heading p,
+.app-shell .settings-card > p {
+  margin-top: 7px;
+  color: #8E8E93;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ---------- UNIVERSAL GLASS SURFACES ---------- */
+.app-shell .dashboard-card,
+.app-shell .restaurant-card,
+.app-shell .license-card,
+.app-shell .details-block,
+.app-shell .settings-card,
+.app-shell .category-panel,
+.app-shell .dish-card,
+.app-shell .table-card,
+.app-shell .order-card,
+.app-shell .empty-state,
+.app-shell .form-section {
+  border: 1px solid rgba(255,255,255,.72);
+  background: rgba(255,255,255,.53);
+  backdrop-filter: blur(25px) saturate(135%);
+  -webkit-backdrop-filter: blur(25px) saturate(135%);
+  box-shadow: 0 12px 38px -22px rgba(26,26,30,.22), inset 0 1px 0 rgba(255,255,255,.86);
+}
+
+.app-shell .dashboard-card,
+.app-shell .restaurant-card,
+.app-shell .license-card,
+.app-shell .details-block,
+.app-shell .settings-card { border-radius: 23px; }
+
+.app-shell .dashboard-card:hover,
+.app-shell .restaurant-card:hover,
+.app-shell .dish-card:hover,
+.app-shell .table-card:hover,
+.app-shell .order-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.92);
+  box-shadow: 0 18px 45px -24px rgba(26,26,30,.28), inset 0 1px 0 rgba(255,255,255,.95);
+}
+
+/* ---------- HOME ---------- */
+.app-shell .director-hero {
+  min-height: 285px;
+  padding: 34px;
+  border: 1px solid rgba(255,255,255,.74);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(255,255,255,.55), transparent 28%),
+    linear-gradient(135deg, rgba(88,86,214,.90), rgba(88,86,214,.72));
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  box-shadow: 0 25px 65px -28px rgba(88,86,214,.45), inset 0 1px 0 rgba(255,255,255,.30);
+  color: white;
+  overflow: hidden;
+  position: relative;
+}
+
+.app-shell .director-hero::after {
+  content: "";
+  position: absolute;
+  width: 230px;
+  height: 230px;
+  right: -55px;
+  top: -75px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.13);
+  filter: blur(2px);
+}
+
+.app-shell .director-hero h1 {
+  margin-top: 7px;
+  color: white;
+  font-size: 38px;
+  letter-spacing: -1.5px;
+}
+
+.app-shell .director-hero p { max-width: 470px; color: rgba(255,255,255,.78); }
+.app-shell .director-hero .primary-button { border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,.10); }
+
+.app-shell .dashboard-grid {
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.app-shell .dashboard-card {
+  min-height: 142px;
+  padding: 22px;
+  transition: .2s ease;
+}
+
+.app-shell .dashboard-card > span {
+  color: #8E8E93;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+}
+
+.app-shell .dashboard-card strong {
+  display: block;
+  margin-top: 18px;
+  color: #1A1A1E;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.app-shell .dashboard-card p { margin-top: 8px; color: #8E8E93; font-size: 12px; }
+
+/* ---------- BUTTONS ---------- */
+.app-shell .primary-button,
+.app-shell .secondary-button,
+.app-shell .ai-menu-button,
+.app-shell .danger-button {
+  min-height: 42px;
+  border-radius: 14px;
+  padding: 0 15px;
+  font-size: 12px;
+  font-weight: 650;
+  transition: .18s ease;
+}
+
+.app-shell .primary-button {
+  border: 1px solid rgba(255,255,255,.16);
+  background: #1A1A1E;
+  color: white;
+  box-shadow: 0 8px 22px -13px rgba(26,26,30,.55), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.app-shell .primary-button:hover { transform: translateY(-1px); background: #27272C; }
+.app-shell .secondary-button {
+  border: 1px solid rgba(255,255,255,.82);
+  background: rgba(255,255,255,.56);
+  color: #1A1A1E;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 7px 22px -16px rgba(26,26,30,.25);
+}
+.app-shell .secondary-button:hover { background: rgba(255,255,255,.78); }
+.app-shell .ai-menu-button {
+  border: 1px solid rgba(88,86,214,.12);
+  background: rgba(88,86,214,.10);
+  color: #4F4DC7;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+}
+.app-shell .danger-button {
+  border: 1px solid rgba(220,70,70,.12);
+  background: rgba(255,242,242,.65);
+  color: #C73535;
+}
+.app-shell button:active { transform: scale(.975); }
+
+/* ---------- MENU ---------- */
+.app-shell .heading-actions { gap: 8px; }
+.app-shell .menu-toolbar { gap: 10px; margin-bottom: 13px; }
+.app-shell .menu-search,
+.app-shell .order-search {
+  height: 44px;
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: 15px;
+  background: rgba(255,255,255,.52);
+  color: #1A1A1E;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
+}
+.app-shell .menu-search input,
+.app-shell .order-search { color: #1A1A1E; }
+.app-shell .menu-search input::placeholder,
+.app-shell .order-search::placeholder { color: #A0A0A5; }
+.app-shell .menu-toolbar-count { color: #8E8E93; font-size: 11px; }
+
+.app-shell .category-panel {
+  padding: 7px;
+  border-radius: 18px;
+  gap: 6px;
+}
+.app-shell .category-item {
+  min-height: 37px;
+  padding: 0 13px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 999px;
+  background: rgba(255,255,255,.48);
+  color: #6F6F75;
+  font-size: 11px;
+  font-weight: 600;
+}
+.app-shell .category-item.active,
+.app-shell .category-row.active .category-item {
+  border-color: rgba(88,86,214,.10);
+  background: #5856D6;
+  color: white;
+  box-shadow: 0 7px 18px -12px rgba(88,86,214,.7), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.app-shell .dish-grid { gap: 12px; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); }
+.app-shell .dish-card {
+  overflow: hidden;
+  border-radius: 23px;
+  transition: .2s ease;
+}
+.app-shell .dish-image { height: 168px; border-radius: 0; overflow: hidden; }
+.app-shell .dish-image img { width:100%; height:100%; object-fit:cover; transition: transform .35s ease; }
+.app-shell .dish-card:hover .dish-image img { transform: scale(1.025); }
+.app-shell .dish-body { padding: 15px 16px 16px; }
+.app-shell .dish-category { color:#8E8E93; font-size:10px; font-weight:600; letter-spacing:.04em; }
+.app-shell .dish-body h3 { margin-top:5px; color:#1A1A1E; font-size:15px; letter-spacing:-.25px; }
+.app-shell .dish-body p { margin-top:5px; color:#8E8E93; font-size:12px; line-height:1.45; }
+.app-shell .dish-ingredients { margin-top:8px; color:#77777D; font-size:11px; }
+.app-shell .dish-bottom { margin-top:14px; }
+.app-shell .dish-bottom > strong { color:#1A1A1E; font-size:16px; }
+.app-shell .dish-actions button {
+  width:34px; height:34px; border:1px solid rgba(255,255,255,.75); border-radius:11px;
+  background:rgba(255,255,255,.58); color:#67676D;
+}
+
+/* ---------- TABLES ---------- */
+.app-shell .table-grid { gap: 12px; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); }
+.app-shell .table-card { padding: 15px; border-radius: 23px; transition:.2s ease; }
+.app-shell .table-number {
+  min-width: 44px; height: 44px; display:flex; align-items:center; justify-content:center;
+  border-radius:14px; background:rgba(88,86,214,.10); color:#4F4DC7; font-size:16px; font-weight:750;
+}
+.app-shell .table-top h2 { margin-top:4px; color:#1A1A1E; font-size:17px; letter-spacing:-.35px; }
+.app-shell .qr-box {
+  margin-top:13px; padding:16px; border:1px solid rgba(255,255,255,.75); border-radius:19px;
+  background:rgba(255,255,255,.48); box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
+.app-shell .qr-box svg { max-width: 180px; max-height:180px; }
+.app-shell .table-url { color:#9A9AA0; font-size:10px; }
+.app-shell .table-actions { margin-top:12px; gap:6px; }
+.app-shell .table-actions button { min-height:36px; padding:0 10px; border-radius:12px; font-size:10px; }
+
+/* ---------- ORDERS ---------- */
+.app-shell .orders-view-tabs {
+  padding: 4px;
+  border: 1px solid rgba(255,255,255,.75);
+  border-radius: 15px;
+  background: rgba(255,255,255,.45);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+}
+.app-shell .orders-view-tabs button {
+  height: 38px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #8E8E93;
+  font-size: 11px;
+  font-weight: 650;
+}
+.app-shell .orders-view-tabs button.active {
+  background: rgba(255,255,255,.84);
+  color: #1A1A1E;
+  box-shadow: 0 5px 16px -12px rgba(26,26,30,.35), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.app-shell .orders-view-tabs b { color: inherit; opacity:.55; }
+.app-shell .orders-toolbar { gap: 7px; margin-bottom: 10px; }
+.app-shell .order-filter,
+.app-shell .order-date-wrap {
+  height: 44px;
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: 15px;
+  background: rgba(255,255,255,.53);
+  color: #606066;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
+}
+.app-shell .order-filter { padding:0 12px; }
+.app-shell .orders-list { grid-template-columns: repeat(auto-fill,minmax(285px,1fr)); gap: 10px; }
+.app-shell .order-card {
+  padding: 16px;
+  border-radius: 21px;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.app-shell .order-main { gap: 11px; }
+.app-shell .order-number {
+  min-width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;
+  border-radius:15px; background:rgba(88,86,214,.09); color:#4F4DC7; font-size:15px; font-weight:750;
+}
+.app-shell .order-main h3 { color:#1A1A1E; font-size:14px; font-weight:650; }
+.app-shell .order-main p { margin-top:4px; color:#9A9AA0; font-size:10px; }
+.app-shell .order-items-count { color:#8E8E93; font-size:11px; }
+.app-shell .order-total { color:#1A1A1E; font-size:18px; }
+.app-shell .order-status { border-radius:999px; padding:6px 9px; font-size:9px; font-weight:700; }
+
+/* ---------- MODALS / EDITOR PAGES ---------- */
+.app-shell .modal-overlay {
+  background: rgba(242,242,247,.48);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.app-shell .modal,
+.app-shell .large-modal,
+.app-shell .form-page-content > .modal,
+.app-shell .form-page-content > .modal.ai-import-modal {
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 27px;
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+  box-shadow: 0 28px 80px -30px rgba(26,26,30,.28), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.app-shell .form-section { border-radius:18px; background:rgba(255,255,255,.43); padding:17px; }
+.app-shell .form-section input,
+.app-shell .form-section select,
+.app-shell .form-section textarea,
+.app-shell .input-group input,
+.app-shell .details-edit input,
+.app-shell .password-section input {
+  border:1px solid rgba(255,255,255,.88);
+  border-radius:14px;
+  background:rgba(255,255,255,.62);
+  color:#1A1A1E;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+}
+.app-shell .form-section input:focus,
+.app-shell .form-section select:focus,
+.app-shell .form-section textarea:focus,
+.app-shell .input-group input:focus,
+.app-shell .details-edit input:focus,
+.app-shell .password-section input:focus {
+  border-color: rgba(88,86,214,.35);
+  box-shadow: 0 0 0 4px rgba(88,86,214,.08), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.app-shell .subpage-header { min-height:54px; margin-bottom:20px; }
+.app-shell .subpage-back {
+  border:1px solid rgba(255,255,255,.78);
+  border-radius:14px;
+  background:rgba(255,255,255,.52);
+  color:#5D5D63;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+}
+.app-shell .subpage-title { color:#1A1A1E; font-size:20px; font-weight:700; letter-spacing:-.45px; }
+
+/* ---------- EMPTY / SETTINGS / ADMIN ---------- */
+.app-shell .empty-state { border-radius:23px; padding:38px 24px; }
+.app-shell .empty-state h2 { color:#1A1A1E; font-size:20px; }
+.app-shell .empty-state p { color:#8E8E93; }
+.app-shell .settings-card { background:rgba(255,255,255,.55); }
+.app-shell .info-box,
+.app-shell .agreement-text { border:1px solid rgba(255,255,255,.68); background:rgba(255,255,255,.42); border-radius:18px; }
+
+/* ---------- MOBILE GLASS ---------- */
+@media (max-width: 800px) {
+  .app-shell::before { position: fixed; }
+  .app-shell .main-content { margin-left:0; padding:16px 14px 100px; }
+  .app-shell .topbar { height:48px; margin-bottom:18px; }
+  .app-shell .topbar h2 { font-size:22px; }
+  .app-shell .page-heading h1 { font-size:30px; }
+  .app-shell .page-heading { gap:13px; }
+  .app-shell .director-hero { min-height:245px; padding:24px; border-radius:25px; }
+  .app-shell .director-hero h1 { font-size:29px; }
+  .app-shell .dashboard-grid { grid-template-columns:1fr; gap:9px; }
+  .app-shell .dashboard-card { min-height:105px; padding:18px; }
+  .app-shell .dashboard-card strong { margin-top:12px; font-size:28px; }
+  .app-shell .heading-actions { width:100%; }
+  .app-shell .heading-actions button { min-height:44px; }
+  .app-shell .dish-grid { grid-template-columns:1fr; gap:9px; }
+  .app-shell .dish-card { display:grid; grid-template-columns:108px 1fr; border-radius:18px; }
+  .app-shell .dish-image { height:100%; min-height:116px; }
+  .app-shell .dish-body { padding:12px; min-width:0; }
+  .app-shell .dish-body h3 { font-size:14px; }
+  .app-shell .dish-body p { font-size:11px; }
+  .app-shell .table-grid { grid-template-columns:1fr; gap:9px; }
+  .app-shell .table-card { border-radius:19px; }
+  .app-shell .qr-box { padding:13px; }
+  .app-shell .orders-list { grid-template-columns:1fr; gap:8px; }
+  .app-shell .order-card { border-radius:18px; }
+  .app-shell .orders-heading { align-items:stretch; }
+  .app-shell .orders-view-tabs { width:100%; }
+  .app-shell .orders-toolbar { grid-template-columns:minmax(0,1fr) auto auto; }
+  .app-shell .order-filter { width:92px; }
+  .app-shell .order-date-wrap { width:68px; min-width:68px; }
+  .app-shell .mobile-bar {
+    left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom));
+    min-height:64px; padding:6px;
+    border:1px solid rgba(255,255,255,.76);
+    border-radius:21px;
+    background:rgba(255,255,255,.66);
+    backdrop-filter:blur(35px) saturate(150%);
+    -webkit-backdrop-filter:blur(35px) saturate(150%);
+    box-shadow:0 18px 45px -20px rgba(26,26,30,.28), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .app-shell .mobile-bar button { min-height:52px; border-radius:16px; color:#8E8E93; }
+  .app-shell .mobile-bar button.mobile-active { background:rgba(88,86,214,.10); color:#5856D6; }
+}
+
+@media (max-width: 420px) {
+  .app-shell .main-content { padding-left:11px; padding-right:11px; }
+  .app-shell .orders-toolbar { grid-template-columns:minmax(0,1fr) 82px 62px; }
+  .app-shell .order-filter { width:82px; }
+  .app-shell .order-date-wrap { width:62px; min-width:62px; }
+}
