@@ -1756,7 +1756,6 @@ function CategoryModal({ onClose, onCreate, fullPage = false }) {
           <div className="input-group">
             <label>Название категории</label>
             <input
-              autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Например: Завтраки"
