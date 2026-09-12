@@ -11,6 +11,8 @@ const STORAGE = {
   dishes: "festo_dishes",
   tables: "festo_tables",
   orders: "festo_orders",
+  invoices: "festo_invoices",
+  qrStands: "festo_qr_stands",
 };
 
 const DEFAULT_RESTAURANT = {
@@ -176,6 +178,9 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
     image: <><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="m5 17 4.5-4 3 2.5 2.5-2 4 3.5"/></>,
     logout: <><path d="M10 5H5v14h5M14 8l4 4-4 4M9 12h9"/></>,
     arrow: <><path d="M5 12h14M13 6l6 6-6 6"/></>,
+    profile: <><circle cx="12" cy="8" r="3.5"/><path d="M5 21c.8-4 3.1-6 7-6s6.2 2 7 6"/></>,
+    bank: <><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 14h.01M11 14h6"/></>,
+    qr: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2"/></>,
   };
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
 }
@@ -290,6 +295,8 @@ function AdminApp({
   orders,
   setTables,
   setOrders,
+  invoices,
+  setInvoices,
   onLogout,
 }) {
   const [page, setPage] = useState("dashboard");
@@ -381,6 +388,14 @@ function AdminApp({
           />
         )}
 
+        {page === "profile" && (
+          <AdminProfilePage
+            restaurants={restaurants}
+            invoices={invoices}
+            setInvoices={setInvoices}
+          />
+        )}
+
         {page === "settings" && (
           <SettingsPage
             title="Настройки"
@@ -425,6 +440,8 @@ function DirectorApp({
   orders,
   setOrders,
   setRestaurants,
+  invoices,
+  setInvoices,
   onLogout,
 }) {
   const [page, setPage] = useState("dashboard");
@@ -522,11 +539,14 @@ function DirectorApp({
           />
         )}
 
-        {page === "orders" && (
-          <OrdersManager
+        {page === "profile" && (
+          <ProfilePage
             restaurant={restaurant}
             orders={restaurantOrders}
             setOrders={setOrders}
+            tables={restaurantTables}
+            invoices={invoices}
+            setInvoices={setInvoices}
           />
         )}
 
@@ -556,13 +576,14 @@ function Sidebar({ page, setPage, role, restaurant, onLogout }) {
     { id: "dashboard", icon: "home", label: "Главная" },
     { id: "restaurants", icon: "restaurant", label: "Рестораны" },
     { id: "licenses", icon: "license", label: "Лицензии" },
+    { id: "profile", icon: "profile", label: "Профиль" },
     { id: "settings", icon: "settings", label: "Настройки" },
   ];
   const directorItems = [
     { id: "dashboard", icon: "home", label: "Главная" },
     { id: "menu", icon: "menu", label: "Меню" },
     { id: "tables", icon: "table", label: "Столы" },
-    { id: "orders", icon: "orders", label: "Заказы" },
+    { id: "profile", icon: "profile", label: "Профиль" },
     { id: "settings", icon: "settings", label: "Настройки" },
   ];
   const items = role === "admin" ? adminItems : directorItems;
@@ -3452,14 +3473,122 @@ function EmptyState({
   );
 }
 
+
+/* -------------------------------------------------------
+   PROFILE / QR STANDS / INVOICES
+------------------------------------------------------- */
+
+function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoices }) {
+  const [section, setSection] = useState("home");
+  const [standOrders, setStandOrders] = useState(() =>
+    readStorage(STORAGE.qrStands, []).filter((x) => x.restaurantId === restaurant.id)
+  );
+
+  useEffect(() => {
+    const all = readStorage(STORAGE.qrStands, []);
+    writeStorage(STORAGE.qrStands, [
+      ...all.filter((x) => x.restaurantId !== restaurant.id),
+      ...standOrders,
+    ]);
+  }, [standOrders, restaurant.id]);
+
+  if (section === "orders") {
+    return <div className="profile-subpage"><SubpageHeader title="Заказы" onBack={() => setSection("home")} /><OrdersManager restaurant={restaurant} orders={orders} setOrders={setOrders} /></div>;
+  }
+  if (section === "stands") {
+    return <QRStandOrderPage restaurant={restaurant} tables={tables} onBack={() => setSection("home")} standOrders={standOrders} setStandOrders={setStandOrders} />;
+  }
+  if (section === "invoices") {
+    return <InvoicesPage restaurant={restaurant} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
+  }
+
+  const pending = invoices.filter((x) => x.restaurantId === restaurant.id && x.status !== "paid").length;
+  return (
+    <div className="profile-page">
+      <div className="page-heading">
+        <div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>{restaurant.name} · управление аккаунтом</p></div>
+      </div>
+      <div className="profile-grid">
+        <button className="profile-card" onClick={() => setSection("orders")}><span className="profile-card-icon"><Icon name="orders" size={26}/></span><strong>Заказы</strong><span>История и статусы заказов гостей</span><b>{orders.length}</b></button>
+        <button className="profile-card" onClick={() => setSection("stands")}><span className="profile-card-icon"><Icon name="qr" size={26}/></span><strong>Заказать QR подставки</strong><span>Дизайн, логотип, цвет и столы</span><b>{standOrders.length}</b></button>
+        <button className="profile-card" onClick={() => setSection("invoices")}><span className="profile-card-icon"><Icon name="bank" size={26}/></span><strong>Счета и оплаты</strong><span>Реквизиты, чеки и проверка платежей</span><b>{pending}</b></button>
+      </div>
+    </div>
+  );
+}
+
+function AdminProfilePage({ restaurants, invoices, setInvoices }) {
+  const [section, setSection] = useState("home");
+  if (section === "invoices") return <AdminInvoicesPage restaurants={restaurants} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
+  return <div className="profile-page"><div className="page-heading"><div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>Управление аккаунтом администратора</p></div></div><div className="profile-grid"><button className="profile-card" onClick={() => setSection("invoices")}><span className="profile-card-icon"><Icon name="bank" size={26}/></span><strong>Счета и оплаты</strong><span>Выставляйте счета ресторанам и проверяйте платежи</span><b>{invoices.filter(x => x.status === "payment_submitted").length}</b></button></div></div>;
+}
+
+function QRStandOrderPage({ restaurant, tables, onBack, standOrders, setStandOrders }) {
+  const [font, setFont] = useState("Inter");
+  const [color, setColor] = useState("#ffffff");
+  const [accent, setAccent] = useState("#111111");
+  const [logo, setLogo] = useState("");
+  const [selectedTables, setSelectedTables] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [sent, setSent] = useState(false);
+
+  const toggleTable = (id) => setSelectedTables(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  function loadLogo(e) {
+    const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader(); reader.onload = () => setLogo(String(reader.result)); reader.readAsDataURL(file);
+  }
+  function submit() {
+    if (!selectedTables.length) { alert("Выберите хотя бы один стол."); return; }
+    const order = { id: uid("stand"), restaurantId: restaurant.id, tables: selectedTables, font, color, accent, logo, quantity, status: "new", createdAt: new Date().toISOString() };
+    setStandOrders(prev => [order, ...prev]); setSent(true);
+  }
+  const previewTable = tables.find(t => selectedTables.includes(t.id)) || tables[0];
+  const previewValue = previewTable ? customerUrl(previewTable.id) : `${window.location.origin}/?table=table-1`;
+
+  if (sent) return <div className="profile-subpage"><SubpageHeader title="QR подставки" onBack={onBack}/><div className="success-card"><div className="success-icon"><Icon name="check" size={30}/></div><h2>Заявка отправлена</h2><p>Мы получили дизайн и список столов. Заказ будет обработан после подтверждения.</p><div className="info-box"><span>Столы</span><strong>{selectedTables.map(id => tables.find(t => t.id === id)?.name).filter(Boolean).join(", ")}</strong></div><button className="primary-button" onClick={onBack}>Вернуться в профиль</button></div></div>;
+
+  return (
+    <div className="profile-subpage">
+      <SubpageHeader title="Заказать QR подставки" onBack={onBack}/>
+      <div className="stand-layout">
+        <div className="stand-form">
+          <div className="glass-panel"><div className="eyebrow">1 · СТОЛЫ</div><h2>Для каких столов нужны подставки?</h2><p className="muted">QR берутся напрямую со страницы «Столы», поэтому каждый выбранный стол получает свой QR.</p><div className="table-select-grid">{tables.map(t => <button key={t.id} type="button" className={`table-select ${selectedTables.includes(t.id) ? "selected" : ""}`} onClick={() => toggleTable(t.id)}><span>{t.name}</span><small>Стол {t.number}</small>{selectedTables.includes(t.id) && <Icon name="check" size={18}/>}</button>)}</div></div>
+          <div className="glass-panel"><div className="eyebrow">2 · ДИЗАЙН</div><h2>Оформление подставки</h2><div className="form-row"><div className="input-group"><label>Шрифт</label><select value={font} onChange={e => setFont(e.target.value)}><option>Inter</option><option>Georgia</option><option>Arial</option><option>Montserrat</option></select></div><div className="input-group"><label>Количество</label><input type="number" min="1" value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value) || 1))}/></div></div><div className="form-row"><div className="input-group"><label>Цвет подставки</label><input className="color-input" type="color" value={color} onChange={e => setColor(e.target.value)}/></div><div className="input-group"><label>Цвет QR</label><input className="color-input" type="color" value={accent} onChange={e => setAccent(e.target.value)}/></div></div><div className="logo-upload"><input id="stand-logo" type="file" accept="image/*" onChange={loadLogo}/><label htmlFor="stand-logo"><Icon name="upload" size={18}/> {logo ? "Логотип загружен — заменить" : "Загрузить логотип"}</label><small>Логотип всегда размещается в левом верхнем углу подставки.</small></div></div>
+          <div className="glass-panel"><div className="eyebrow">3 · ПРЕДПРОСМОТР</div><h2>Так будет выглядеть подставка</h2><p className="muted">QR сразу показан вместе с выбранным оформлением.</p><div className="stand-preview" style={{ background: color, color: accent, fontFamily: font }}><div className="stand-logo-slot">{logo ? <img src={logo} alt="Логотип"/> : <span>LOGO</span>}</div><div className="stand-title">{restaurant.name}</div><div className="stand-qr"><QRCodeSVG value={previewValue} size={170} bgColor={color} fgColor={accent} level="H"/></div><div className="stand-table-label">{previewTable ? previewTable.name : "Выберите стол"}</div><div className="stand-hint">Наведите камеру, чтобы открыть меню</div></div></div>
+          <button className="primary-button stand-submit" onClick={submit}>Отправить заявку на подставки</button>
+        </div>
+        <aside className="stand-summary glass-panel"><div className="eyebrow">ЗАКАЗ</div><h3>QR подставки</h3><p>{selectedTables.length} столов · {quantity} шт.</p><div className="summary-list">{selectedTables.map(id => <div key={id}><span>{tables.find(t => t.id === id)?.name}</span><span>QR ✓</span></div>)}</div></aside>
+      </div>
+    </div>
+  );
+}
+
+function InvoicesPage({ restaurant, invoices, setInvoices, onBack }) {
+  const mine = invoices.filter(x => x.restaurantId === restaurant.id);
+  const [selected, setSelected] = useState(null);
+  const [receipt, setReceipt] = useState("");
+  function uploadReceipt(e) { const file=e.target.files?.[0]; if(!file)return; const r=new FileReader(); r.onload=()=>setReceipt(String(r.result)); r.readAsDataURL(file); }
+  function submitPayment() { if(!selected || !receipt){alert("Загрузите чек об оплате.");return;} setInvoices(prev=>prev.map(x=>x.id===selected.id?{...x,status:"payment_submitted",receiptData:receipt,submittedAt:new Date().toISOString()}:x)); setSelected(null); setReceipt(""); }
+  return <div className="profile-subpage"><SubpageHeader title="Счета и оплаты" onBack={onBack}/><div className="billing-note"><Icon name="bank" size={20}/><div><strong>Оплата только переводом на банковский счёт</strong><span>После перевода прикрепите чек. Администратор проверяет платеж вручную, обычно в течение 10 минут.</span></div></div>{mine.length===0?<EmptyState icon="bank" title="Счетов пока нет" text="Когда администратор выставит счет, он появится здесь."/>:<div className="invoice-list">{mine.map(inv=><div className="invoice-card" key={inv.id}><div><div className="eyebrow">СЧЕТ · {inv.number}</div><h3>{inv.title}</h3><p>{inv.description}</p><strong>{money(inv.amount)}</strong></div><div className={`invoice-status status-${inv.status}`}>{invoiceStatus(inv.status)}</div>{inv.status !== "paid" && inv.status !== "payment_submitted" && <button className="primary-button" onClick={()=>{setSelected(inv);setReceipt("")}}>Оплатить и отправить чек</button>}{inv.status === "payment_submitted" && <div className="invoice-wait">Чек отправлен · проверка до 10 минут</div>}{inv.status === "paid" && <div className="invoice-paid">Оплата подтверждена</div>}<div className="requisites"><b>Реквизиты для перевода</b><span>{inv.requisites}</span></div></div>)}</div>}{selected&&<div className="modal-backdrop"><div className="modal-card"><button className="icon-button modal-close" onClick={()=>setSelected(null)}><Icon name="close"/></button><div className="eyebrow">ОПЛАТА СЧЕТА</div><h2>{selected.title}</h2><div className="payment-amount">{money(selected.amount)}</div><div className="requisites"><b>Переведите средства по реквизитам</b><span>{selected.requisites}</span></div><div className="logo-upload"><input id="receipt-upload" type="file" accept="image/*,.pdf" onChange={uploadReceipt}/><label htmlFor="receipt-upload"><Icon name="upload" size={18}/> {receipt?"Чек загружен":"Загрузить чек"}</label></div><button className="primary-button" onClick={submitPayment}>Отправить платеж на проверку</button></div></div>}</div>;
+}
+
+function AdminInvoicesPage({ restaurants, invoices, setInvoices, onBack }) {
+  const [form, setForm] = useState({restaurantId: restaurants[0]?.id || "", title:"", amount:"", description:"", requisites:""});
+  function createInvoice(){ if(!form.restaurantId||!form.title||!form.amount||!form.requisites){alert("Заполните ресторан, название, сумму и реквизиты.");return;} setInvoices(prev=>[{id:uid("invoice"),number:String(Math.floor(1000+Math.random()*9000)),...form,amount:Number(form.amount),status:"pending_payment",createdAt:new Date().toISOString()},...prev]);setForm({...form,title:"",amount:"",description:""}); }
+  function review(id,status){setInvoices(prev=>prev.map(x=>x.id===id?{...x,status,reviewedAt:new Date().toISOString()}:x));}
+  return <div className="profile-subpage"><SubpageHeader title="Счета и оплаты" onBack={onBack}/><div className="admin-billing-layout"><div className="glass-panel"><div className="eyebrow">АДМИНИСТРАТОР</div><h2>Выставить новый счет</h2><div className="input-group"><label>Ресторан</label><select value={form.restaurantId} onChange={e=>setForm({...form,restaurantId:e.target.value})}>{restaurants.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div><div className="input-group"><label>Название счета</label><input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Например: QR-подставки"/></div><div className="form-row"><div className="input-group"><label>Сумма, ₽</label><input type="number" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/></div><div className="input-group"><label>Описание</label><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="За что выставлен счет"/></div></div><div className="input-group"><label>Реквизиты для перевода</label><textarea value={form.requisites} onChange={e=>setForm({...form,requisites:e.target.value})} placeholder="Банк, получатель, номер счета..."/></div><button className="primary-button" onClick={createInvoice}>Выставить счет</button></div><div className="invoice-list admin-invoice-list">{invoices.length===0?<EmptyState icon="bank" title="Счетов нет" text="Создайте первый счет для ресторана."/>:invoices.map(inv=><div className="invoice-card" key={inv.id}><div><div className="eyebrow">СЧЕТ · {inv.number}</div><h3>{inv.title}</h3><p>{restaurants.find(r=>r.id===inv.restaurantId)?.name}</p><strong>{money(inv.amount)}</strong></div><div className={`invoice-status status-${inv.status}`}>{invoiceStatus(inv.status)}</div><div className="requisites"><b>Реквизиты</b><span>{inv.requisites}</span></div>{inv.receiptData&&<div className="receipt-preview"><span>Чек приложен</span>{String(inv.receiptData).startsWith("data:image")&&<img src={inv.receiptData} alt="Чек"/>}</div>}{inv.status === "payment_submitted"&&<div className="review-actions"><button className="primary-button" onClick={()=>review(inv.id,"paid")}>Подтвердить оплату</button><button className="danger-button" onClick={()=>review(inv.id,"rejected")}>Отклонить</button></div>}</div>)}</div></div></div>;
+}
+
+function invoiceStatus(status){return ({pending_payment:"Ожидает оплаты",payment_submitted:"На проверке",paid:"Оплачен",rejected:"Отклонен"}[status]||status);}
+
 /* -------------------------------------------------------
    MOBILE BAR
 ------------------------------------------------------- */
 
 function MobileBar({ page, setPage, role }) {
   const items = role === "admin"
-    ? [["dashboard", "Главная", "home"], ["restaurants", "Рестораны", "restaurant"], ["licenses", "Лицензии", "license"], ["settings", "Настройки", "settings"]]
-    : [["dashboard", "Главная", "home"], ["menu", "Меню", "menu"], ["tables", "Столы", "grid"], ["orders", "Заказы", "orders"]];
+    ? [["dashboard", "Главная", "home"], ["restaurants", "Рестораны", "restaurant"], ["licenses", "Лицензии", "license"], ["profile", "Профиль", "profile"]]
+    : [["dashboard", "Главная", "home"], ["menu", "Меню", "menu"], ["tables", "Столы", "grid"], ["profile", "Профиль", "profile"]];
   return <div className="mobile-bar">{items.map(([id, label, icon]) => <button key={id} className={page === id ? "mobile-active" : ""} onClick={() => setPage(id)} type="button"><Icon name={icon} size={22} strokeWidth={1.9} /><span>{label}</span></button>)}</div>;
 }
 
@@ -3474,6 +3603,7 @@ function getAdminPageTitle(page) {
     licenses: "Лицензии",
     "restaurant-details": "Ресторан",
     settings: "Настройки",
+    profile: "Профиль",
   };
 
   return titles[page] || "Festo";
@@ -3485,6 +3615,7 @@ function getDirectorPageTitle(page) {
     menu: "Меню",
     tables: "Столы",
     orders: "Заказы",
+    profile: "Профиль",
     settings: "Настройки",
   };
 
@@ -3906,6 +4037,10 @@ export default function App() {
     readStorage(STORAGE.orders, [])
   );
 
+  const [invoices, setInvoices] = useState(() =>
+    readStorage(STORAGE.invoices, [])
+  );
+
   const [session, setSession] = useState(null);
 
   const urlParams = useMemo(() => {
@@ -3943,6 +4078,10 @@ export default function App() {
   useEffect(() => {
     writeStorage(STORAGE.orders, orders);
   }, [orders]);
+
+  useEffect(() => {
+    writeStorage(STORAGE.invoices, invoices);
+  }, [invoices]);
 
   /*
    * Важная защита от бага предыдущей версии:
@@ -4036,6 +4175,8 @@ export default function App() {
         orders={orders}
         setTables={setTables}
         setOrders={setOrders}
+        invoices={invoices}
+        setInvoices={setInvoices}
         onLogout={logout}
       />
     );
@@ -4058,6 +4199,8 @@ export default function App() {
       orders={orders}
       setOrders={setOrders}
       setRestaurants={setRestaurants}
+      invoices={invoices}
+      setInvoices={setInvoices}
       onLogout={logout}
     />
   );
