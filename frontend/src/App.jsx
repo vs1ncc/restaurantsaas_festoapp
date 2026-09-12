@@ -785,28 +785,7 @@ function DirectorDashboard({
         </div>
       </div>
 
-      <div style={{ marginTop: 30 }}>
-        <div className="page-heading">
-          <div>
-            <div className="eyebrow">БЫСТРЫЙ ДОСТУП</div>
-            <h1>Рабочее пространство</h1>
-            <p>Основные инструменты ресторана</p>
-          </div>
-        </div>
-
-
-      </div>
     </>
-  );
-}
-
-function QuickAction({ title, text, icon, onClick }) {
-  return (
-    <button className="dashboard-card quick-action" onClick={onClick} type="button">
-      <div className="quick-icon"><Icon name={icon} size={21} /></div>
-      <strong>{title}</strong>
-      <p>{text}</p>
-    </button>
   );
 }
 
@@ -1518,8 +1497,8 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
         <div><div className="eyebrow">РЕСТОРАН</div><h1>Меню</h1><p>Управляйте категориями и блюдами ресторана</p></div>
         <div className="heading-actions">
           <button className="ai-menu-button" onClick={() => setShowAIImport(true)} type="button"><Icon name="spark" size={18} />Добавить меню с ИИ</button>
-          <button className="secondary-button" onClick={() => setCategoryModal(true)} type="button"><Icon name="plus" size={16} />+ Категория</button>
-          <button className="primary-button" onClick={() => { setEditingDish(null); setDishModal(true); }} type="button"><Icon name="plus" size={16} />+ Добавить блюдо</button>
+          <button className="secondary-button" onClick={() => setCategoryModal(true)} type="button">Категория</button>
+          <button className="primary-button" onClick={() => { setEditingDish(null); setDishModal(true); }} type="button">Добавить блюдо</button>
         </div>
       </div>
 
@@ -2063,6 +2042,13 @@ function TablesManager({
 
                 <button
                   className="secondary-button"
+                  onClick={() => copyLink(table)}
+                >
+                  Скопировать ссылку
+                </button>
+
+                <button
+                  className="secondary-button"
                   onClick={() => printQR(table)}
                 >
                   Печать QR
@@ -2246,6 +2232,13 @@ function QRModal({ table, onClose }) {
         </div>
 
         <div className="modal-actions">
+          <button
+            className="secondary-button"
+            onClick={copy}
+          >
+            Скопировать ссылку
+          </button>
+
           <a
             className="primary-button"
             href={link}
@@ -2382,7 +2375,7 @@ function OrdersManager({
           className="order-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Поиск"
+          placeholder="Поиск по номеру или столу"
         />
 
         <select
@@ -2408,13 +2401,14 @@ function OrdersManager({
         </select>
 
         <label className="order-date-wrap">
-          <span>Дата</span>
+          <span>{dateFilter ? new Date(`${dateFilter}T00:00:00`).toLocaleDateString("ru-RU") : "Дата"}</span>
           <input
             className="order-date"
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             title="Фильтр по дате"
+            aria-label="Дата"
           />
         </label>
 

@@ -2810,3 +2810,131 @@ button {
     min-width: 105px;
   }
 }
+
+/* Orders: keep a clear 5px breathing space between the Date control and order cards */
+.orders-toolbar {
+  margin-bottom: 5px;
+}
+
+/* Menu search matches the rounded Orders search control */
+.menu-search {
+  height: 48px;
+  min-height: 48px;
+  border-radius: 17px !important;
+  padding: 0 18px !important;
+}
+
+/* =======================================================
+   FINAL REQUESTED UI REFINEMENTS
+======================================================= */
+
+/* Menu: Category and Add Dish buttons are exactly the same size */
+.heading-actions > .secondary-button,
+.heading-actions > .primary-button {
+  width: 190px;
+  min-width: 190px;
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+/* Menu search uses the same visual treatment as Orders search */
+.menu-search {
+  height: 48px;
+  min-height: 48px;
+  border: 1px solid #dedee2;
+  border-radius: 17px !important;
+  background: #fff;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 18px !important;
+  overflow: hidden;
+}
+
+.menu-search input {
+  height: 100%;
+  min-width: 0;
+  flex: 1;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 14px;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-search input::placeholder,
+.order-search::placeholder {
+  color: #777;
+  opacity: 1;
+}
+
+/* Orders: exactly 5px breathing room after the Date/filter row */
+.orders-toolbar {
+  margin-bottom: 5px;
+}
+
+/* Keep the Date control itself rounded and readable */
+.order-date-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  min-width: 120px;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #dedee2;
+  border-radius: 17px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.order-date-wrap > span {
+  font-size: 14px;
+  font-weight: 650;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.order-date-wrap .order-date {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 800px) {
+  .heading-actions > .secondary-button,
+  .heading-actions > .primary-button,
+  .heading-actions .ai-menu-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .menu-search {
+    width: 100%;
+  }
+
+  .orders-toolbar {
+    margin-bottom: 5px;
+  }
+}
