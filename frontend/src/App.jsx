@@ -187,14 +187,57 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
 }
 
+function festoBase64Encode(value) {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function festoBase64Decode(value) {
+  try {
+    const normalized = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    return null;
+  }
+}
+
+function getPublicMenuSnapshot(tableId, restaurantId) {
+  const restaurants = readStorage(STORAGE.restaurants, [DEFAULT_RESTAURANT]);
+  const categories = readStorage(STORAGE.categories, DEFAULT_CATEGORIES);
+  const dishes = readStorage(STORAGE.dishes, DEFAULT_DISHES);
+  const tables = readStorage(STORAGE.tables, DEFAULT_TABLES);
+  const restaurant = restaurants.find((item) => item.id === restaurantId);
+  const table = tables.find((item) => item.id === tableId && item.restaurantId === restaurantId);
+  if (!restaurant || !table) return null;
+  return {
+    version: 2,
+    restaurant: { id: restaurant.id, name: restaurant.name, accent: restaurant.accent || "#6C4BF4" },
+    table: { id: table.id, name: table.name, number: table.number, restaurantId: table.restaurantId },
+    categories: categories.filter((item) => item.restaurantId === restaurantId).map((item) => ({ id: item.id, name: item.name, sort: item.sort })),
+    dishes: dishes.filter((item) => item.restaurantId === restaurantId && item.active !== false).map((item) => ({
+      id: item.id,
+      categoryId: item.categoryId,
+      name: item.name,
+      description: item.description || "",
+      price: Number(item.price || 0),
+      image: String(item.image || "").startsWith("http") ? item.image : "",
+    })),
+  };
+}
+
 function customerUrl(tableId, restaurantId) {
-  // QR должен вести на публичную точку входа приложения, а не на
-  // текущую страницу (например, /login или /admin).
-  // В URL обязательно передаём и ресторан, и столик.
-  const params = new URLSearchParams();
-  if (restaurantId) params.set("restaurant", restaurantId);
-  params.set("table", tableId);
-  return `${window.location.origin}/?${params.toString()}`;
+  const snapshot = getPublicMenuSnapshot(tableId, restaurantId);
+  if (!snapshot) return `${window.location.origin}${window.location.pathname}?table=${encodeURIComponent(tableId)}&restaurant=${encodeURIComponent(restaurantId || "")}`;
+  const payload = festoBase64Encode(snapshot);
+  return `${window.location.origin}${window.location.pathname}?festoMenu=${encodeURIComponent(payload)}`;
 }
 
 /* -------------------------------------------------------
@@ -3307,12 +3350,17 @@ function CustomerApp({
   dishes,
   tables,
   setOrders,
+  publicData = null,
 }) {
   const params = new URLSearchParams(window.location.search);
   const tableId = params.get("table");
   const restaurantIdFromUrl = params.get("restaurant");
+  const publicRestaurant = publicData?.restaurant || restaurant;
+  const publicCategories = publicData?.categories || categories;
+  const publicDishes = publicData?.dishes || dishes;
+  const publicTable = publicData?.table || null;
 
-  const table = tables.find(
+  const table = publicTable || tables.find(
     (item) =>
       item.id === tableId &&
       item.restaurantId === restaurant.id &&
@@ -3329,15 +3377,13 @@ function CustomerApp({
   const [orderComment, setOrderComment] = useState("");
   const [submittedOrder, setSubmittedOrder] = useState(null);
 
-  const restaurantCategories = categories
-    .filter((c) => c.restaurantId === restaurant.id)
+  const restaurantCategories = publicCategories
+    .filter((c) => c.restaurantId === publicRestaurant.id || publicData)
     .sort((a, b) => a.sort - b.sort);
 
-  const restaurantDishes = dishes.filter(
-    (d) =>
-      d.restaurantId === restaurant.id &&
-      d.active !== false
-  );
+  const restaurantDishes = publicData
+    ? publicDishes.filter((d) => d.active !== false)
+    : publicDishes.filter((d) => d.restaurantId === publicRestaurant.id && d.active !== false);
 
   const filteredDishes =
     activeCategory === "all"
@@ -3444,7 +3490,7 @@ function CustomerApp({
         className="customer-page"
         style={{
           "--customer-accent":
-            restaurant.accent || "#6C4BF4",
+            publicRestaurant.accent || "#6C4BF4",
         }}
       >
         <div className="customer-success">
@@ -3486,7 +3532,7 @@ function CustomerApp({
       className="customer-page"
       style={{
         "--customer-accent":
-          restaurant.accent || "#6C4BF4",
+          publicRestaurant.accent || "#6C4BF4",
       }}
     >
       <header className="customer-header">
@@ -3494,7 +3540,7 @@ function CustomerApp({
 
         <div>
           <div className="customer-restaurant">
-            {restaurant.name}
+            {publicRestaurant.name}
           </div>
 
           <div className="customer-table">
@@ -4593,6 +4639,8 @@ export default function App() {
 
   const tableFromUrl = urlParams.get("table");
   const restaurantFromUrl = urlParams.get("restaurant");
+  const publicMenuPayload = urlParams.get("festoMenu");
+  const publicMenuData = publicMenuPayload ? festoBase64Decode(publicMenuPayload) : null;
   const liveOrdersRestaurantId =
     urlParams.get("liveOrders");
 
@@ -4652,7 +4700,22 @@ export default function App() {
     );
   }, []);
 
-  // QR URL всегда открывает клиентское меню.
+  // Новый QR содержит публичный снимок меню и стола прямо в URL.
+  // Он работает на телефоне гостя независимо от localStorage директора.
+  if (publicMenuData?.restaurant?.id && publicMenuData?.table?.id) {
+    return (
+      <CustomerApp
+        restaurant={publicMenuData.restaurant}
+        categories={publicMenuData.categories || []}
+        dishes={publicMenuData.dishes || []}
+        tables={[publicMenuData.table]}
+        setOrders={setOrders}
+        publicData={publicMenuData}
+      />
+    );
+  }
+
+  // Совместимость со старыми QR.
   if (tableFromUrl) {
     const table = tables.find(
       (item) =>
