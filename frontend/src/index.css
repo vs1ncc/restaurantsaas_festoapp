@@ -5983,3 +5983,55 @@ button {
     flex: 0 0 auto !important;
   }
 }
+
+/* =========================================================
+   FINAL DESKTOP SIDEBAR NAV POSITION FIX
+   Keep the navigation group exactly centered in the sidebar,
+   independently of the brand / restaurant / logout blocks.
+========================================================= */
+@media (min-width: 801px) {
+  .app-shell .sidebar {
+    position: fixed !important;
+    display: block !important;
+  }
+
+  .app-shell .sidebar > nav {
+    position: absolute !important;
+    top: 50% !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    margin: 0 !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    flex: none !important;
+  }
+
+  .app-shell .sidebar > .brand {
+    position: relative !important;
+    z-index: 2 !important;
+  }
+
+  .app-shell .sidebar > .sidebar-restaurant,
+  .app-shell .sidebar > .logout {
+    position: absolute !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    z-index: 2 !important;
+  }
+
+  .app-shell .sidebar > .sidebar-restaurant {
+    bottom: 58px !important;
+    margin: 0 !important;
+  }
+
+  .app-shell .sidebar > .logout {
+    bottom: 12px !important;
+    margin: 0 !important;
+  }
+}
