@@ -13,6 +13,7 @@ const STORAGE = {
   orders: "festo_orders",
   invoices: "festo_invoices",
   qrStands: "festo_qr_stands",
+  reportDrafts: "festo_report_drafts",
 };
 
 const DEFAULT_RESTAURANT = {
@@ -180,6 +181,7 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
     arrow: <><path d="M5 12h14M13 6l6 6-6 6"/></>,
     profile: <><circle cx="12" cy="8" r="3.5"/><path d="M5 21c.8-4 3.1-6 7-6s6.2 2 7 6"/></>,
     bank: <><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 14h.01M11 14h6"/></>,
+    chart: <><path d="M4 19V5M4 19h16"/><path d="m7 15 3-4 3 2 5-7"/></>,
     qr: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2"/></>,
   };
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
@@ -278,6 +280,67 @@ function Auth({ restaurants, onLogin }) {
           Войти
         </button>
       </form>
+    </div>
+  );
+}
+
+
+/* -------------------------------------------------------
+   LICENSE AGREEMENT / TRIAL ACCESS
+------------------------------------------------------- */
+
+const TRIAL_HOURS = 5;
+const SUBSCRIPTION_PRICE = 5000;
+const DEFAULT_PAYMENT_REQUISITES = "+7 925 569 07-37 · Даниэла Х. · Сбер Банк · по СБП";
+
+function LicenseAgreementGate({ restaurant, onAccept, onLogout }) {
+  const [accepted, setAccepted] = useState(false);
+  return (
+    <div className="agreement-page">
+      <div className="agreement-card agreement-card-wide">
+        <div className="logo">F</div>
+        <div className="eyebrow">ПЕРВЫЙ ВХОД · FESTO</div>
+        <h1>Лицензионное соглашение</h1>
+        <p className="agreement-lead">Перед началом работы ознакомьтесь с условиями использования программного обеспечения FESTO.</p>
+        <div className="agreement-parties">
+          <div><span>Лицензиат</span><strong>ООО «Фесто»</strong><small>владелец лицензии</small></div>
+          <div><span>Лицензиар</span><strong>{restaurant.legalName || restaurant.name}</strong><small>ресторан, на который создан аккаунт</small></div>
+        </div>
+        <div className="agreement-scroll">
+          <h3>1. Предмет соглашения</h3>
+          <p>Лицензиат предоставляет Лицензиару право использовать программное обеспечение FESTO для управления меню, QR-меню, столами, заказами, отчетами и связанными сервисами ресторана.</p>
+          <h3>2. Учетная запись</h3>
+          <p>Доступ предоставляется после ознакомления с соглашением и подтверждения согласия. Учетная запись предназначена для указанного ресторана и не должна передаваться третьим лицам.</p>
+          <h3>3. Оплата</h3>
+          <p>После пробного доступа программное обеспечение используется на платной основе. Счета выставляются в разделе «Счета и оплаты». Оплата производится банковским переводом по указанным в счете реквизитам.</p>
+          <h3>4. Проверка платежа</h3>
+          <p>После перевода Лицензиар прикрепляет чек и отправляет платеж на ручную проверку. Администратор FESTO проверяет платеж и подтверждает его в системе.</p>
+          <h3>5. Срок пробного доступа</h3>
+          <p>Пробный доступ к кабинету предоставляется сроком на 5 часов с момента начала пробного периода. Для продолжения работы необходимо оплатить счет на программное обеспечение.</p>
+        </div>
+        <label className="agreement-check">
+          <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
+          <span>Я прочитал(а) и согласен(на) с лицензионным соглашением.</span>
+        </label>
+        <div className="agreement-actions">
+          <button className="secondary-button" type="button" onClick={onLogout}>Выйти</button>
+          <button className="primary-button" type="button" disabled={!accepted} onClick={onAccept}>Далее</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrialExpiredGate({ restaurant, invoices, setInvoices, onLogout }) {
+  return (
+    <div className="trial-expired-page">
+      <div className="trial-expired-head">
+        <div className="logo">F</div>
+        <div><div className="eyebrow">ПРОБНЫЙ ДОСТУП ЗАВЕРШЕН</div><h1>Оплатите FESTO, чтобы продолжить</h1><p>{restaurant.name} · пробный период 5 часов закончился.</p></div>
+        <button className="secondary-button" onClick={onLogout}><Icon name="logout" size={17}/>Выйти</button>
+      </div>
+      <div className="trial-expired-note"><strong>Счет за программное обеспечение — {money(SUBSCRIPTION_PRICE)}</strong><span>Оплата только банковским переводом. После перевода прикрепите чек в счете.</span></div>
+      <InvoicesPage restaurant={restaurant} invoices={invoices} setInvoices={setInvoices} onBack={null} embedded />
     </div>
   );
 }
@@ -410,6 +473,19 @@ function AdminApp({
             onClose={() => setShowCreate(false)}
             onCreate={(restaurant) => {
               setRestaurants((prev) => [...prev, restaurant]);
+              const invoice = {
+                id: uid("invoice"),
+                number: `F-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+                restaurantId: restaurant.id,
+                title: "Лицензия и программное обеспечение FESTO",
+                amount: SUBSCRIPTION_PRICE,
+                description: "Оплата программного обеспечения FESTO после пробного доступа.",
+                requisites: DEFAULT_PAYMENT_REQUISITES,
+                status: "pending_payment",
+                type: "subscription",
+                createdAt: new Date().toISOString(),
+              };
+              setInvoices((prev) => [invoice, ...prev]);
               setShowCreate(false);
             }}
           />
@@ -547,6 +623,7 @@ function DirectorApp({
             tables={restaurantTables}
             invoices={invoices}
             setInvoices={setInvoices}
+            onLogout={onLogout}
           />
         )}
 
@@ -1055,6 +1132,9 @@ function CreateRestaurantModal({
         .toString(36)
         .slice(2, 8)
         .toUpperCase()}`,
+      licenseAcceptedAt: null,
+      trialStartedAt: null,
+      trialDurationHours: TRIAL_HOURS,
     };
 
     onCreate(restaurant);
@@ -2370,6 +2450,9 @@ function OrdersManager({
               ...order,
               status,
               statusChangedAt: new Date().toISOString(),
+              ...(status === "assembled" && !order.assembledAt ? { assembledAt: new Date().toISOString() } : {}),
+              ...(status === "ready" ? { readyAt: new Date().toISOString() } : {}),
+              ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}),
             }
           : order
       )
@@ -3478,8 +3561,10 @@ function EmptyState({
    PROFILE / QR STANDS / INVOICES
 ------------------------------------------------------- */
 
-function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoices }) {
+function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoices, onLogout }) {
   const [section, setSection] = useState("home");
+  const [, forceClock] = useState(Date.now());
+  useEffect(() => { const timer = window.setInterval(() => forceClock(Date.now()), 30000); return () => window.clearInterval(timer); }, []);
   const [standOrders, setStandOrders] = useState(() =>
     readStorage(STORAGE.qrStands, []).filter((x) => x.restaurantId === restaurant.id)
   );
@@ -3492,29 +3577,79 @@ function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoi
     ]);
   }, [standOrders, restaurant.id]);
 
-  if (section === "orders") {
-    return <div className="profile-subpage"><SubpageHeader title="Заказы" onBack={() => setSection("home")} /><OrdersManager restaurant={restaurant} orders={orders} setOrders={setOrders} /></div>;
-  }
-  if (section === "stands") {
-    return <QRStandOrderPage restaurant={restaurant} tables={tables} onBack={() => setSection("home")} standOrders={standOrders} setStandOrders={setStandOrders} />;
-  }
-  if (section === "invoices") {
-    return <InvoicesPage restaurant={restaurant} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
-  }
+  if (section === "orders") return <div className="profile-subpage"><SubpageHeader title="Заказы" onBack={() => setSection("home")} /><OrdersManager restaurant={restaurant} orders={orders} setOrders={setOrders} /></div>;
+  if (section === "stands") return <QRStandOrderPage restaurant={restaurant} tables={tables} onBack={() => setSection("home")} standOrders={standOrders} setStandOrders={setStandOrders} />;
+  if (section === "invoices") return <InvoicesPage restaurant={restaurant} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
+  if (section === "reports") return <ReportsPage restaurant={restaurant} orders={orders} onBack={() => setSection("home")} />;
 
   const pending = invoices.filter((x) => x.restaurantId === restaurant.id && x.status !== "paid").length;
+  const trialStarted = restaurant.trialStartedAt ? new Date(restaurant.trialStartedAt).getTime() : null;
+  const trialLeft = trialStarted ? Math.max(0, TRIAL_HOURS * 60 - Math.floor((Date.now() - trialStarted) / 60000)) : TRIAL_HOURS * 60;
+  const trialLabel = trialStarted ? `${Math.floor(trialLeft / 60)} ч ${trialLeft % 60} мин` : "5 часов";
+
   return (
     <div className="profile-page">
-      <div className="page-heading">
-        <div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>{restaurant.name} · управление аккаунтом</p></div>
-      </div>
+      <div className="page-heading"><div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>{restaurant.name} · управление аккаунтом</p></div></div>
+      <div className="profile-trial-banner"><div><span>ПРОБНЫЙ ДОСТУП</span><strong>{trialLabel}</strong></div><p>После завершения пробного периода оплатите счет в разделе «Счета и оплаты».</p></div>
       <div className="profile-grid">
         <button className="profile-card" onClick={() => setSection("orders")}><span className="profile-card-icon"><Icon name="orders" size={26}/></span><strong>Заказы</strong><span>История и статусы заказов гостей</span><b>{orders.length}</b></button>
-        <button className="profile-card" onClick={() => setSection("stands")}><span className="profile-card-icon"><Icon name="qr" size={26}/></span><strong>Заказать QR подставки</strong><span>Дизайн, логотип, цвет и столы</span><b>{standOrders.length}</b></button>
+        <button className="profile-card" onClick={() => setSection("stands")}><span className="profile-card-icon"><Icon name="qr" size={26}/></span><strong>Заказать QR подставки</strong><span>Дизайн, логотип, цвет и конкретные столы</span><b>{standOrders.length}</b></button>
         <button className="profile-card" onClick={() => setSection("invoices")}><span className="profile-card-icon"><Icon name="bank" size={26}/></span><strong>Счета и оплаты</strong><span>Реквизиты, чеки и проверка платежей</span><b>{pending}</b></button>
+        <button className="profile-card" onClick={() => setSection("reports")}><span className="profile-card-icon"><Icon name="chart" size={26}/></span><strong>Отчеты</strong><span>Скорость приготовления и товарооборот</span><b>↗</b></button>
       </div>
+      <div className="profile-logout-wrap"><button className="profile-logout-button" onClick={onLogout}><Icon name="logout" size={18}/>Выйти из аккаунта</button></div>
     </div>
   );
+}
+
+
+function reportIntervalLabel(interval) {
+  return ({last_hour:"Последний час", today:"Сегодня", yesterday:"Прошедший день", month:"Текущий месяц"}[interval] || interval);
+}
+
+function getReportRange(interval) {
+  const now = Date.now();
+  const d = new Date(now);
+  if (interval === "last_hour") return { from: now - 60 * 60 * 1000, to: now };
+  if (interval === "today") return { from: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), to: now };
+  if (interval === "yesterday") {
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1).getTime();
+    return { from: start, to: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() };
+  }
+  return { from: new Date(d.getFullYear(), d.getMonth(), 1).getTime(), to: now };
+}
+
+function ReportsPage({ restaurant, orders, onBack }) {
+  const [interval, setInterval] = useState("today");
+  const [type, setType] = useState("speed");
+  const [report, setReport] = useState(null);
+
+  function buildReport() {
+    const range = getReportRange(interval);
+    const filtered = orders.filter((o) => {
+      const t = new Date(o.createdAt).getTime();
+      return o.restaurantId === restaurant.id && t >= range.from && t < range.to && o.status !== "cancelled";
+    });
+    if (type === "turnover") {
+      const turnover = filtered.reduce((sum, o) => sum + Number(o.total || 0), 0);
+      const avg = filtered.length ? turnover / filtered.length : 0;
+      setReport({ type, interval, range, orders: filtered, turnover, avg });
+      return;
+    }
+    const measured = filtered.map((o) => {
+      const start = new Date(o.createdAt).getTime();
+      const end = o.readyAt ? new Date(o.readyAt).getTime() : (o.statusChangedAt && o.status === "ready" ? new Date(o.statusChangedAt).getTime() : null);
+      return end && end >= start ? (end - start) / 60000 : null;
+    }).filter((x) => x != null);
+    const avg = measured.length ? measured.reduce((a,b) => a+b, 0) / measured.length : 0;
+    const fastest = measured.length ? Math.min(...measured) : 0;
+    const slowest = measured.length ? Math.max(...measured) : 0;
+    setReport({ type, interval, range, orders: filtered, measured, avg, fastest, slowest });
+  }
+
+  if (report) return <div className="profile-subpage report-result-page"><SubpageHeader title={report.type === "speed" ? "Отчет · Скорость приготовления" : "Отчет · Товарооборот"} onBack={() => setReport(null)} /><div className="report-result-head"><div><div className="eyebrow">{reportIntervalLabel(report.interval)}</div><h2>{restaurant.name}</h2><p>{new Date(report.range.from).toLocaleString("ru-RU")} — {new Date(report.range.to).toLocaleString("ru-RU")}</p></div><button className="secondary-button" onClick={() => setReport(null)}>Изменить отчет</button></div>{report.type === "speed" ? <div className="report-metrics"><div className="report-metric"><span>СРЕДНЕЕ ВРЕМЯ</span><strong>{report.avg.toFixed(1)} мин</strong><p>от создания до готовности</p></div><div className="report-metric"><span>САМЫЙ БЫСТРЫЙ</span><strong>{report.fastest.toFixed(1)} мин</strong><p>из измеренных заказов</p></div><div className="report-metric"><span>САМЫЙ ДОЛГИЙ</span><strong>{report.slowest.toFixed(1)} мин</strong><p>из измеренных заказов</p></div><div className="report-metric"><span>ЗАКАЗОВ</span><strong>{report.orders.length}</strong><p>в выбранном интервале</p></div></div> : <div className="report-metrics"><div className="report-metric"><span>ТОВАРООБОРОТ</span><strong>{money(report.turnover)}</strong><p>сумма заказов</p></div><div className="report-metric"><span>СРЕДНИЙ ЧЕК</span><strong>{money(report.avg)}</strong><p>на один заказ</p></div><div className="report-metric"><span>ЗАКАЗОВ</span><strong>{report.orders.length}</strong><p>в выбранном интервале</p></div></div>}<div className="glass-panel report-table-panel"><h3>Заказы в отчете</h3>{report.orders.length ? <div className="report-order-list">{report.orders.map(o => <div key={o.id}><span>#{String(o.number).padStart(4,"0")}</span><span>{new Date(o.createdAt).toLocaleString("ru-RU")}</span><span>{money(o.total)}</span><b>{o.status === "ready" || o.status === "completed" ? "Готов" : "В работе"}</b></div>)}</div> : <EmptyState icon="chart" title="Нет данных" text="В выбранном интервале нет заказов для формирования отчета."/>}</div></div>;
+
+  return <div className="profile-subpage"><SubpageHeader title="Отчеты" onBack={onBack}/><div className="glass-panel reports-builder"><div className="eyebrow">АНАЛИТИКА РЕСТОРАНА</div><h2>Сформировать отчет</h2><p className="muted">Выберите интервал и тип отчета. После формирования откроется отдельная страница с результатами.</p><div className="report-form-grid"><div className="input-group"><label>Интервал</label><select value={interval} onChange={e=>setInterval(e.target.value)}><option value="last_hour">Последний час</option><option value="today">Сегодня</option><option value="yesterday">Прошедший день</option><option value="month">Текущий месяц</option></select></div><div className="input-group"><label>Отчет</label><select value={type} onChange={e=>setType(e.target.value)}><option value="speed">По скорости приготовления</option><option value="turnover">По товарообороту</option></select></div></div><button className="primary-button report-generate" onClick={buildReport}><Icon name="chart" size={18}/>Сформировать отчет</button></div></div>;
 }
 
 function AdminProfilePage({ restaurants, invoices, setInvoices }) {
@@ -3645,7 +3780,7 @@ function LiveOrdersScreen({
   function normalizeLiveOrders(source, restaurantId) {
     return source
       .filter((order) => order.restaurantId === restaurantId)
-      .filter((order) => order.status !== "completed" && order.status !== "cancelled")
+      .filter((order) => order.status !== "completed" && order.status !== "cancelled" && order.status !== "ready")
       .map((order) => ({
         ...order,
         // В кухонном режиме новый/принятый заказ сразу считается готовящимся.
@@ -3792,6 +3927,9 @@ function LiveOrdersScreen({
               ...order,
               status,
               statusChangedAt: new Date().toISOString(),
+              ...(status === "assembled" && !order.assembledAt ? { assembledAt: new Date().toISOString() } : {}),
+              ...(status === "ready" ? { readyAt: new Date().toISOString() } : {}),
+              ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}),
             }
           : order
       )
@@ -4042,6 +4180,19 @@ export default function App() {
   );
 
   const [session, setSession] = useState(null);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  function handleLogin(nextSession) {
+    if (nextSession.role === "director") {
+      setRestaurants((prev) => prev.map((r) => r.id === nextSession.restaurantId && !r.trialStartedAt ? { ...r, trialStartedAt: new Date().toISOString() } : r));
+    }
+    setSession(nextSession);
+  }
 
   const urlParams = useMemo(() => {
     return new URLSearchParams(
@@ -4155,7 +4306,7 @@ export default function App() {
     return (
       <Auth
         restaurants={restaurants}
-        onLogin={setSession}
+        onLogin={handleLogin}
       />
     );
   }
@@ -4186,6 +4337,17 @@ export default function App() {
     (restaurant) =>
       restaurant.id === session.restaurantId
   );
+
+  if (directorRestaurant) {
+    const trialStarted = directorRestaurant.trialStartedAt ? new Date(directorRestaurant.trialStartedAt).getTime() : Date.now();
+    const trialExpired = now - trialStarted >= TRIAL_HOURS * 60 * 60 * 1000;
+    if (!directorRestaurant.licenseAcceptedAt) {
+      return <LicenseAgreementGate restaurant={directorRestaurant} onAccept={() => { setRestaurants(prev => prev.map(r => r.id === directorRestaurant.id ? { ...r, licenseAcceptedAt: new Date().toISOString() } : r)); }} onLogout={logout} />;
+    }
+    if (trialExpired && !invoices.some(i => i.restaurantId === directorRestaurant.id && i.status === "paid")) {
+      return <TrialExpiredGate restaurant={directorRestaurant} invoices={invoices} setInvoices={setInvoices} onLogout={logout} />;
+    }
+  }
 
   return (
     <DirectorApp
