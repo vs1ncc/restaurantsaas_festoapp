@@ -5916,3 +5916,44 @@ button {
 
 @media(max-width:900px){.report-metrics{grid-template-columns:repeat(2,1fr)}.customer-dishes{grid-template-columns:1fr!important}.customer-dish{grid-template-columns:120px minmax(0,1fr)!important}.customer-dish-image{width:120px!important;height:120px!important}.trial-expired-head{grid-template-columns:auto 1fr}.trial-expired-head .secondary-button{grid-column:2;justify-self:start}.trial-expired-note{display:block}.profile-trial-banner{display:block}.profile-trial-banner p{margin-top:7px}}
 @media(max-width:600px){.agreement-page{padding:12px}.agreement-card-wide{padding:24px 18px}.agreement-parties{grid-template-columns:1fr}.agreement-scroll{max-height:300px}.agreement-actions{flex-direction:column-reverse}.trial-expired-page{padding:18px}.trial-expired-head{grid-template-columns:auto 1fr}.trial-expired-head h1{font-size:24px}.report-form-grid{grid-template-columns:1fr}.report-metrics{grid-template-columns:1fr 1fr}.report-result-head{align-items:flex-start;flex-direction:column}.report-order-list>div{grid-template-columns:80px 1fr;gap:7px}.report-order-list>div span:nth-child(3),.report-order-list>div b{grid-column:auto;text-align:left}.customer-content{width:calc(100% - 20px)!important}.customer-header{width:calc(100% - 20px)!important}.customer-dish{grid-template-columns:96px minmax(0,1fr)!important;padding:11px!important;gap:11px!important}.customer-dish-image{width:96px!important;height:96px!important}.customer-dish-info h2{font-size:17px!important}.customer-dish-info p{font-size:12px!important}.customer-title h1{font-size:31px!important}}
+
+/* =========================================================
+   DESKTOP NAVIGATION / SCROLL FIX — 12.09.2026
+   The cabinet is a single-page app. The sidebar is removed
+   from document flow and changing a section starts at scrollTop 0.
+========================================================= */
+@media (min-width: 801px) {
+  .app-shell {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: clip;
+  }
+
+  .app-shell .sidebar {
+    position: fixed !important;
+    top: 14px !important;
+    left: 14px !important;
+    right: auto !important;
+    bottom: 14px !important;
+    inset: auto auto 14px 14px !important;
+    width: 238px !important;
+    height: auto !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+  }
+
+  .app-shell .main-content {
+    position: relative;
+    z-index: 1;
+    margin-left: 266px !important;
+    width: auto !important;
+    max-width: none !important;
+    min-height: 100vh;
+    padding-top: 22px !important;
+  }
+
+  .app-shell .topbar {
+    position: relative;
+    z-index: 2;
+  }
+}

@@ -369,6 +369,11 @@ function AdminApp({
   const activeRestaurant =
     restaurants.find((r) => r.id === selectedRestaurant) || null;
 
+  // Navigation between sections must always start at the top of the desktop page.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [page]);
+
   function deleteRestaurant(id) {
     if (id === "demo-restaurant") {
       alert("Демо-ресторан нельзя удалить.");
@@ -521,6 +526,11 @@ function DirectorApp({
   onLogout,
 }) {
   const [page, setPage] = useState("dashboard");
+
+  // Reset the document scroll whenever a desktop cabinet section changes.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [page]);
 
   function openLiveOrders() {
     const url = `${window.location.origin}${window.location.pathname}?liveOrders=${encodeURIComponent(
