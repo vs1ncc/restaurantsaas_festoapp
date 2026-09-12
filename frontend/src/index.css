@@ -4460,6 +4460,14 @@ button {
 .app-shell .live-orders-button,
 .app-shell .mobile-bar { position: relative; z-index: 1; }
 
+/* Desktop layout fix: the sidebar must stay fixed, otherwise it takes normal document flow space and pushes main content below it. */
+@media (min-width: 801px) {
+  .app-shell .sidebar {
+    position: fixed;
+    z-index: 10;
+  }
+}
+
 /* ---------- SIDEBAR ---------- */
 .app-shell .sidebar {
   width: 238px;
