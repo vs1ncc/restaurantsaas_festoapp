@@ -4760,6 +4760,31 @@ function LiveOrdersScreen({
   }, [orders, restaurant.id]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const loadLiveOrders = () => {
+      festoApi(
+        `/api/orders?restaurantId=${encodeURIComponent(restaurant.id)}`
+      )
+        .then((remote) => {
+          if (!cancelled && Array.isArray(remote)) {
+            setOrders(remote);
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadLiveOrders();
+
+    const timer = window.setInterval(loadLiveOrders, 1500);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [restaurant.id]);
+
+  useEffect(() => {
     const ids = new Set(liveOrders.map((order) => order.id));
 
     if (initialized.current) {
