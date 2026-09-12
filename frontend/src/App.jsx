@@ -186,10 +186,23 @@ function Icon({ name, size = 18, strokeWidth = 1.8, className = "" }) {
   return <svg className={`festo-icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.file}</svg>;
 }
 
-function customerUrl(tableId) {
-  return `${window.location.origin}${window.location.pathname}?table=${encodeURIComponent(
-    tableId
-  )}`;
+function customerUrl(tableId, restaurantId = null) {
+  let resolvedRestaurantId = restaurantId;
+
+  // Если restaurantId не передан (например, старый вызов из QR-модалки),
+  // определяем его по столу из локальных данных.
+  if (!resolvedRestaurantId) {
+    const savedTables = readStorage(STORAGE.tables, DEFAULT_TABLES);
+    const savedTable = savedTables.find((item) => item.id === tableId);
+    resolvedRestaurantId = savedTable?.restaurantId || "";
+  }
+
+  // Hash-маршрут не требует серверного rewrite на Vercel.
+  // В QR одновременно записываем restaurantId и tableId, чтобы меню
+  // можно было открыть с телефона, где нет localStorage админки.
+  return `${window.location.origin}${window.location.pathname}#/menu/${encodeURIComponent(
+    resolvedRestaurantId
+  )}/${encodeURIComponent(tableId)}`;
 }
 
 /* -------------------------------------------------------
@@ -3022,11 +3035,14 @@ function CustomerApp({
   setOrders,
   publicData = null,
 }) {
-  const params = new URLSearchParams(
-    window.location.search
+  const params = new URLSearchParams(window.location.search);
+  const hashMatch = String(window.location.hash || "").match(
+    /^#\/menu\/([^/]+)\/([^/]+)\/?$/
   );
 
-  const tableId = params.get("table");
+  const tableId =
+    params.get("table") ||
+    (hashMatch ? decodeURIComponent(hashMatch[2]) : null);
 
   const publicRestaurant =
     publicData?.restaurant || restaurant;
@@ -4889,14 +4905,82 @@ export default function App() {
   const [session, setSession] = useState(null);
 
   const urlParams = useMemo(() => {
-    return new URLSearchParams(
-      window.location.search
-    );
+    return new URLSearchParams(window.location.search);
   }, []);
 
+  const publicRoute = useMemo(() => {
+    const hash = String(window.location.hash || "");
+    const match = hash.match(/^#\/menu\/([^/]+)\/([^/]+)\/?$/);
+
+    if (!match) {
+      return { restaurantId: "", tableId: "" };
+    }
+
+    return {
+      restaurantId: decodeURIComponent(match[1]),
+      tableId: decodeURIComponent(match[2]),
+    };
+  }, []);
+
+  // Старые QR-коды с ?table=... продолжают работать.
   const tableFromUrl = urlParams.get("table");
-  const liveOrdersRestaurantId =
-    urlParams.get("liveOrders");
+  const liveOrdersRestaurantId = urlParams.get("liveOrders");
+
+  const [publicMenuData, setPublicMenuData] = useState(null);
+  const [publicMenuLoading, setPublicMenuLoading] = useState(
+    Boolean(publicRoute.restaurantId && publicRoute.tableId)
+  );
+  const [publicMenuError, setPublicMenuError] = useState("");
+
+  useEffect(() => {
+    if (!publicRoute.restaurantId || !publicRoute.tableId) {
+      setPublicMenuLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadPublicMenu() {
+      setPublicMenuLoading(true);
+      setPublicMenuError("");
+
+      try {
+        const response = await fetch(
+          `/api/public-menu/${encodeURIComponent(publicRoute.restaurantId)}/${encodeURIComponent(publicRoute.tableId)}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+
+        if (!payload?.restaurant || !payload?.table) {
+          throw new Error("Публичное меню не найдено");
+        }
+
+        if (!cancelled) {
+          setPublicMenuData(payload);
+        }
+      } catch (error) {
+        console.error("FESTO public menu error:", error);
+        if (!cancelled) {
+          setPublicMenuData(null);
+          setPublicMenuError("Не удалось открыть меню. QR-код может быть устаревшим.");
+        }
+      } finally {
+        if (!cancelled) {
+          setPublicMenuLoading(false);
+        }
+      }
+    }
+
+    loadPublicMenu();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [publicRoute.restaurantId, publicRoute.tableId]);
 
   useEffect(() => {
     writeStorage(
@@ -4954,11 +5038,42 @@ export default function App() {
     );
   }, []);
 
-  // QR URL всегда открывает клиентское меню.
-  if (tableFromUrl) {
-    const table = tables.find(
-      (item) => item.id === tableFromUrl
+  // Новый QR: #/menu/<restaurantId>/<tableId>.
+  // Он загружает данные с Redis/API и поэтому работает на любом телефоне.
+  if (publicRoute.restaurantId && publicRoute.tableId) {
+    if (publicMenuLoading) {
+      return (
+        <CustomerError
+          title="Открываем меню…"
+          text="Загружаем меню ресторана."
+        />
+      );
+    }
+
+    if (publicMenuData) {
+      return (
+        <CustomerApp
+          restaurant={publicMenuData.restaurant}
+          categories={publicMenuData.categories || []}
+          dishes={publicMenuData.dishes || []}
+          tables={publicMenuData.table ? [publicMenuData.table] : []}
+          setOrders={setOrders}
+          publicData={publicMenuData}
+        />
+      );
+    }
+
+    return (
+      <CustomerError
+        title="Меню не найдено"
+        text={publicMenuError || "QR-код недействителен или данные ресторана недоступны."}
+      />
     );
+  }
+
+  // Старые QR с ?table=... сохраняем для обратной совместимости.
+  if (tableFromUrl) {
+    const table = tables.find((item) => item.id === tableFromUrl);
 
     if (table) {
       const restaurant = restaurants.find(
