@@ -4767,8 +4767,8 @@ function LiveOrdersScreen({
         `/api/orders?restaurantId=${encodeURIComponent(restaurant.id)}`
       )
         .then((remote) => {
-          if (!cancelled && Array.isArray(remote)) {
-            setOrders(remote);
+          if (!cancelled && Array.isArray(remote?.orders)) {
+            setOrders(remote.orders);
           }
         })
         .catch(() => {});
@@ -5245,7 +5245,7 @@ export default function App() {
     if (session?.role !== "director" || !session.restaurantId) return;
     let cancelled = false;
     const load = () => festoApi(`/api/orders?restaurantId=${encodeURIComponent(session.restaurantId)}`)
-      .then((remote) => { if (!cancelled && Array.isArray(remote)) setOrders(remote); })
+      .then((remote) => { if (!cancelled && Array.isArray(remote?.orders)) setOrders(remote.orders); })
       .catch(() => {});
     load();
     const timer = window.setInterval(load, 1500);
