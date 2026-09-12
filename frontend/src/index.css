@@ -10427,3 +10427,65 @@ button {
     font-size: 52px !important;
   }
 }
+
+/* =========================================================
+   FESTO BRAND LOGO — ADMIN + DIRECTOR
+   Visual only. Does not change application logic.
+   ========================================================= */
+
+.app-shell .brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  min-height: 48px !important;
+}
+
+.app-shell .brand-logo {
+  width: 118px !important;
+  height: 42px !important;
+  min-width: 118px !important;
+  border-radius: 0 !important;
+  background-image: url("/festo-logo.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  background-color: transparent !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  box-shadow: none !important;
+}
+
+.app-shell .brand > span {
+  display: none !important;
+}
+
+/* LIVE ORDERS — тот же логотип */
+.live-brand {
+  gap: 0 !important;
+}
+
+.live-brand-logo {
+  width: 118px !important;
+  height: 42px !important;
+  min-width: 118px !important;
+  border-radius: 0 !important;
+  background-image: url("/festo-logo.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  background-color: transparent !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Мобильные версии */
+@media (max-width: 900px) {
+  .app-shell .brand-logo,
+  .live-brand-logo {
+    width: 108px !important;
+    min-width: 108px !important;
+    height: 38px !important;
+  }
+}
+
