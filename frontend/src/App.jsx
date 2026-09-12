@@ -3870,7 +3870,11 @@ function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoi
   return (
     <div className="profile-page">
       <div className="page-heading"><div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>{restaurant.name} · управление аккаунтом</p></div></div>
-      <div className="profile-trial-banner"><div><span>ПРОБНЫЙ ДОСТУП</span><strong>{trialLabel}</strong></div><p>После завершения пробного периода оплатите счет в разделе «Счета и оплаты».</p></div>
+      {restaurant.subscriptionType === "perpetual" && restaurant.subscriptionActive ? (
+        <div className="profile-trial-banner profile-perpetual-banner"><div><span>ЛИЦЕНЗИЯ FESTO</span><strong>Бессрочная</strong></div><p>Оплата подтверждена администратором. Пробный период отключен.</p></div>
+      ) : (
+        <div className="profile-trial-banner"><div><span>ПРОБНЫЙ ДОСТУП</span><strong>{trialLabel}</strong></div><p>После завершения пробного периода оплатите счет в разделе «Счета и оплаты».</p></div>
+      )}
       <div className="profile-grid">
         <button className="profile-card" onClick={() => setSection("orders")}><span className="profile-card-icon"><Icon name="orders" size={26}/></span><strong>Заказы</strong><span>История и статусы заказов гостей</span><b>{orders.length}</b></button>
         <button className="profile-card" onClick={() => setSection("stands")}><span className="profile-card-icon"><Icon name="qr" size={26}/></span><strong>Заказать QR подставки</strong><span>Дизайн, логотип, цвет и конкретные столы</span><b>{standOrders.length}</b></button>
@@ -4001,13 +4005,20 @@ function AdminInvoicesPage({ restaurants, setRestaurants, invoices, setInvoices,
     if (!invoice) return;
     const reviewedAt = new Date().toISOString();
     setInvoices(prev=>prev.map(x=>x.id===id?{...x,status,reviewedAt}:x));
-    if (status === "paid" && invoice.type === "subscription") {
+    const isSubscriptionInvoice =
+      invoice.type === "subscription" ||
+      invoice.title === "Лицензия и программное обеспечение FESTO";
+
+    if (status === "paid" && isSubscriptionInvoice) {
+      // A confirmed subscription payment permanently activates the restaurant.
+      // Explicitly remove every trial marker so the trial gate can never return.
       setRestaurants(prev => prev.map(r => r.id === invoice.restaurantId ? {
         ...r,
         subscriptionActive: true,
         subscriptionType: "perpetual",
         trialStartedAt: null,
         trialDurationHours: 0,
+        trialEndsAt: null,
         subscriptionPaidAt: reviewedAt,
         paidInvoiceId: invoice.id,
       } : r));
@@ -4504,6 +4515,40 @@ export default function App() {
       ...prev,
     ]);
   }, [restaurants, invoices]);
+
+  // Migration/safety net: if an older build already stored a paid subscription
+  // invoice without the current restaurant flags, activate it now as perpetual.
+  useEffect(() => {
+    const paidSubscriptions = invoices.filter(i =>
+      i.status === "paid" &&
+      (i.type === "subscription" || i.title === "Лицензия и программное обеспечение FESTO")
+    );
+    if (!paidSubscriptions.length) return;
+
+    setRestaurants(prev => {
+      let changed = false;
+      const next = prev.map(r => {
+        const paid = paidSubscriptions
+          .filter(i => i.restaurantId === r.id)
+          .sort((a, b) => String(b.reviewedAt || b.createdAt || "").localeCompare(String(a.reviewedAt || a.createdAt || "")))[0];
+        if (!paid) return r;
+        if (r.subscriptionActive === true && r.subscriptionType === "perpetual" &&
+            r.trialStartedAt == null && r.trialDurationHours === 0 && r.trialEndsAt == null) return r;
+        changed = true;
+        return {
+          ...r,
+          subscriptionActive: true,
+          subscriptionType: "perpetual",
+          trialStartedAt: null,
+          trialDurationHours: 0,
+          trialEndsAt: null,
+          subscriptionPaidAt: r.subscriptionPaidAt || paid.reviewedAt || paid.createdAt || new Date().toISOString(),
+          paidInvoiceId: paid.id,
+        };
+      });
+      return changed ? next : prev;
+    });
+  }, [invoices]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
