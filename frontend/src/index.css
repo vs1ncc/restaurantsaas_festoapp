@@ -10560,3 +10560,35 @@ button {
     margin-bottom: 24px !important;
   }
 }
+
+/* Новый логотип FESTO на странице авторизации */
+.login-festo-logo {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  margin: 0 auto 30px !important;
+  padding: 0 !important;
+
+  color: #5b16f5 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 38px !important;
+  font-weight: 800 !important;
+  letter-spacing: 8px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+
+  text-shadow:
+    0 3px 10px rgba(91, 22, 245, .12),
+    0 0 1px rgba(91, 22, 245, .35) !important;
+}
+
+@media (max-width: 640px) {
+  .login-festo-logo {
+    font-size: 32px !important;
+    letter-spacing: 6px !important;
+    margin-bottom: 24px !important;
+  }
+}
