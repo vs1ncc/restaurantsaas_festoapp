@@ -3675,7 +3675,8 @@ function CustomerApp({
           orderComment={orderComment}
           setOrderComment={setOrderComment}
           onChangeQuantity={changeQuantity}
-          onContinue={continueFromCart}
+          onSubmit={submitOrder}
+          isSubmitting={isSubmitting}
         />
       </CustomerCheckoutLayout>
     );
@@ -3899,7 +3900,8 @@ function CustomerCartPage({
   orderComment,
   setOrderComment,
   onChangeQuantity,
-  onContinue,
+  onSubmit,
+  isSubmitting,
 }) {
   return (
     <section className="customer-cart-page">
@@ -3978,10 +3980,10 @@ function CustomerCartPage({
       <button
         type="button"
         className="customer-primary-button"
-        onClick={onContinue}
-        disabled={!cart.length}
+        onClick={onSubmit}
+        disabled={isSubmitting || !cart.length}
       >
-        Продолжить
+        {isSubmitting ? "Оформляем заказ..." : "Оформить заказ"}
       </button>
     </section>
   );
