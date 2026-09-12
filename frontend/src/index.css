@@ -6096,3 +6096,18 @@ button {
     max-width: calc(100% - 180px) !important;
   }
 }
+
+/* Dish image upload from local computer */
+.dish-image-upload-group input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed rgba(0,0,0,.18);
+  border-radius: 14px;
+  background: rgba(255,255,255,.72);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.field-help { display:block; margin-top:8px; color:#7b7b84; font-size:12px; line-height:1.4; }
+.dish-upload-preview { position:relative; }
+.dish-upload-preview img { display:block; width:100%; max-height:320px; object-fit:cover; border-radius:16px; }
+.dish-remove-image { margin-top:10px; }

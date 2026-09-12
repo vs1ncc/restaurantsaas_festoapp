@@ -2194,6 +2194,26 @@ function DishModal({
     }));
   }
 
+  function handleImageUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Выберите файл изображения: JPG, PNG, WEBP и т. п.");
+      e.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => update("image", String(reader.result || ""));
+    reader.onerror = () => alert("Не удалось прочитать выбранное изображение.");
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    update("image", "");
+  }
+
   function submit(e) {
     e.preventDefault();
 
@@ -2310,26 +2330,23 @@ function DishModal({
         <div className="form-section">
           <h3>Изображение</h3>
 
-          <div className="input-group">
-            <label>URL изображения</label>
+          <div className="input-group dish-image-upload-group">
+            <label>Загрузить фото с компьютера</label>
             <input
-              value={form.image}
-              onChange={(e) =>
-                update("image", e.target.value)
-              }
-              placeholder="https://..."
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
             />
+            <small className="field-help">Выберите JPG, PNG, WEBP или другое изображение. Фото сохраняется вместе с блюдом.</small>
           </div>
 
           {form.image && (
-            <div className="image-preview">
+            <div className="image-preview dish-upload-preview">
               <img
                 src={form.image}
-                alt="Предпросмотр"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
+                alt="Предпросмотр блюда"
               />
+              <button type="button" className="secondary-button dish-remove-image" onClick={removeImage}>Удалить фото</button>
             </div>
           )}
         </div>
