@@ -10489,3 +10489,46 @@ button {
   }
 }
 
+
+/* FESTO logo — final size and centered position */
+.app-shell .brand {
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.app-shell .brand-logo {
+  width: 100px !important;
+  height: 36px !important;
+  min-width: 100px !important;
+  margin: 0 auto !important;
+  background-size: contain !important;
+  background-position: center center !important;
+}
+
+.app-shell .brand > span {
+  display: none !important;
+}
+
+/* Live Orders */
+.live-brand {
+  justify-content: center !important;
+}
+
+.live-brand-logo {
+  width: 100px !important;
+  height: 36px !important;
+  min-width: 100px !important;
+  margin: 0 auto !important;
+  background-size: contain !important;
+  background-position: center center !important;
+}
+
+@media (max-width: 900px) {
+  .app-shell .brand-logo,
+  .live-brand-logo {
+    width: 92px !important;
+    height: 34px !important;
+    min-width: 92px !important;
+  }
+}
+
