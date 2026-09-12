@@ -291,7 +291,7 @@ function Auth({ restaurants, onLogin }) {
 
 const TRIAL_HOURS = 5;
 const SUBSCRIPTION_PRICE = 5000;
-const DEFAULT_PAYMENT_REQUISITES = "+7 925 569 07-37 · Даниэла Х. · Сбер Банк · по СБП";
+const DEFAULT_PAYMENT_REQUISITES = "+7 925 569 07-37 · Даниэла Альбертовна Х. · Сбер Банк · по СБП";
 
 function LicenseAgreementGate({ restaurant, onAccept, onLogout }) {
   const [accepted, setAccepted] = useState(false);
@@ -307,16 +307,33 @@ function LicenseAgreementGate({ restaurant, onAccept, onLogout }) {
           <div><span>Лицензиар</span><strong>{restaurant.legalName || restaurant.name}</strong><small>ресторан, на который создан аккаунт</small></div>
         </div>
         <div className="agreement-scroll">
-          <h3>1. Предмет соглашения</h3>
-          <p>Лицензиат предоставляет Лицензиару право использовать программное обеспечение FESTO для управления меню, QR-меню, столами, заказами, отчетами и связанными сервисами ресторана.</p>
-          <h3>2. Учетная запись</h3>
-          <p>Доступ предоставляется после ознакомления с соглашением и подтверждения согласия. Учетная запись предназначена для указанного ресторана и не должна передаваться третьим лицам.</p>
-          <h3>3. Оплата</h3>
-          <p>После пробного доступа программное обеспечение используется на платной основе. Счета выставляются в разделе «Счета и оплаты». Оплата производится банковским переводом по указанным в счете реквизитам.</p>
-          <h3>4. Проверка платежа</h3>
-          <p>После перевода Лицензиар прикрепляет чек и отправляет платеж на ручную проверку. Администратор FESTO проверяет платеж и подтверждает его в системе.</p>
-          <h3>5. Срок пробного доступа</h3>
-          <p>Пробный доступ к кабинету предоставляется сроком на 5 часов с момента начала пробного периода. Для продолжения работы необходимо оплатить счет на программное обеспечение.</p>
+          <h3>1. Общие положения</h3>
+          <p>Настоящее лицензионное соглашение регулирует предоставление права использования программного обеспечения FESTO для автоматизации работы ресторана. Лицензиаром по настоящему соглашению является ООО «Фесто», а Лицензиатом — юридическое лицо или индивидуальный предприниматель, указанный в учетной записи ресторана: <strong>{restaurant.legalName || restaurant.name}</strong>.</p>
+          <h3>2. Предмет лицензии</h3>
+          <p>Лицензиар предоставляет Лицензиату неисключительное, непередаваемое право использовать FESTO для управления меню, QR-меню, столами, заказами, отчетностью, настройками ресторана и иными доступными в аккаунте функциями. Передача исходного кода, перепродажа программы или предоставление доступа третьим лицам вне согласованного круга пользователей не разрешаются.</p>
+          <h3>3. Учетная запись и безопасность</h3>
+          <p>Лицензиат обязан хранить логин и пароль в тайне, своевременно обновлять данные и незамедлительно сообщать об утрате контроля над учетной записью. Действия, совершенные с использованием учетной записи, считаются совершенными Лицензиатом до момента уведомления Лицензиара об ее компрометации.</p>
+          <h3>4. Пробный период</h3>
+          <p>При первичном подключении предоставляется пробный доступ продолжительностью 5 часов с момента первого входа. В течение пробного периода функциональность предоставляется для ознакомления. По окончании пробного периода доступ к кабинету может быть ограничен до подтверждения оплаты лицензии.</p>
+          <h3>5. Стоимость и порядок оплаты</h3>
+          <p>Стоимость подключения нового ресторана составляет <strong>{money(SUBSCRIPTION_PRICE)}</strong>. Оплата производится банковским переводом по реквизитам, указанным в счете. После загрузки подтверждения платежа счет передается администратору FESTO на ручную проверку.</p>
+          <h3>6. Бессрочная лицензия после подтверждения оплаты</h3>
+          <p>После подтверждения администратором полной оплаты счета на подключение ресторана пробный период прекращается, а в учетной записи устанавливается статус бессрочной лицензии. Если платеж отклонен, статус лицензии не изменяется до получения и подтверждения корректного платежа.</p>
+          <h3>7. Интеллектуальные права</h3>
+          <p>Исключительные права на программное обеспечение FESTO, его интерфейс, код, товарные обозначения и документацию принадлежат соответствующим правообладателям. Настоящее соглашение не передает Лицензиату исключительные права на программу.</p>
+          <h3>8. Данные ресторана и ответственность пользователя</h3>
+          <p>Лицензиат самостоятельно отвечает за законность, достоверность и актуальность размещаемых в FESTO сведений, включая цены, состав блюд, изображения, реквизиты и сведения о заказах. Лицензиат также обязан иметь необходимые права на загружаемые фотографии, тексты и иные материалы.</p>
+          <h3>9. Доступность и техническая поддержка</h3>
+          <p>Лицензиар принимает разумные меры для поддержания работоспособности сервиса, однако не гарантирует бесперебойную работу при сбоях связи, оборудования, сторонней инфраструктуры или обстоятельствах непреодолимой силы. Плановые технические работы могут временно ограничивать доступ.</p>
+          <h3>10. Ограничение ответственности</h3>
+          <p>FESTO является программным инструментом автоматизации и не заменяет бухгалтерский, юридический или иной профессиональный контроль. Лицензиат самостоятельно проверяет корректность цен, заказов, платежей, отчетов и других критически важных данных перед их использованием.</p>
+          <h3>11. Срок действия и прекращение</h3>
+          <p>Соглашение действует с момента принятия и, при подтвержденной оплате лицензии, без ограничения срока, если иное не предусмотрено применимым законодательством или отдельным письменным соглашением сторон. При существенном нарушении условий доступ может быть приостановлен после уведомления Лицензиата, если нарушение не устранено в разумный срок.</p>
+          <h3>12. Изменения соглашения</h3>
+          <p>Изменения условий публикуются в интерфейсе FESTO или доводятся до Лицензиата иным доступным способом. Изменения, ухудшающие положение действующего Лицензиата, применяются с учетом требований законодательства и порядка уведомления.</p>
+          <h3>13. Заключительные положения</h3>
+          <p>Нажатие кнопки «Далее» после установки отметки означает, что пользователь ознакомился с текстом соглашения, понял его условия и действует от имени Лицензиата либо имеет полномочия принять соглашение. Если пользователь не согласен с условиями, он должен выйти из аккаунта и не использовать сервис.</p>
+          <p className="agreement-legal-note"><strong>Важно:</strong> этот текст является рабочим шаблоном пользовательского лицензионного соглашения для интерфейса FESTO. Перед коммерческим запуском его следует проверить и при необходимости адаптировать под реквизиты ООО «Фесто», выбранную юрисдикцию, налоговый режим и требования законодательства о персональных данных.</p>
         </div>
         <label className="agreement-check">
           <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
@@ -459,6 +476,7 @@ function AdminApp({
         {page === "profile" && (
           <AdminProfilePage
             restaurants={restaurants}
+            setRestaurants={setRestaurants}
             invoices={invoices}
             setInvoices={setInvoices}
           />
@@ -1151,6 +1169,8 @@ function CreateRestaurantModal({
       licenseAcceptedAt: null,
       trialStartedAt: null,
       trialDurationHours: TRIAL_HOURS,
+      subscriptionActive: false,
+      subscriptionType: "trial",
     };
 
     onCreate(restaurant);
@@ -1732,12 +1752,243 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
 }
 
 /* -------------------------------------------------------
+   LOCAL FESTO AI MENU ENGINE
+   On-device OCR + layout parsing. No /api/menu/parse endpoint is required.
+   OCR runs in the browser; the recognized menu blocks are converted into
+   separate dishes with name, price, description, composition and a crop
+   from the source menu photo.
+------------------------------------------------------- */
+
+let festoTesseractPromise = null;
+
+function loadFestoTesseract() {
+  if (typeof window !== "undefined" && window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (festoTesseractPromise) return festoTesseractPromise;
+  festoTesseractPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-festo-tesseract="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.Tesseract));
+      existing.addEventListener("error", () => reject(new Error("Не удалось загрузить локальный OCR-модуль FESTO AI.")));
+      return;
+    }
+    const script = document.createElement("script");
+    script.dataset.festoTesseract = "1";
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    script.async = true;
+    script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error("OCR-модуль FESTO AI не найден."));
+    script.onerror = () => reject(new Error("Не удалось загрузить OCR-модуль. Проверьте интернет-соединение и повторите попытку."));
+    document.head.appendChild(script);
+  });
+  return festoTesseractPromise;
+}
+
+function festoNormalizeOCRText(value) {
+  return String(value || "")
+    .replace(/[|¦]/g, "I")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.])/g, "$1")
+    .trim();
+}
+
+function festoParsePrice(value) {
+  const text = festoNormalizeOCRText(value);
+  const matches = [...text.matchAll(/(^|\s)(\d{2,5}(?:[.,]\d{1,2})?)(?:\s*(?:₽|руб(?:\.|лей)?|р\.?))?(?=\s*$)/gi)];
+  if (!matches.length) return null;
+  const raw = matches[matches.length - 1][2].replace(",", ".");
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 20 && n <= 999999 ? n : null;
+}
+
+function festoNameWithoutPrice(value) {
+  const text = festoNormalizeOCRText(value);
+  const match = text.match(/^(.*?)(?:\s+)(\d{2,5}(?:[.,]\d{1,2})?)(?:\s*(?:₽|руб(?:\.|лей)?|р\.?))?$/i);
+  const name = match ? match[1].replace(/[—–-]\s*$/, "").trim() : "";
+  return festoLooksLikeDishName(name) ? name : "";
+}
+
+function festoLooksLikeNoise(text) {
+  const t = festoNormalizeOCRText(text);
+  if (!t || t.length < 2) return true;
+  if (/^(меню|menu|цена|price|руб|₽|р\.?|вес|грамм|гр|мл|ml|g)$/i.test(t)) return true;
+  const letters = (t.match(/[A-Za-zА-Яа-яЁё]/g) || []).length;
+  const digits = (t.match(/\d/g) || []).length;
+  return letters < 2 || digits > letters * 2;
+}
+
+function festoLooksLikeDishName(text) {
+  const t = festoNormalizeOCRText(text);
+  if (festoLooksLikeNoise(t) || t.length > 90) return false;
+  if (festoParsePrice(t) != null) return false;
+  if (/^(состав|ингредиенты|описание|вес|выход|ккал|калорийность|цена|руб|₽)/i.test(t)) return false;
+  return (t.match(/[A-Za-zА-Яа-яЁё]/g) || []).length >= 3;
+}
+
+function festoCompositionFromText(lines) {
+  const joined = lines.map(festoNormalizeOCRText).filter(Boolean).join(" ");
+  if (!joined) return "";
+  const match = joined.match(/(?:состав|ингредиенты)\s*[:—-]?\s*(.+?)(?=\s+(?:цена|выход|вес)\b|$)/i);
+  return match ? match[1].trim() : "";
+}
+
+async function festoImageSize(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = url;
+    });
+    return { image: img, width: img.naturalWidth || img.width, height: img.naturalHeight || img.height };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function festoCropDataUrl(file, crop) {
+  const { image, width, height } = await festoImageSize(file);
+  const x = Math.max(0, Math.min(width - 1, Math.floor(crop.x)));
+  const y = Math.max(0, Math.min(height - 1, Math.floor(crop.y)));
+  const w = Math.max(1, Math.min(width - x, Math.floor(crop.w)));
+  const h = Math.max(1, Math.min(height - y, Math.floor(crop.h)));
+  const canvas = document.createElement("canvas");
+  const maxSide = 1200;
+  const scale = Math.min(1, maxSide / Math.max(w, h));
+  canvas.width = Math.max(1, Math.round(w * scale));
+  canvas.height = Math.max(1, Math.round(h * scale));
+  const ctx = canvas.getContext("2d", { alpha: false });
+  ctx.drawImage(image, x, y, w, h, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.86);
+}
+
+function festoClusterColumns(lines, imageWidth) {
+  if (!lines.length) return [];
+  const sorted = [...lines].sort((a, b) => a.x - b.x);
+  const columns = [];
+  const threshold = Math.max(90, imageWidth * 0.18);
+  sorted.forEach(line => {
+    const center = line.x + line.w / 2;
+    let target = columns.find(c => Math.abs(c.center - center) < threshold);
+    if (!target) {
+      target = { lines: [], center };
+      columns.push(target);
+    }
+    target.lines.push(line);
+    target.center = target.lines.reduce((sum, item) => sum + item.x + item.w / 2, 0) / target.lines.length;
+  });
+  return columns.sort((a, b) => a.center - b.center);
+}
+
+async function festoRecognizeImage(file, onProgress) {
+  const Tesseract = await loadFestoTesseract();
+  const result = await Tesseract.recognize(file, "rus+eng", {
+    logger: message => {
+      if (message?.status === "recognizing text" && Number.isFinite(message.progress)) onProgress?.(message.progress);
+    },
+  });
+  const data = result?.data || {};
+  const size = await festoImageSize(file);
+  const imageWidth = size.width;
+  const imageHeight = size.height;
+  const rawLines = (data.lines || []).map(line => {
+    const bbox = line.bbox || {};
+    return {
+      text: festoNormalizeOCRText(line.text),
+      x: Number(bbox.x0 || 0),
+      y: Number(bbox.y0 || 0),
+      w: Math.max(1, Number(bbox.x1 || 0) - Number(bbox.x0 || 0)),
+      h: Math.max(1, Number(bbox.y1 || 0) - Number(bbox.y0 || 0)),
+    };
+  }).filter(line => line.text && line.w > 3 && line.h > 3);
+
+  const columns = festoClusterColumns(rawLines, imageWidth);
+  const detected = [];
+  for (const column of columns) {
+    const lines = column.lines.sort((a, b) => a.y - b.y);
+    const priceLines = lines.filter(line => festoParsePrice(line.text) != null);
+    const anchors = priceLines.length ? priceLines : lines.filter(line => festoLooksLikeDishName(line.text));
+    if (!anchors.length) continue;
+
+    const left = Math.max(0, Math.min(...lines.map(l => l.x)) - 24);
+    const right = Math.min(imageWidth, Math.max(...lines.map(l => l.x + l.w)) + 24);
+    for (let i = 0; i < anchors.length; i++) {
+      const anchor = anchors[i];
+      const previous = anchors[i - 1];
+      const next = anchors[i + 1];
+      const top = Math.max(0, previous ? Math.floor((previous.y + previous.h + anchor.y) / 2) : Math.floor(anchor.y - imageHeight * 0.09));
+      const bottom = Math.min(imageHeight, next ? Math.floor((anchor.y + anchor.h + next.y) / 2) : Math.floor(anchor.y + imageHeight * 0.16));
+      const nearby = lines.filter(line => line.y + line.h >= top && line.y <= bottom).sort((a, b) => a.y - b.y);
+      const price = festoParsePrice(anchor.text);
+      let nameIndex = nearby.findIndex(line => festoLooksLikeDishName(line.text) && (price == null || line.y <= anchor.y));
+      if (nameIndex < 0) nameIndex = nearby.findIndex(line => festoLooksLikeDishName(line.text));
+      const inlineName = nameIndex < 0 ? festoNameWithoutPrice(anchor.text) : "";
+      if (nameIndex < 0 && !inlineName) continue;
+      const name = inlineName || nearby[nameIndex].text;
+      const textLines = nearby.filter((line, idx) => (nameIndex < 0 || idx !== nameIndex) && line !== anchor && !festoParsePrice(line.text));
+      const description = textLines.map(l => l.text).filter(Boolean).join(" ").slice(0, 360);
+      const ingredients = festoCompositionFromText(textLines);
+      let image = "";
+      try {
+        image = await festoCropDataUrl(file, { x: left, y: top, w: Math.max(80, right - left), h: Math.max(80, bottom - top) });
+      } catch (_) {}
+      detected.push({
+        name,
+        price: price || 0,
+        description: ingredients ? description.replace(ingredients, "").trim() : description,
+        ingredients,
+        image,
+        category: "Без категории",
+        confidence: typeof data.confidence === "number" ? Math.max(0, Math.min(1, data.confidence / 100)) : null,
+        sourceFile: file.name,
+      });
+    }
+  }
+
+  // Deduplicate OCR anchors from overlapping columns/blocks.
+  const unique = [];
+  const seen = new Set();
+  detected.forEach(item => {
+    const key = `${item.name.toLowerCase().replace(/[^a-zа-яё0-9]+/gi, " ").trim()}|${item.price}`;
+    if (!seen.has(key)) { seen.add(key); unique.push(item); }
+  });
+  return unique;
+}
+
+async function festoLocalMenuAI(files, onProgress) {
+  const imageFiles = files.filter(file => /^image\/(jpeg|png|webp|heic)/i.test(file.type) || /\.(jpe?g|png|webp|heic)$/i.test(file.name));
+  if (!imageFiles.length) throw new Error("Для встроенного FESTO AI сейчас нужны фотографии меню (JPG, PNG или WEBP). PDF/Excel/Word можно оставить для отдельного серверного импорта.");
+  const all = [];
+  for (let i = 0; i < imageFiles.length; i++) {
+    const part = await festoRecognizeImage(imageFiles[i], progress => onProgress?.((i + progress) / imageFiles.length));
+    all.push(...part);
+  }
+  const merged = [];
+  const byName = new Map();
+  all.forEach(item => {
+    const key = item.name.toLowerCase().replace(/[^a-zа-яё0-9]+/gi, " ").trim();
+    if (!key) return;
+    if (byName.has(key)) {
+      const existing = byName.get(key);
+      if (!existing.image && item.image) existing.image = item.image;
+      if (!existing.ingredients && item.ingredients) existing.ingredients = item.ingredients;
+      if (!existing.description && item.description) existing.description = item.description;
+      if (!existing.price && item.price) existing.price = item.price;
+    } else {
+      byName.set(key, item);
+      merged.push(item);
+    }
+  });
+  return merged;
+}
+
+/* -------------------------------------------------------
    AI MENU IMPORT
 ------------------------------------------------------- */
 
 function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage = false }) {
   const [files, setFiles] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [review, setReview] = useState([]);
   const [dragActive, setDragActive] = useState(false);
@@ -1759,20 +2010,14 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage
 
   async function processFiles() {
     if (!files.length) { setError("Добавьте хотя бы один файл."); return; }
-    setProcessing(true); setError("");
+    setProcessing(true); setProgress(0); setError("");
     try {
-      const formData = new FormData();
-      formData.append("restaurantId", restaurant.id);
-      formData.append("restaurantName", restaurant.name);
-      formData.append("categories", JSON.stringify(categories));
-      files.forEach((file) => formData.append("files", file, file.name));
-      const response = await fetch("/api/menu/parse", { method: "POST", body: formData });
-      if (!response.ok) throw new Error(`Сервис ИИ вернул ошибку ${response.status}.`);
-      const data = await response.json();
-      if (!Array.isArray(data.dishes) || !data.dishes.length) throw new Error("ИИ не смог найти блюда в загруженных материалах.");
-      setReview(data.dishes.map((dish, index) => ({ id: uid("ai-review"), confidence: dish.confidence ?? null, ...dish, _index: index })));
+      const dishes = await festoLocalMenuAI(files, value => setProgress(Math.round(value * 100)));
+      if (!Array.isArray(dishes) || !dishes.length) throw new Error("Встроенный FESTO AI не нашел отдельных блюд. Попробуйте более четкое фото, где хорошо видны названия и цены.");
+      setReview(dishes.map((dish, index) => ({ id: uid("ai-review"), confidence: dish.confidence ?? null, ...dish, _index: index })));
+      setProgress(100);
     } catch (err) {
-      setError(`${err.message || "Не удалось обработать файлы."} Сейчас в клиентской версии нужен подключённый endpoint /api/menu/parse с OCR/AI.`);
+      setError(err.message || "Не удалось обработать фотографии меню.");
     } finally { setProcessing(false); }
   }
 
@@ -1789,7 +2034,7 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage
     <div className={fullPage ? "form-page-content" : "modal-overlay"}>
       <div className="modal ai-import-modal">
         <div className="modal-header">
-          <div><div className="eyebrow">FESTO AI MENU</div><h2>{review.length ? "Проверка меню" : "Добавить меню с ИИ"}</h2><p className="modal-subtitle">Фото, Excel, Word и PDF. Можно загрузить сразу много файлов.</p></div>
+          <div><div className="eyebrow">FESTO AI MENU</div><h2>{review.length ? "Проверка меню" : "Добавить меню с ИИ"}</h2><p className="modal-subtitle">Встроенный ИИ работает прямо в браузере: находит отдельные карточки блюд даже на одной фотографии и переносит название, цену, состав, описание и фото-кроп.</p></div>
           <button type="button" className="close-button" onClick={onClose}><Icon name="close" size={18} /></button>
         </div>
 
@@ -1804,20 +2049,21 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage
             </div>
 
             <div className="ai-capabilities">
-              <div><Icon name="image" size={17} /><span><strong>Фото</strong> — распознаёт десятки блюд на одном фото</span></div>
-              <div><Icon name="file" size={17} /><span><strong>Excel / Word / PDF</strong> — извлекает названия, описания, состав и цены</span></div>
-              <div><Icon name="spark" size={17} /><span><strong>Объединение</strong> — сопоставляет данные из разных файлов в одно блюдо</span></div>
+              <div><Icon name="image" size={17} /><span><strong>On-device OCR</strong> — распознаёт много блюд на одном фото и разбивает их на отдельные карточки</span></div>
+              <div><Icon name="spark" size={17} /><span><strong>Умный разбор</strong> — связывает название, цену, описание и состав по расположению текста</span></div>
+              <div><Icon name="image" size={17} /><span><strong>Фото блюда</strong> — сохраняет отдельный кроп исходной карточки меню для каждого найденного блюда</span></div>
             </div>
 
             {files.length > 0 && <div className="ai-file-list">{files.map((file, index) => <div className="ai-file-row" key={`${file.name}-${file.size}-${index}`}><Icon name={file.type.startsWith("image/") ? "image" : "file"} size={17} /><div><strong>{file.name}</strong><span>{(file.size / 1024 / 1024).toFixed(2)} МБ</span></div><button type="button" onClick={() => removeFile(index)}><Icon name="close" size={15} /></button></div>)}</div>}
             {error && <div className="error ai-error">{error}</div>}
-            <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>Отмена</button><button className="primary-button" type="button" disabled={!files.length || processing} onClick={processFiles}>{processing ? "ИИ анализирует…" : <><Icon name="spark" size={17} />Распознать меню</>}</button></div>
+            <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>Отмена</button><button className="primary-button" type="button" disabled={!files.length || processing} onClick={processFiles}>{processing ? `ИИ анализирует… ${progress}%` : <><Icon name="spark" size={17}/>Распознать меню</>}</button></div>
           </>
         ) : (
           <>
             <div className="ai-review-summary"><div><strong>{review.length}</strong><span>найдено блюд</span></div><div><strong>{review.filter((x) => x.confidence != null && Number(x.confidence) < 0.75).length}</strong><span>требуют проверки</span></div><div><strong>{files.length}</strong><span>источников</span></div></div>
             <div className="ai-review-list">{review.map((item) => <div className="ai-review-card" key={item.id}>
               <div className="ai-review-number">{item._index + 1}</div>
+              <div className="ai-review-image">{item.image ? <img src={item.image} alt="Предпросмотр блюда" /> : <Icon name="image" size={24} />}</div>
               <div className="ai-review-fields">
                 <div className="ai-review-grid">
                   <label>Название<input value={item.name || ""} onChange={(e) => updateReview(item.id, "name", e.target.value)} /></label>
@@ -3668,9 +3914,9 @@ function ReportsPage({ restaurant, orders, onBack }) {
   return <div className="profile-subpage"><SubpageHeader title="Отчеты" onBack={onBack}/><div className="glass-panel reports-builder"><div className="eyebrow">АНАЛИТИКА РЕСТОРАНА</div><h2>Сформировать отчет</h2><p className="muted">Выберите интервал и тип отчета. После формирования откроется отдельная страница с результатами.</p><div className="report-form-grid"><div className="input-group"><label>Интервал</label><select value={interval} onChange={e=>setInterval(e.target.value)}><option value="last_hour">Последний час</option><option value="today">Сегодня</option><option value="yesterday">Прошедший день</option><option value="month">Текущий месяц</option></select></div><div className="input-group"><label>Отчет</label><select value={type} onChange={e=>setType(e.target.value)}><option value="speed">По скорости приготовления</option><option value="turnover">По товарообороту</option></select></div></div><button className="primary-button report-generate" onClick={buildReport}><Icon name="chart" size={18}/>Сформировать отчет</button></div></div>;
 }
 
-function AdminProfilePage({ restaurants, invoices, setInvoices }) {
+function AdminProfilePage({ restaurants, setRestaurants, invoices, setInvoices }) {
   const [section, setSection] = useState("home");
-  if (section === "invoices") return <AdminInvoicesPage restaurants={restaurants} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
+  if (section === "invoices") return <AdminInvoicesPage restaurants={restaurants} setRestaurants={setRestaurants} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
   return <div className="profile-page"><div className="page-heading"><div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>Управление аккаунтом администратора</p></div></div><div className="profile-grid"><button className="profile-card" onClick={() => setSection("invoices")}><span className="profile-card-icon"><Icon name="bank" size={26}/></span><strong>Счета и оплаты</strong><span>Выставляйте счета ресторанам и проверяйте платежи</span><b>{invoices.filter(x => x.status === "payment_submitted").length}</b></button></div></div>;
 }
 
@@ -3723,10 +3969,32 @@ function InvoicesPage({ restaurant, invoices, setInvoices, onBack }) {
   return <div className="profile-subpage"><SubpageHeader title="Счета и оплаты" onBack={onBack}/><div className="billing-note"><Icon name="bank" size={20}/><div><strong>Оплата только переводом на банковский счёт</strong><span>После перевода прикрепите чек. Администратор проверяет платеж вручную, обычно в течение 10 минут.</span></div></div>{mine.length===0?<EmptyState icon="bank" title="Счетов пока нет" text="Когда администратор выставит счет, он появится здесь."/>:<div className="invoice-list">{mine.map(inv=><div className="invoice-card" key={inv.id}><div><div className="eyebrow">СЧЕТ · {inv.number}</div><h3>{inv.title}</h3><p>{inv.description}</p><strong>{money(inv.amount)}</strong></div><div className={`invoice-status status-${inv.status}`}>{invoiceStatus(inv.status)}</div>{inv.status !== "paid" && inv.status !== "payment_submitted" && <button className="primary-button" onClick={()=>{setSelected(inv);setReceipt("")}}>Оплатить и отправить чек</button>}{inv.status === "payment_submitted" && <div className="invoice-wait">Чек отправлен · проверка до 10 минут</div>}{inv.status === "paid" && <div className="invoice-paid">Оплата подтверждена</div>}<div className="requisites"><b>Реквизиты для перевода</b><span>{inv.requisites}</span></div></div>)}</div>}{selected&&<div className="modal-backdrop"><div className="modal-card"><button className="icon-button modal-close" onClick={()=>setSelected(null)}><Icon name="close"/></button><div className="eyebrow">ОПЛАТА СЧЕТА</div><h2>{selected.title}</h2><div className="payment-amount">{money(selected.amount)}</div><div className="requisites"><b>Переведите средства по реквизитам</b><span>{selected.requisites}</span></div><div className="logo-upload"><input id="receipt-upload" type="file" accept="image/*,.pdf" onChange={uploadReceipt}/><label htmlFor="receipt-upload"><Icon name="upload" size={18}/> {receipt?"Чек загружен":"Загрузить чек"}</label></div><button className="primary-button" onClick={submitPayment}>Отправить платеж на проверку</button></div></div>}</div>;
 }
 
-function AdminInvoicesPage({ restaurants, invoices, setInvoices, onBack }) {
-  const [form, setForm] = useState({restaurantId: restaurants[0]?.id || "", title:"", amount:"", description:"", requisites:""});
-  function createInvoice(){ if(!form.restaurantId||!form.title||!form.amount||!form.requisites){alert("Заполните ресторан, название, сумму и реквизиты.");return;} setInvoices(prev=>[{id:uid("invoice"),number:String(Math.floor(1000+Math.random()*9000)),...form,amount:Number(form.amount),status:"pending_payment",createdAt:new Date().toISOString()},...prev]);setForm({...form,title:"",amount:"",description:""}); }
-  function review(id,status){setInvoices(prev=>prev.map(x=>x.id===id?{...x,status,reviewedAt:new Date().toISOString()}:x));}
+function AdminInvoicesPage({ restaurants, setRestaurants, invoices, setInvoices, onBack }) {
+  const [form, setForm] = useState({restaurantId: restaurants[0]?.id || "", title:"", amount:"", description:"", requisites:DEFAULT_PAYMENT_REQUISITES});
+
+  function createInvoice(){
+    if(!form.restaurantId||!form.title||!form.amount||!form.requisites){alert("Заполните ресторан, название, сумму и реквизиты.");return;}
+    setInvoices(prev=>[{id:uid("invoice"),number:String(Math.floor(1000+Math.random()*9000)),...form,amount:Number(form.amount),status:"pending_payment",createdAt:new Date().toISOString()},...prev]);
+    setForm({...form,title:"",amount:"",description:"",requisites:DEFAULT_PAYMENT_REQUISITES});
+  }
+
+  function review(id,status){
+    const invoice = invoices.find(x => x.id === id);
+    if (!invoice) return;
+    const reviewedAt = new Date().toISOString();
+    setInvoices(prev=>prev.map(x=>x.id===id?{...x,status,reviewedAt}:x));
+    if (status === "paid" && invoice.type === "subscription") {
+      setRestaurants(prev => prev.map(r => r.id === invoice.restaurantId ? {
+        ...r,
+        subscriptionActive: true,
+        subscriptionType: "perpetual",
+        trialStartedAt: null,
+        trialDurationHours: 0,
+        subscriptionPaidAt: reviewedAt,
+        paidInvoiceId: invoice.id,
+      } : r));
+    }
+  }
   return <div className="profile-subpage"><SubpageHeader title="Счета и оплаты" onBack={onBack}/><div className="admin-billing-layout"><div className="glass-panel"><div className="eyebrow">АДМИНИСТРАТОР</div><h2>Выставить новый счет</h2><div className="input-group"><label>Ресторан</label><select value={form.restaurantId} onChange={e=>setForm({...form,restaurantId:e.target.value})}>{restaurants.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div><div className="input-group"><label>Название счета</label><input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Например: QR-подставки"/></div><div className="form-row"><div className="input-group"><label>Сумма, ₽</label><input type="number" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/></div><div className="input-group"><label>Описание</label><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="За что выставлен счет"/></div></div><div className="input-group"><label>Реквизиты для перевода</label><textarea value={form.requisites} onChange={e=>setForm({...form,requisites:e.target.value})} placeholder="Банк, получатель, номер счета..."/></div><button className="primary-button" onClick={createInvoice}>Выставить счет</button></div><div className="invoice-list admin-invoice-list">{invoices.length===0?<EmptyState icon="bank" title="Счетов нет" text="Создайте первый счет для ресторана."/>:invoices.map(inv=><div className="invoice-card" key={inv.id}><div><div className="eyebrow">СЧЕТ · {inv.number}</div><h3>{inv.title}</h3><p>{restaurants.find(r=>r.id===inv.restaurantId)?.name}</p><strong>{money(inv.amount)}</strong></div><div className={`invoice-status status-${inv.status}`}>{invoiceStatus(inv.status)}</div><div className="requisites"><b>Реквизиты</b><span>{inv.requisites}</span></div>{inv.receiptData&&<div className="receipt-preview"><span>Чек приложен</span>{String(inv.receiptData).startsWith("data:image")&&<img src={inv.receiptData} alt="Чек"/>}</div>}{inv.status === "payment_submitted"&&<div className="review-actions"><button className="primary-button" onClick={()=>review(inv.id,"paid")}>Подтвердить оплату</button><button className="danger-button" onClick={()=>review(inv.id,"rejected")}>Отклонить</button></div>}</div>)}</div></div></div>;
 }
 
@@ -4198,6 +4466,27 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [now, setNow] = useState(Date.now());
 
+  // Safety net: every newly created restaurant automatically receives one subscription invoice.
+  useEffect(() => {
+    const missing = restaurants.filter(r => r.id !== "demo-restaurant" && !invoices.some(i => i.restaurantId === r.id && i.type === "subscription"));
+    if (!missing.length) return;
+    setInvoices(prev => [
+      ...missing.map(r => ({
+        id: uid("invoice"),
+        number: `F-${new Date().getFullYear()}-${String(Date.now() + Math.random()).slice(-6)}`,
+        restaurantId: r.id,
+        title: "Лицензия и программное обеспечение FESTO",
+        amount: SUBSCRIPTION_PRICE,
+        description: "Подключение ресторана и бессрочная лицензия FESTO после подтверждения оплаты.",
+        requisites: DEFAULT_PAYMENT_REQUISITES,
+        status: "pending_payment",
+        type: "subscription",
+        createdAt: new Date().toISOString(),
+      })),
+      ...prev,
+    ]);
+  }, [restaurants, invoices]);
+
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
     return () => window.clearInterval(timer);
@@ -4360,7 +4649,7 @@ export default function App() {
     if (!directorRestaurant.licenseAcceptedAt) {
       return <LicenseAgreementGate restaurant={directorRestaurant} onAccept={() => { setRestaurants(prev => prev.map(r => r.id === directorRestaurant.id ? { ...r, licenseAcceptedAt: new Date().toISOString() } : r)); }} onLogout={logout} />;
     }
-    if (trialExpired && !invoices.some(i => i.restaurantId === directorRestaurant.id && i.status === "paid")) {
+    if (trialExpired && !directorRestaurant.subscriptionActive) {
       return <TrialExpiredGate restaurant={directorRestaurant} invoices={invoices} setInvoices={setInvoices} onLogout={logout} />;
     }
   }
