@@ -3343,66 +3343,136 @@ function CustomerApp({
   const params = new URLSearchParams(window.location.search);
   const tableId = params.get("table");
   const restaurantIdFromUrl = params.get("restaurant");
+
   const publicRestaurant = publicData?.restaurant || restaurant;
   const publicCategories = publicData?.categories || categories;
   const publicDishes = publicData?.dishes || dishes;
   const publicTable = publicData?.table || null;
 
-  const table = publicTable || tables.find(
-    (item) =>
-      item.id === tableId &&
-      item.restaurantId === restaurant.id &&
-      (!restaurantIdFromUrl || item.restaurantId === restaurantIdFromUrl)
-  );
+  const table =
+    publicTable ||
+    tables.find(
+      (item) =>
+        item.id === tableId &&
+        item.restaurantId === restaurant.id &&
+        (!restaurantIdFromUrl ||
+          item.restaurantId === restaurantIdFromUrl)
+    );
 
-  const [activeCategory, setActiveCategory] =
-    useState("all");
-
+  const [activeCategory, setActiveCategory] = useState("all");
   const [cart, setCart] = useState([]);
-  const [showCart, setShowCart] = useState(false);
-  const [orderComplete, setOrderComplete] =
-    useState(false);
+  const [checkoutStep, setCheckoutStep] = useState("menu");
+  const [orderComplete, setOrderComplete] = useState(false);
   const [orderComment, setOrderComment] = useState("");
   const [submittedOrder, setSubmittedOrder] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const restaurantCategories = publicCategories
-    .filter((c) => c.restaurantId === publicRestaurant.id || publicData)
-    .sort((a, b) => a.sort - b.sort);
+  const restaurantCategories = (publicCategories || [])
+    .filter(
+      (category) =>
+        category.restaurantId === publicRestaurant.id || publicData
+    )
+    .sort(
+      (a, b) =>
+        Number(a.sort || 0) - Number(b.sort || 0)
+    );
 
-  const restaurantDishes = publicData
-    ? publicDishes.filter((d) => d.active !== false)
-    : publicDishes.filter((d) => d.restaurantId === publicRestaurant.id && d.active !== false);
+  const restaurantDishes = (publicDishes || []).filter(
+    (dish) =>
+      dish.active !== false &&
+      (publicData || dish.restaurantId === publicRestaurant.id)
+  );
 
   const filteredDishes =
     activeCategory === "all"
       ? restaurantDishes
       : restaurantDishes.filter(
-          (d) => d.categoryId === activeCategory
+          (dish) => dish.categoryId === activeCategory
         );
 
   const cartTotal = cart.reduce(
     (sum, item) =>
-      sum + item.price * item.quantity,
+      sum +
+      Number(item.price || 0) *
+        Number(item.quantity || 0),
     0
   );
 
   const cartCount = cart.reduce(
-    (sum, item) => sum + item.quantity,
+    (sum, item) =>
+      sum + Number(item.quantity || 0),
     0
   );
 
+  const upsellDishes = useMemo(() => {
+    const cartIds = new Set(
+      cart.map((item) => item.dishId)
+    );
+
+    const available = restaurantDishes.filter(
+      (dish) => !cartIds.has(dish.id)
+    );
+
+    const categoryMap = new Map(
+      restaurantCategories.map((category) => [
+        category.id,
+        String(category.name || "").toLowerCase(),
+      ])
+    );
+
+    const priorityWords = [
+      "напит",
+      "drink",
+      "соус",
+      "sauce",
+      "закуск",
+      "snack",
+      "карто",
+      "десерт",
+      "слад",
+    ];
+
+    const priority = [];
+    const regular = [];
+
+    available.forEach((dish) => {
+      const categoryName =
+        categoryMap.get(dish.categoryId) || "";
+
+      const text =
+        `${dish.name || ""} ${categoryName}`.toLowerCase();
+
+      if (
+        priorityWords.some((word) =>
+          text.includes(word)
+        )
+      ) {
+        priority.push(dish);
+      } else {
+        regular.push(dish);
+      }
+    });
+
+    return [...priority, ...regular].slice(0, 6);
+  }, [
+    cart,
+    restaurantDishes,
+    restaurantCategories,
+  ]);
+
   function addToCart(dish) {
     setCart((prev) => {
-      const exists = prev.find(
+      const existing = prev.find(
         (item) => item.dishId === dish.id
       );
 
-      if (exists) {
+      if (existing) {
         return prev.map((item) =>
           item.dishId === dish.id
             ? {
                 ...item,
-                quantity: item.quantity + 1,
+                quantity:
+                  Number(item.quantity || 0) + 1,
               }
             : item
         );
@@ -3413,8 +3483,10 @@ function CustomerApp({
         {
           dishId: dish.id,
           name: dish.name,
-          price: Number(dish.price),
+          price: Number(dish.price || 0),
           quantity: 1,
+          image: dish.image || null,
+          description: dish.description || "",
         },
       ];
     });
@@ -3427,40 +3499,61 @@ function CustomerApp({
           item.dishId === dishId
             ? {
                 ...item,
-                quantity: item.quantity + delta,
+                quantity:
+                  Number(item.quantity || 0) + delta,
               }
             : item
         )
-        .filter((item) => item.quantity > 0)
+        .filter(
+          (item) => Number(item.quantity || 0) > 0
+        )
     );
   }
 
-  async function submitOrder() {
-    if (!cart.length || !table) {
+  function openCheckout() {
+    if (!cart.length) {
       return;
     }
+
+    setCheckoutStep("cart");
+  }
+
+  function continueFromCart() {
+    if (!cart.length) {
+      return;
+    }
+
+    setCheckoutStep("upsell");
+  }
+
+  function continueFromUpsell() {
+    setCheckoutStep("review");
+  }
+
+  async function submitOrder() {
+    if (!cart.length || !table || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
 
     const orderDraft = {
       id: uid("order"),
       restaurantId: publicRestaurant.id,
       tableId: table.id,
-
       tableName:
         table.name ||
         `Стол ${table.number ?? ""}`,
-
       tableNumber:
         table.number ??
         table.name ??
         "0",
-
       items: cart.map((item) => ({
         dishId: item.dishId,
         name: item.name,
         price: Number(item.price),
         quantity: Number(item.quantity),
       })),
-
       total: cartTotal,
       comment: orderComment.trim(),
       status: "new",
@@ -3486,7 +3579,7 @@ function CustomerApp({
       setSubmittedOrder(saved);
       setCart([]);
       setOrderComment("");
-      setShowCart(false);
+      setCheckoutStep("menu");
       setOrderComplete(true);
     } catch (error) {
       console.error(
@@ -3497,14 +3590,16 @@ function CustomerApp({
       alert(
         "Не удалось оформить заказ. Проверьте соединение и повторите попытку."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   if (!table) {
     return (
       <CustomerError
-        title="Столик не найден"
-        text="QR-код недействителен или столик был удалён."
+        title="Стол не найден"
+        text="Проверьте QR-код или ссылку на меню."
       />
     );
   }
@@ -3512,14 +3607,16 @@ function CustomerApp({
   if (orderComplete) {
     return (
       <div
-        className="customer-page"
+        className="customer-page customer-success-page"
         style={{
           "--customer-accent":
             publicRestaurant.accent || "#6C4BF4",
         }}
       >
-        <div className="customer-success">
-          <div className="success-icon">✓</div>
+        <div className="customer-success-card">
+          <div className="customer-success-icon">
+            ✓
+          </div>
 
           <div className="customer-eyebrow">
             ЗАКАЗ ПРИНЯТ
@@ -3527,28 +3624,93 @@ function CustomerApp({
 
           <h1>Спасибо!</h1>
 
-          <div className="customer-order-number">
-            ЗАКАЗ №{String(submittedOrder?.number || "").padStart(4, "0")}
-          </div>
-
           <p>
-            Ваш заказ передан ресторану.
+            Заказ уже поступил в ресторан.
             <br />
-            Ожидайте приготовления.
+            Официант скоро займётся им.
           </p>
 
-          {submittedOrder && (
-            <CustomerOrderTracking order={submittedOrder} />
+          {submittedOrder?.id && (
+            <div className="customer-success-order">
+              Заказ #{String(submittedOrder.id).slice(-6)}
+            </div>
           )}
 
           <button
-            className="customer-primary"
-            onClick={() => setOrderComplete(false)}
+            type="button"
+            className="customer-primary-button"
+            onClick={() => {
+              setOrderComplete(false);
+              setCheckoutStep("menu");
+            }}
           >
             Вернуться в меню
           </button>
         </div>
       </div>
+    );
+  }
+
+  if (checkoutStep === "cart") {
+    return (
+      <CustomerCheckoutLayout
+        publicRestaurant={publicRestaurant}
+        table={table}
+        cartCount={cartCount}
+        cartTotal={cartTotal}
+        onBack={() => setCheckoutStep("menu")}
+      >
+        <CustomerCartPage
+          cart={cart}
+          cartTotal={cartTotal}
+          orderComment={orderComment}
+          setOrderComment={setOrderComment}
+          onChangeQuantity={changeQuantity}
+          onContinue={continueFromCart}
+        />
+      </CustomerCheckoutLayout>
+    );
+  }
+
+  if (checkoutStep === "upsell") {
+    return (
+      <CustomerCheckoutLayout
+        publicRestaurant={publicRestaurant}
+        table={table}
+        cartCount={cartCount}
+        cartTotal={cartTotal}
+        onBack={() => setCheckoutStep("cart")}
+      >
+        <CustomerUpsellPage
+          dishes={upsellDishes}
+          cartTotal={cartTotal}
+          onAdd={addToCart}
+          onSkip={continueFromUpsell}
+          onContinue={continueFromUpsell}
+        />
+      </CustomerCheckoutLayout>
+    );
+  }
+
+  if (checkoutStep === "review") {
+    return (
+      <CustomerCheckoutLayout
+        publicRestaurant={publicRestaurant}
+        table={table}
+        cartCount={cartCount}
+        cartTotal={cartTotal}
+        onBack={() => setCheckoutStep("upsell")}
+      >
+        <CustomerReviewPage
+          cart={cart}
+          cartTotal={cartTotal}
+          orderComment={orderComment}
+          setOrderComment={setOrderComment}
+          onChangeQuantity={changeQuantity}
+          onSubmit={submitOrder}
+          isSubmitting={isSubmitting}
+        />
+      </CustomerCheckoutLayout>
     );
   }
 
@@ -3561,38 +3723,50 @@ function CustomerApp({
       }}
     >
       <header className="customer-header">
-        <div className="customer-logo">F</div>
+        <div className="customer-brand">
+          {publicRestaurant.logo ? (
+            <img
+              src={publicRestaurant.logo}
+              alt={publicRestaurant.name || "Ресторан"}
+              className="customer-restaurant-logo"
+            />
+          ) : (
+            <div className="customer-logo">
+              F
+            </div>
+          )}
 
-        <div>
-          <div className="customer-restaurant">
-            {publicRestaurant.name}
-          </div>
+          <div className="customer-brand-text">
+            <div className="customer-eyebrow">
+              {publicRestaurant.name}
+            </div>
 
-          <div className="customer-table">
-            {table.name}
+            <div className="customer-table">
+              {table.name ||
+                `Стол ${table.number ?? ""}`}
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="customer-content">
-        <div className="customer-title">
+      <main className="customer-main">
+        <section className="customer-title">
           <div className="customer-eyebrow">
             МЕНЮ
           </div>
 
-          <h1>Что желаете?</h1>
-        </div>
+          <h1>{getCustomerGreeting()}</h1>
+        </section>
 
         <div className="customer-categories">
           <button
+            type="button"
             className={
               activeCategory === "all"
                 ? "customer-category active"
                 : "customer-category"
             }
-            onClick={() =>
-              setActiveCategory("all")
-            }
+            onClick={() => setActiveCategory("all")}
           >
             Всё
           </button>
@@ -3600,6 +3774,7 @@ function CustomerApp({
           {restaurantCategories.map(
             (category) => (
               <button
+                type="button"
                 key={category.id}
                 className={
                   activeCategory === category.id
@@ -3616,53 +3791,402 @@ function CustomerApp({
           )}
         </div>
 
-        <div className="customer-dishes">
-          {filteredDishes.map((dish) => (
-            <CustomerDish
-              key={dish.id}
-              dish={dish}
-              onAdd={() => addToCart(dish)}
-            />
-          ))}
-        </div>
-      </div>
+        <section className="customer-dishes">
+          {filteredDishes.length ? (
+            filteredDishes.map((dish) => (
+              <CustomerDish
+                key={dish.id}
+                dish={dish}
+                onAdd={() => addToCart(dish)}
+              />
+            ))
+          ) : (
+            <div className="customer-empty">
+              В этой категории пока нет блюд.
+            </div>
+          )}
+        </section>
+      </main>
 
       <div className="customer-bottom-bar">
         <button
-          className={!showCart ? "active" : ""}
-          onClick={() => setShowCart(false)}
+          type="button"
+          className="customer-bottom-menu"
+          onClick={() => setActiveCategory("all")}
         >
-          <span>⌂</span>
-          <small>Меню</small>
+          <Icon
+            name="grid"
+            size={20}
+            strokeWidth={2}
+          />
+          <span>Меню</span>
         </button>
 
         <button
-          className={showCart ? "active" : ""}
-          onClick={() => setShowCart(true)}
+          type="button"
+          className={
+            cartCount > 0
+              ? "customer-bottom-order has-items"
+              : "customer-bottom-order"
+          }
+          onClick={openCheckout}
         >
-          <span>
-            □
-            {cartCount > 0 && (
-              <b>{cartCount}</b>
-            )}
-          </span>
+          <span>Мой заказ</span>
 
-          <small>Мой заказ</small>
+          {cartCount > 0 && (
+            <span className="customer-bottom-order-meta">
+              <span className="customer-bottom-badge">
+                {cartCount}
+              </span>
+
+              <strong>
+                {money(cartTotal)}
+              </strong>
+            </span>
+          )}
         </button>
       </div>
-
-      {showCart && (
-        <CustomerCart
-          cart={cart}
-          total={cartTotal}
-          onChange={changeQuantity}
-          onSubmit={submitOrder}
-          comment={orderComment}
-          onCommentChange={setOrderComment}
-          onClose={() => setShowCart(false)}
-        />
-      )}
     </div>
+  );
+}
+
+function CustomerCheckoutLayout({
+  publicRestaurant,
+  table,
+  cartCount,
+  cartTotal,
+  onBack,
+  children,
+}) {
+  return (
+    <div
+      className="customer-page customer-checkout-page"
+      style={{
+        "--customer-accent":
+          publicRestaurant.accent || "#6C4BF4",
+      }}
+    >
+      <header className="customer-checkout-header">
+        <button
+          type="button"
+          className="customer-checkout-back"
+          onClick={onBack}
+          aria-label="Назад"
+        >
+          <Icon
+            name="arrow"
+            size={22}
+            strokeWidth={2}
+            className="customer-checkout-back-icon"
+          />
+        </button>
+
+        <div>
+          <div className="customer-eyebrow">
+            {publicRestaurant.name}
+          </div>
+
+          <strong>
+            {table.name ||
+              `Стол ${table.number ?? ""}`}
+          </strong>
+        </div>
+
+        <div className="customer-checkout-mini-total">
+          {cartCount > 0 ? money(cartTotal) : ""}
+        </div>
+      </header>
+
+      <main className="customer-checkout-content">
+        {children}
+      </main>
+    </div>
+  );
+}
+
+function CustomerCartPage({
+  cart,
+  cartTotal,
+  orderComment,
+  setOrderComment,
+  onChangeQuantity,
+  onContinue,
+}) {
+  return (
+    <section className="customer-cart-page">
+      <div className="customer-eyebrow">
+        МОЙ ЗАКАЗ
+      </div>
+
+      <h1>Ваш заказ</h1>
+
+      <div className="customer-order-list">
+        {cart.map((item) => (
+          <div
+            className="customer-order-row"
+            key={item.dishId}
+          >
+            <div className="customer-order-row-main">
+              <strong>{item.name}</strong>
+
+              <span>
+                {money(item.price)} ×{" "}
+                {item.quantity}
+              </span>
+            </div>
+
+            <div className="customer-quantity">
+              <button
+                type="button"
+                onClick={() =>
+                  onChangeQuantity(
+                    item.dishId,
+                    -1
+                  )
+                }
+                aria-label="Уменьшить количество"
+              >
+                −
+              </button>
+
+              <span>{item.quantity}</span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  onChangeQuantity(
+                    item.dishId,
+                    1
+                  )
+                }
+                aria-label="Увеличить количество"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <label className="customer-comment">
+        <span>Комментарий к заказу</span>
+
+        <textarea
+          value={orderComment}
+          onChange={(event) =>
+            setOrderComment(event.target.value)
+          }
+          placeholder="Например: без лука, соус отдельно..."
+          maxLength={300}
+        />
+      </label>
+
+      <div className="customer-total-row">
+        <span>Итого</span>
+        <strong>{money(cartTotal)}</strong>
+      </div>
+
+      <button
+        type="button"
+        className="customer-primary-button"
+        onClick={onContinue}
+        disabled={!cart.length}
+      >
+        Продолжить
+      </button>
+    </section>
+  );
+}
+
+function CustomerUpsellPage({
+  dishes,
+  cartTotal,
+  onAdd,
+  onSkip,
+  onContinue,
+}) {
+  return (
+    <section className="customer-upsell-page">
+      <div className="customer-eyebrow">
+        ДОПОЛНИТЕ ЗАКАЗ
+      </div>
+
+      <h1>
+        Может, ещё что-нибудь?
+      </h1>
+
+      <p className="customer-upsell-description">
+        Часто к заказу добавляют напитки,
+        соусы, закуски и десерты.
+      </p>
+
+      {dishes.length > 0 && (
+        <div className="customer-upsell-list">
+          {dishes.map((dish) => (
+            <article
+              className="customer-upsell-card"
+              key={dish.id}
+            >
+              {dish.image ? (
+                <img
+                  src={dish.image}
+                  alt={dish.name}
+                  className="customer-upsell-image"
+                />
+              ) : (
+                <div className="customer-upsell-image customer-upsell-image-placeholder">
+                  F
+                </div>
+              )}
+
+              <div className="customer-upsell-card-body">
+                <strong>{dish.name}</strong>
+
+                {dish.description && (
+                  <p>
+                    {dish.description}
+                  </p>
+                )}
+
+                <div className="customer-upsell-card-footer">
+                  <span>
+                    {money(dish.price)}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => onAdd(dish)}
+                  >
+                    Добавить
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      <div className="customer-upsell-actions">
+        <button
+          type="button"
+          className="customer-secondary-button"
+          onClick={onSkip}
+        >
+          Пропустить
+        </button>
+
+        <button
+          type="button"
+          className="customer-primary-button"
+          onClick={onContinue}
+        >
+          Перейти к проверке ·{" "}
+          {money(cartTotal)}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function CustomerReviewPage({
+  cart,
+  cartTotal,
+  orderComment,
+  setOrderComment,
+  onChangeQuantity,
+  onSubmit,
+  isSubmitting,
+}) {
+  return (
+    <section className="customer-review-page">
+      <div className="customer-eyebrow">
+        ПОСЛЕДНИЙ ШАГ
+      </div>
+
+      <h1>Проверьте заказ</h1>
+
+      <div className="customer-review-card">
+        {cart.map((item) => (
+          <div
+            className="customer-review-row"
+            key={item.dishId}
+          >
+            <div>
+              <strong>{item.name}</strong>
+
+              <span>
+                {money(item.price)} ×{" "}
+                {item.quantity}
+              </span>
+            </div>
+
+            <div className="customer-quantity">
+              <button
+                type="button"
+                onClick={() =>
+                  onChangeQuantity(
+                    item.dishId,
+                    -1
+                  )
+                }
+                aria-label="Уменьшить количество"
+              >
+                −
+              </button>
+
+              <span>{item.quantity}</span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  onChangeQuantity(
+                    item.dishId,
+                    1
+                  )
+                }
+                aria-label="Увеличить количество"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <label className="customer-comment">
+        <span>Комментарий к заказу</span>
+
+        <textarea
+          value={orderComment}
+          onChange={(event) =>
+            setOrderComment(event.target.value)
+          }
+          placeholder="Например: без лука, соус отдельно..."
+          maxLength={300}
+        />
+      </label>
+
+      <div className="customer-total-row">
+        <span>Итого</span>
+        <strong>{money(cartTotal)}</strong>
+      </div>
+
+      <button
+        type="button"
+        className="customer-primary-button"
+        onClick={onSubmit}
+        disabled={isSubmitting || !cart.length}
+      >
+        {isSubmitting
+          ? "Оформляем заказ..."
+          : "Оформить заказ"}
+      </button>
+
+      <p className="customer-final-note">
+        После нажатия заказ сразу поступит
+        в ресторан.
+      </p>
+    </section>
   );
 }
 
