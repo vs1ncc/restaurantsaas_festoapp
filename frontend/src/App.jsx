@@ -638,7 +638,6 @@ function AdminDashboard({
           </button>
         </div>
 
-        <div className="welcome-mark">F</div>
       </div>
 
       <div className="dashboard-grid">
@@ -750,7 +749,6 @@ function DirectorDashboard({
           </button>
         </div>
 
-        <div className="hero-logo">F</div>
       </div>
 
       <div className="dashboard-grid">
@@ -1404,17 +1402,27 @@ function DetailRow({ label, value }) {
   );
 }
 
+function SubpageHeader({ title, onBack }) {
+  return (
+    <div className="subpage-header">
+      <button className="subpage-back" type="button" onClick={onBack} aria-label="Назад в меню">
+        <Icon name="arrow" size={18} className="subpage-back-icon" />
+        <span>Назад</span>
+      </button>
+      <div className="subpage-title">{title}</div>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------
    MENU MANAGER
 ------------------------------------------------------- */
 
 function MenuManager({ restaurant, categories, dishes, setCategories, setDishes }) {
-  const [categoryModal, setCategoryModal] = useState(false);
-  const [dishModal, setDishModal] = useState(false);
+  const [menuSubpage, setMenuSubpage] = useState(null);
   const [editingDish, setEditingDish] = useState(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
-  const [showAIImport, setShowAIImport] = useState(false);
 
   const visibleCategories = [...categories].sort((a, b) => a.sort - b.sort);
   const visibleDishes = dishes.filter((dish) => {
@@ -1491,14 +1499,65 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
     return newDishes.length;
   }
 
+  if (menuSubpage === "category") {
+    return (
+      <div className="editor-page">
+        <SubpageHeader title="Новая категория" onBack={() => setMenuSubpage(null)} />
+        <CategoryModal
+          fullPage
+          onClose={() => setMenuSubpage(null)}
+          onCreate={(name) => {
+            setCategories((prev) => [...prev, { id: uid("category"), restaurantId: restaurant.id, name, sort: prev.length + 1 }]);
+            setMenuSubpage(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (menuSubpage === "dish") {
+    return (
+      <div className="editor-page">
+        <SubpageHeader title={editingDish ? "Редактировать блюдо" : "Новое блюдо"} onBack={() => { setMenuSubpage(null); setEditingDish(null); }} />
+        <DishModal
+          fullPage
+          restaurant={restaurant}
+          categories={categories}
+          dish={editingDish}
+          onClose={() => { setMenuSubpage(null); setEditingDish(null); }}
+          onSave={(dish) => {
+            setDishes((prev) => prev.some((item) => item.id === dish.id) ? prev.map((item) => item.id === dish.id ? dish : item) : [...prev, dish]);
+            setMenuSubpage(null);
+            setEditingDish(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (menuSubpage === "ai") {
+    return (
+      <div className="editor-page">
+        <SubpageHeader title="Добавить меню с ИИ" onBack={() => setMenuSubpage(null)} />
+        <AIMenuImportModal
+          fullPage
+          restaurant={restaurant}
+          categories={categories}
+          onClose={() => setMenuSubpage(null)}
+          onImport={importAIResult}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="page-heading">
         <div><div className="eyebrow">РЕСТОРАН</div><h1>Меню</h1><p>Управляйте категориями и блюдами ресторана</p></div>
         <div className="heading-actions">
-          <button className="ai-menu-button" onClick={() => setShowAIImport(true)} type="button"><Icon name="spark" size={18} />Добавить меню с ИИ</button>
-          <button className="secondary-button" onClick={() => setCategoryModal(true)} type="button">Категория</button>
-          <button className="primary-button" onClick={() => { setEditingDish(null); setDishModal(true); }} type="button">Добавить блюдо</button>
+          <button className="ai-menu-button" onClick={() => setMenuSubpage("ai")} type="button"><Icon name="spark" size={18} />Добавить меню с ИИ</button>
+          <button className="secondary-button" onClick={() => setMenuSubpage("category")} type="button">Категория</button>
+          <button className="primary-button" onClick={() => { setEditingDish(null); setMenuSubpage("dish"); }} type="button">Добавить блюдо</button>
         </div>
       </div>
 
@@ -1520,7 +1579,7 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
 
         <div className="dish-grid">
           {visibleDishes.length === 0 ? (
-            <EmptyState icon="menu" title="Блюд пока нет" text="Добавьте первое блюдо или загрузите меню через ИИ." button="Добавить блюдо" onClick={() => { setEditingDish(null); setDishModal(true); }} />
+            <EmptyState icon="menu" title="Блюд пока нет" text="Добавьте первое блюдо или загрузите меню через ИИ." button="Добавить блюдо" onClick={() => { setEditingDish(null); setMenuSubpage("dish"); }} />
           ) : visibleDishes.map((dish) => {
             const category = categories.find((c) => c.id === dish.categoryId);
             return (
@@ -1538,7 +1597,7 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
                     <strong>{money(dish.price)}</strong>
                     <div className="dish-actions">
                       <button onClick={() => toggleDish(dish.id)} title={dish.active ? "Скрыть" : "Показать"} type="button"><Icon name={dish.active ? "eye" : "eyeOff"} size={16} /></button>
-                      <button onClick={() => { setEditingDish(dish); setDishModal(true); }} title="Редактировать" type="button"><Icon name="edit" size={16} /></button>
+                      <button onClick={() => { setEditingDish(dish); setMenuSubpage("dish"); }} title="Редактировать" type="button"><Icon name="edit" size={16} /></button>
                       <button onClick={() => deleteDish(dish.id)} title="Удалить" type="button"><Icon name="trash" size={16} /></button>
                     </div>
                   </div>
@@ -1549,9 +1608,6 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
         </div>
       </div>
 
-      {categoryModal && <CategoryModal onClose={() => setCategoryModal(false)} onCreate={(name) => { setCategories((prev) => [...prev, { id: uid("category"), restaurantId: restaurant.id, name, sort: prev.length + 1 }]); setCategoryModal(false); }} />}
-      {dishModal && <DishModal restaurant={restaurant} categories={categories} dish={editingDish} onClose={() => { setDishModal(false); setEditingDish(null); }} onSave={(dish) => { setDishes((prev) => prev.some((item) => item.id === dish.id) ? prev.map((item) => item.id === dish.id ? dish : item) : [...prev, dish]); setDishModal(false); setEditingDish(null); }} />}
-      {showAIImport && <AIMenuImportModal restaurant={restaurant} categories={categories} onClose={() => setShowAIImport(false)} onImport={importAIResult} />}
     </>
   );
 }
@@ -1560,7 +1616,7 @@ function MenuManager({ restaurant, categories, dishes, setCategories, setDishes 
    AI MENU IMPORT
 ------------------------------------------------------- */
 
-function AIMenuImportModal({ restaurant, categories, onClose, onImport }) {
+function AIMenuImportModal({ restaurant, categories, onClose, onImport, fullPage = false }) {
   const [files, setFiles] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
@@ -1611,7 +1667,7 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport }) {
   }
 
   return (
-    <div className="modal-overlay">
+    <div className={fullPage ? "form-page-content" : "modal-overlay"}>
       <div className="modal ai-import-modal">
         <div className="modal-header">
           <div><div className="eyebrow">FESTO AI MENU</div><h2>{review.length ? "Проверка меню" : "Добавить меню с ИИ"}</h2><p className="modal-subtitle">Фото, Excel, Word и PDF. Можно загрузить сразу много файлов.</p></div>
@@ -1667,7 +1723,7 @@ function AIMenuImportModal({ restaurant, categories, onClose, onImport }) {
    CATEGORY MODAL
 ------------------------------------------------------- */
 
-function CategoryModal({ onClose, onCreate }) {
+function CategoryModal({ onClose, onCreate, fullPage = false }) {
   const [name, setName] = useState("");
 
   function submit(e) {
@@ -1679,7 +1735,7 @@ function CategoryModal({ onClose, onCreate }) {
   }
 
   return (
-    <div className="modal-overlay">
+    <div className={fullPage ? "form-page-content" : "modal-overlay"}>
       <form className="modal" onSubmit={submit}>
         <div className="modal-header">
           <div>
@@ -1736,6 +1792,7 @@ function DishModal({
   dish,
   onClose,
   onSave,
+  fullPage = false,
 }) {
   const [form, setForm] = useState(
     dish || {
@@ -1783,7 +1840,7 @@ function DishModal({
   }
 
   return (
-    <div className="modal-overlay">
+    <div className={fullPage ? "form-page-content" : "modal-overlay"}>
       <form className="modal large-modal" onSubmit={submit}>
         <div className="modal-header">
           <div>
@@ -1941,7 +1998,7 @@ function TablesManager({
   tables,
   setTables,
 }) {
-  const [showModal, setShowModal] = useState(false);
+  const [tableSubpage, setTableSubpage] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
 
   function deleteTable(id) {
@@ -1956,22 +2013,29 @@ function TablesManager({
     }
   }
 
-  async function copyLink(table) {
-    const link = customerUrl(table.id);
-
-    try {
-      await navigator.clipboard.writeText(link);
-      alert("Ссылка скопирована.");
-    } catch {
-      window.prompt("Скопируйте ссылку:", link);
-    }
-  }
-
   function printQR(table) {
     setSelectedTable(table);
     window.setTimeout(() => {
       window.print();
     }, 250);
+  }
+
+  if (tableSubpage) {
+    return (
+      <div className="editor-page">
+        <SubpageHeader title="Новый столик" onBack={() => setTableSubpage(false)} />
+        <AddTableModal
+          fullPage
+          tables={tables}
+          restaurant={restaurant}
+          onClose={() => setTableSubpage(false)}
+          onCreate={(table) => {
+            setTables((prev) => [...prev, table]);
+            setTableSubpage(false);
+          }}
+        />
+      </div>
+    );
   }
 
   return (
@@ -1987,7 +2051,7 @@ function TablesManager({
 
         <button
           className="primary-button"
-          onClick={() => setShowModal(true)}
+          onClick={() => setTableSubpage(true)}
         >
           + Добавить стол
         </button>
@@ -1999,7 +2063,7 @@ function TablesManager({
           title="Столов пока нет"
           text="Добавьте столик, чтобы получить QR-код."
           button="Добавить стол"
-          onClick={() => setShowModal(true)}
+          onClick={() => setTableSubpage(true)}
         />
       ) : (
         <div className="table-grid">
@@ -2042,13 +2106,6 @@ function TablesManager({
 
                 <button
                   className="secondary-button"
-                  onClick={() => copyLink(table)}
-                >
-                  Скопировать ссылку
-                </button>
-
-                <button
-                  className="secondary-button"
                   onClick={() => printQR(table)}
                 >
                   Печать QR
@@ -2064,18 +2121,6 @@ function TablesManager({
             </div>
           ))}
         </div>
-      )}
-
-      {showModal && (
-        <AddTableModal
-          tables={tables}
-          restaurant={restaurant}
-          onClose={() => setShowModal(false)}
-          onCreate={(table) => {
-            setTables((prev) => [...prev, table]);
-            setShowModal(false);
-          }}
-        />
       )}
 
       {selectedTable && (
@@ -2097,6 +2142,7 @@ function AddTableModal({
   restaurant,
   onClose,
   onCreate,
+  fullPage = false,
 }) {
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
@@ -2126,7 +2172,7 @@ function AddTableModal({
   }
 
   return (
-    <div className="modal-overlay">
+    <div className={fullPage ? "form-page-content" : "modal-overlay"}>
       <form className="modal" onSubmit={submit}>
         <div className="modal-header">
           <div>
@@ -2191,15 +2237,6 @@ function AddTableModal({
 function QRModal({ table, onClose }) {
   const link = customerUrl(table.id);
 
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(link);
-      alert("Ссылка скопирована.");
-    } catch {
-      window.prompt("Скопируйте ссылку:", link);
-    }
-  }
-
   return (
     <div className="modal-overlay">
       <div className="modal qr-modal">
@@ -2232,13 +2269,6 @@ function QRModal({ table, onClose }) {
         </div>
 
         <div className="modal-actions">
-          <button
-            className="secondary-button"
-            onClick={copy}
-          >
-            Скопировать ссылку
-          </button>
-
           <a
             className="primary-button"
             href={link}

@@ -4281,3 +4281,96 @@ button {
     min-width: 62px;
   }
 }
+
+/* =========================================================
+   FESTO FORM SUBPAGES
+   Full-page editors for category / dish / AI menu / table
+========================================================= */
+.subpage-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  margin-bottom: 22px;
+}
+
+.subpage-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 13px 0 10px;
+  border: 1px solid #e3e3e8;
+  border-radius: 13px;
+  background: #fff;
+  color: #242428;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: transform .16s ease, background .16s ease, border-color .16s ease;
+}
+.subpage-back:hover { background: #f7f7f9; border-color: #d7d7dd; }
+.subpage-back:active { transform: scale(.98); }
+.subpage-back-icon { transform: rotate(180deg); }
+.subpage-title {
+  font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -.02em;
+  color: #151519;
+}
+
+.editor-page { width: 100%; }
+.form-page-content {
+  width: 100%;
+  display: block;
+}
+.form-page-content > .modal {
+  width: min(760px, 100%);
+  max-width: 760px;
+  margin: 0;
+  border: 1px solid #e7e7eb;
+  border-radius: 22px;
+  box-shadow: 0 10px 35px rgba(16,16,20,.06);
+  background: #fff;
+}
+.form-page-content > .modal.ai-import-modal {
+  width: min(980px, 100%);
+  max-width: 980px;
+}
+.form-page-content .modal-header { padding-bottom: 20px; }
+.form-page-content .modal-actions { margin-top: 24px; }
+
+/* Remove the old modal feeling when a form is promoted to a page. */
+.form-page-content .close-button { display: none; }
+
+@media (max-width: 800px) {
+  .subpage-header {
+    min-height: 48px;
+    margin-bottom: 14px;
+    gap: 10px;
+  }
+  .subpage-back {
+    height: 38px;
+    border-radius: 12px;
+    padding: 0 11px 0 9px;
+  }
+  .subpage-title { font-size: 17px; }
+  .form-page-content > .modal,
+  .form-page-content > .modal.ai-import-modal {
+    width: 100%;
+    max-width: none;
+    border-radius: 18px;
+  }
+}
+
+/* Final spacing: keep a clear 5px breathing room below the order filters. */
+.orders-toolbar { margin-bottom: 5px !important; }
+
+/* Full-page editor layout */
+.editor-page { padding-bottom: 24px; }
+.form-page-content > .modal { box-sizing: border-box; }
+
+@media (max-width: 800px) {
+  .editor-page { padding-bottom: 88px; }
+}
