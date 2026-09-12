@@ -578,22 +578,13 @@ function DirectorApp({
         onLogout={onLogout}
       />
 
-      <button
-        className="live-orders-button"
-        onClick={openLiveOrders}
-        title="Открыть Live-заказы в новой вкладке"
-      >
-        <span className="live-dot" />
-        LIVE ЗАКАЗЫ
-        <span className="live-count">{restaurantOrders.length}</span>
-        <span className="live-arrow"><Icon name="arrow" size={15} /></span>
-      </button>
-
       <main className="main-content">
         <Topbar
           title={getDirectorPageTitle(page)}
           name={restaurant.name}
           subtitle="Директор ресторана"
+          liveCount={restaurantOrders.length}
+          onOpenLiveOrders={openLiveOrders}
         />
 
         {page === "dashboard" && (
@@ -695,17 +686,32 @@ function Sidebar({ page, setPage, role, restaurant, onLogout }) {
    TOPBAR
 ------------------------------------------------------- */
 
-function Topbar({ title, name, subtitle }) {
+function Topbar({ title, name, subtitle, liveCount = 0, onOpenLiveOrders }) {
   return (
     <div className="topbar">
       <h2>{title}</h2>
 
-      <div className="profile">
+      <div className="topbar-actions">
+        {onOpenLiveOrders && (
+          <button
+            className="live-orders-button"
+            onClick={onOpenLiveOrders}
+            title="Открыть Live-заказы в новой вкладке"
+          >
+            <span className="live-dot" />
+            LIVE ЗАКАЗЫ
+            <span className="live-count">{liveCount}</span>
+            <span className="live-arrow"><Icon name="arrow" size={15} /></span>
+          </button>
+        )}
+
+        <div className="profile">
         <div className="avatar">{getInitials(name)}</div>
 
         <div>
           <strong>{name}</strong>
           <span>{subtitle}</span>
+        </div>
         </div>
       </div>
     </div>

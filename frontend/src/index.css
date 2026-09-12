@@ -5977,3 +5977,28 @@ button {
     transform: none !important;
   }
 }
+
+
+/* LIVE ORDERS + PROFILE — desktop: adjacent in the top-right corner */
+@media (min-width: 801px) {
+  .app-shell .topbar {
+    position: relative;
+  }
+  .app-shell .topbar-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    margin-left: auto !important;
+  }
+  .app-shell .topbar-actions .live-orders-button {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    z-index: 2147483647 !important;
+    margin: 0 !important;
+  }
+  .app-shell .topbar-actions .profile {
+    position: static !important;
+    margin: 0 !important;
+  }
+}
