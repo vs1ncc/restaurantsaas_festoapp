@@ -11998,3 +11998,22 @@ button {
   }
 }
 
+
+/* ---------- MENU SEARCH — убрать внутреннюю рамку ---------- */
+.app-shell .menu-search {
+  border: 1px solid rgba(88, 86, 214, 0.28) !important;
+  box-shadow: 0 8px 24px rgba(30, 30, 40, 0.04) !important;
+}
+
+.app-shell .menu-search input {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.app-shell .menu-search input:focus {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
