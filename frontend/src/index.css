@@ -11055,3 +11055,38 @@ button {
   width: 100%;
   margin-top: 4px !important;
 }
+
+
+/* FINAL FIX — customer checkout accent color */
+.customer-checkout-page .customer-primary-button,
+.customer-checkout-page .customer-submit-button,
+.customer-checkout-page .checkout-submit,
+.customer-checkout-page button[type="submit"],
+.customer-checkout-page .primary-button {
+  background: var(--customer-accent, #6c4bf4) !important;
+  border-color: var(--customer-accent, #6c4bf4) !important;
+  color: #fff !important;
+}
+
+.customer-checkout-page .customer-primary-button:hover,
+.customer-checkout-page .customer-submit-button:hover,
+.customer-checkout-page .checkout-submit:hover,
+.customer-checkout-page button[type="submit"]:hover,
+.customer-checkout-page .primary-button:hover {
+  background: color-mix(
+    in srgb,
+    var(--customer-accent, #6c4bf4) 88%,
+    black
+  ) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--customer-accent, #6c4bf4) 88%,
+    black
+  ) !important;
+}
+
+.customer-checkout-page .customer-checkout-back,
+.customer-checkout-page .customer-checkout-mini-total,
+.customer-checkout-page .icon-button {
+  color: var(--customer-accent, #6c4bf4) !important;
+}
