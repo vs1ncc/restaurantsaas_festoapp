@@ -12316,3 +12316,10 @@ button {
     bottom: 54px !important;
   }
 }
+
+/* SIDEBAR — ещё 3px вверх */
+@media (min-width: 801px) {
+  .app-shell .sidebar > .sidebar-restaurant {
+    bottom: 57px !important;
+  }
+}
