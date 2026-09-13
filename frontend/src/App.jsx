@@ -625,7 +625,10 @@ function DirectorApp({
   return (
     <div
       className="app-shell"
-      style={{ "--accent": restaurant.accent || "#6C4BF4" }}
+      style={{
+        "--accent": restaurant.accent || "#6C4BF4",
+        "--ui-accent": restaurant.accent || "#6C4BF4",
+      }}
     >
       <Sidebar
         page={page}
@@ -3328,8 +3331,6 @@ function RestaurantSettings({
               name,
               address,
               phone,
-              accent,
-              customerBackground,
               logo,
             }
           : r
@@ -3337,6 +3338,36 @@ function RestaurantSettings({
     );
 
     alert("Данные сохранены.");
+  }
+
+  function saveAccentColor() {
+    setRestaurants((prev) =>
+      prev.map((r) =>
+        r.id === restaurant.id
+          ? {
+              ...r,
+              accent,
+            }
+          : r
+      )
+    );
+
+    alert("Акцентный цвет сохранён.");
+  }
+
+  function saveCustomerBackground() {
+    setRestaurants((prev) =>
+      prev.map((r) =>
+        r.id === restaurant.id
+          ? {
+              ...r,
+              customerBackground,
+            }
+          : r
+      )
+    );
+
+    alert("Цвет фона клиентской страницы сохранён.");
   }
 
   function changePassword() {
@@ -3400,7 +3431,7 @@ function RestaurantSettings({
         />
       </div>
 
-      <div className="details-edit">
+      <div className="details-edit color-setting-block">
         <h3>Акцентный цвет</h3>
 
         <input
@@ -3409,6 +3440,14 @@ function RestaurantSettings({
           value={accent}
           onChange={(e) => setAccent(e.target.value)}
         />
+
+        <button
+          type="button"
+          className="primary-button color-setting-save"
+          onClick={saveAccentColor}
+        >
+          Сохранить акцентный цвет
+        </button>
       </div>
 
       <div className="details-edit customer-background-setting">
@@ -3431,6 +3470,14 @@ function RestaurantSettings({
         <small className="field-help">
           Этот цвет используется на клиентской странице меню и заказа.
         </small>
+
+        <button
+          type="button"
+          className="primary-button color-setting-save"
+          onClick={saveCustomerBackground}
+        >
+          Сохранить цвет фона
+        </button>
       </div>
 
       <div className="details-edit">
@@ -3924,6 +3971,8 @@ function CustomerApp({
       style={{
         "--customer-accent":
           publicRestaurant.accent || "#6C4BF4",
+        "--customer-background":
+          publicRestaurant.customerBackground || "#F7F5F2",
       }}
     >
       <header className="customer-header">
@@ -4068,6 +4117,8 @@ function CustomerCheckoutLayout({
       style={{
         "--customer-accent":
           publicRestaurant.accent || "#6C4BF4",
+        "--customer-background":
+          publicRestaurant.customerBackground || "#F7F5F2",
       }}
     >
       <header className="customer-checkout-header">

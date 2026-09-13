@@ -10906,3 +10906,152 @@ button {
     font-size: 20px;
   }
 }
+
+
+/* =========================================================
+   FESTO — FINAL COLOR SYSTEM
+   Только визуальные настройки.
+   Логику заказа не изменяет.
+   ========================================================= */
+
+/* =========================================================
+   DIRECTOR / ADMIN INTERFACE
+   ========================================================= */
+
+.app-shell {
+  --ui-accent: var(--accent, #6c4bf4);
+}
+
+/* Основные кнопки */
+.app-shell .primary-button,
+.app-shell .login-button,
+.app-shell .add-dish-button,
+.app-shell .heading-actions .primary-button,
+.app-shell .director-hero .primary-button,
+.app-shell .stand-submit {
+  background: var(--ui-accent) !important;
+  border-color: var(--ui-accent) !important;
+}
+
+/* Акцентные ссылки / иконки */
+.app-shell .icon-button:hover,
+.app-shell .secondary-button:hover,
+.app-shell .empty-icon,
+.app-shell .profile-card-icon {
+  color: var(--ui-accent) !important;
+}
+
+/* Фон акцентных иконок */
+.app-shell .profile-card-icon,
+.app-shell .empty-icon {
+  background: color-mix(
+    in srgb,
+    var(--ui-accent) 11%,
+    white
+  ) !important;
+}
+
+/* Hover */
+.app-shell .primary-button:hover,
+.app-shell .login-button:hover,
+.app-shell .add-dish-button:hover,
+.app-shell .stand-submit:hover {
+  background: color-mix(
+    in srgb,
+    var(--ui-accent) 88%,
+    black
+  ) !important;
+}
+
+/* =========================================================
+   CUSTOMER PAGE
+   ========================================================= */
+
+.customer-page {
+  background:
+    radial-gradient(
+      circle at 8% 0%,
+      color-mix(
+        in srgb,
+        var(--customer-accent, #6c4bf4) 14%,
+        transparent
+      ),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 92% 88%,
+      color-mix(
+        in srgb,
+        var(--customer-accent, #6c4bf4) 10%,
+        transparent
+      ),
+      transparent 34%
+    ),
+    var(--customer-background, #f7f5f2) !important;
+}
+
+/* Категория */
+.customer-category.active {
+  background: var(--customer-accent, #6c4bf4) !important;
+  border-color: var(--customer-accent, #6c4bf4) !important;
+  color: #fff !important;
+}
+
+/* Кнопка добавить */
+.customer-page .add-dish-button {
+  background: var(--customer-accent, #6c4bf4) !important;
+  border-color: var(--customer-accent, #6c4bf4) !important;
+  color: #fff !important;
+}
+
+/* Основные кнопки клиента */
+.customer-page .customer-primary-button,
+.customer-page button[type="submit"] {
+  background: var(--customer-accent, #6c4bf4) !important;
+  border-color: var(--customer-accent, #6c4bf4) !important;
+  color: #fff !important;
+}
+
+/* Активная нижняя кнопка */
+.customer-page .customer-bottom-bar button.active {
+  background: color-mix(
+    in srgb,
+    var(--customer-accent, #6c4bf4) 11%,
+    white
+  ) !important;
+
+  color: var(--customer-accent, #6c4bf4) !important;
+}
+
+/* Назад / акцентные элементы оформления заказа */
+.customer-page .customer-checkout-back,
+.customer-page .customer-checkout-mini-total {
+  color: var(--customer-accent, #6c4bf4) !important;
+}
+
+/* Hover */
+.customer-page .customer-primary-button:hover,
+.customer-page .add-dish-button:hover,
+.customer-page button[type="submit"]:hover {
+  background: color-mix(
+    in srgb,
+    var(--customer-accent, #6c4bf4) 88%,
+    black
+  ) !important;
+}
+
+/* =========================================================
+   SETTINGS COLOR BLOCKS
+   ========================================================= */
+
+.color-setting-block,
+.customer-background-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.color-setting-save {
+  width: 100%;
+  margin-top: 4px !important;
+}
