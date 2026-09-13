@@ -12077,3 +12077,44 @@ button {
   margin-right: 6px;
 }
 
+
+/* -------------------------------------------------------
+   DESKTOP MENU CATEGORIES — automatic wrapping
+------------------------------------------------------- */
+@media (min-width: 801px) {
+  .app-shell .category-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: flex-start;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    padding: 8px;
+  }
+
+  .app-shell .category-panel > .category-item,
+  .app-shell .category-panel > .category-row {
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+
+  .app-shell .category-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .app-shell .category-item {
+    white-space: nowrap;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+  }
+
+  .app-shell .category-delete {
+    flex: 0 0 34px;
+  }
+}
+
