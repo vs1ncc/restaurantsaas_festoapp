@@ -134,7 +134,11 @@ function readStorage(key, fallback) {
 }
 
 function writeStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error("FESTO localStorage write failed:", error);
+  }
 }
 
 function uid(prefix = "id") {
@@ -2239,10 +2243,24 @@ function DishModal({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => update("image", String(reader.result || ""));
-    reader.onerror = () => alert("Не удалось прочитать выбранное изображение.");
-    reader.readAsDataURL(file);
+    festoImageSize(file)
+      .then(({ image, width, height }) => {
+        const maxSide = 1200;
+        const scale = Math.min(1, maxSide / Math.max(width, height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+
+        const ctx = canvas.getContext("2d", { alpha: false });
+        if (!ctx) {
+          throw new Error("Не удалось подготовить изображение.");
+        }
+
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL("image/jpeg", 0.82);
+      })
+      .then((dataUrl) => update("image", dataUrl))
+      .catch(() => alert("Не удалось обработать выбранное изображение."));
   }
 
   function removeImage() {
@@ -5136,6 +5154,101 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [sharedDataLoaded, setSharedDataLoaded] = useState(false);
+
+  // Однократная миграция старых больших Base64-фотографий блюд.
+  // Сжимает только изображения > 300 KB, обычные URL и маленькие картинки не трогает.
+  useEffect(() => {
+    let cancelled = false;
+
+    const compressImage = (src) =>
+      new Promise((resolve, reject) => {
+        const image = new Image();
+
+        image.onload = () => {
+          try {
+            const maxSide = 1000;
+            const scale = Math.min(
+              1,
+              maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height)
+            );
+
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+            canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+
+            const ctx = canvas.getContext("2d", { alpha: false });
+            if (!ctx) {
+              reject(new Error("Canvas недоступен"));
+              return;
+            }
+
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", 0.72));
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        image.onerror = () => reject(new Error("Не удалось загрузить изображение"));
+        image.src = src;
+      });
+
+    const migrate = async () => {
+      const source = dishes;
+
+      if (!Array.isArray(source) || !source.length) return;
+
+      let changed = false;
+      const next = [];
+
+      for (const dish of source) {
+        if (cancelled) return;
+
+        const image = String(dish?.image || "");
+
+        if (
+          image.startsWith("data:image/") &&
+          image.length > 300 * 1024
+        ) {
+          try {
+            const compressed = await compressImage(image);
+
+            if (
+              compressed &&
+              compressed.length < image.length * 0.8
+            ) {
+              next.push({
+                ...dish,
+                image: compressed,
+              });
+              changed = true;
+              continue;
+            }
+          } catch (error) {
+            console.warn(
+              "FESTO: не удалось сжать изображение блюда",
+              dish?.name || dish?.id,
+              error
+            );
+          }
+        }
+
+        next.push(dish);
+      }
+
+      if (!cancelled && changed) {
+        setDishes(next);
+        console.info("FESTO: старые фотографии блюд сжаты.");
+      }
+    };
+
+    migrate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sharedDataLoaded]);
+
 
   // Safety net: every newly created restaurant automatically receives one subscription invoice.
   useEffect(() => {
