@@ -12291,3 +12291,10 @@ button {
   transform: translateY(-1px);
 }
 
+
+/* SIDEBAR — карточка ресторана ближе к кнопке выхода */
+@media (min-width: 801px) {
+  .app-shell .sidebar > .sidebar-restaurant {
+    margin-bottom: 6px !important;
+  }
+}
