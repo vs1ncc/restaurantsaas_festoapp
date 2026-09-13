@@ -12065,3 +12065,15 @@ button {
   box-sizing: border-box;
 }
 
+
+/* MENU CATEGORIES — safe right spacing */
+.app-shell .category-panel {
+  padding-right: 14px;
+  box-sizing: border-box;
+}
+
+.app-shell .category-panel > .category-item:last-child,
+.app-shell .category-panel > .category-row:last-child {
+  margin-right: 6px;
+}
+
