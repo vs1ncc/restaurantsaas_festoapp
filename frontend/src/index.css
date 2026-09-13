@@ -12309,3 +12309,10 @@ button {
     margin: 0 !important;
   }
 }
+
+/* SIDEBAR — поднимаем карточку ресторана ещё на 3px */
+@media (min-width: 801px) {
+  .app-shell .sidebar > .sidebar-restaurant {
+    bottom: 54px !important;
+  }
+}
