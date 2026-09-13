@@ -12323,3 +12323,21 @@ button {
     bottom: 57px !important;
   }
 }
+
+/* MOBILE — только нижняя навигация, боковая панель полностью скрыта */
+@media (max-width: 800px) {
+  .app-shell .sidebar {
+    display: none !important;
+  }
+
+  .app-shell .mobile-bar {
+    display: flex !important;
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    width: min(calc(100vw - 20px), 360px) !important;
+    transform: translateX(-50%) !important;
+    z-index: 1000 !important;
+  }
+}
