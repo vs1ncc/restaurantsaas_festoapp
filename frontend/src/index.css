@@ -12017,3 +12017,51 @@ button {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* -------------------------------------------------------
+   MENU CATEGORIES — аккуратное размещение без вылета
+------------------------------------------------------- */
+.app-shell .category-panel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.app-shell .category-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.app-shell .category-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.app-shell .category-item {
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+  padding: 10px 12px;
+}
+
+.app-shell .category-delete {
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
