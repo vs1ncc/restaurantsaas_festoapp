@@ -12270,3 +12270,24 @@ button {
   text-align: center;
 }
 
+
+/* Global close button — optical centering of the × glyph */
+.app-shell .close-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0;
+  line-height: 1;
+}
+
+.app-shell .close-button::before {
+  content: "×";
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
