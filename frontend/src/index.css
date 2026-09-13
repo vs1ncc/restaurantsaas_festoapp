@@ -11132,3 +11132,108 @@ button {
   color: var(--customer-accent, #6c4bf4) !important;
 }
 
+
+/* =========================================================
+   FESTO — DEFINITIVE CUSTOMER ACCENT OVERRIDE
+   Только визуал. Логика заказа не меняется.
+   ========================================================= */
+
+/* ---------- CHECKOUT PRIMARY BUTTON ---------- */
+
+.customer-checkout-page .customer-primary-button,
+.customer-checkout-page button.customer-primary-button,
+.customer-checkout-page button[type="submit"],
+.customer-checkout-page .customer-checkout,
+.customer-checkout-page .customer-primary {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+  box-shadow:
+    0 14px 32px color-mix(
+      in srgb,
+      var(--customer-accent, #6C4BF4) 28%,
+      transparent
+    ) !important;
+}
+
+.customer-checkout-page .customer-primary-button:hover,
+.customer-checkout-page button.customer-primary-button:hover,
+.customer-checkout-page button[type="submit"]:hover,
+.customer-checkout-page .customer-checkout:hover,
+.customer-checkout-page .customer-primary:hover {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+  filter: brightness(.94);
+}
+
+/* ---------- PLUS / MINUS ---------- */
+
+.customer-checkout-page .customer-cart-item .quantity-control button,
+.customer-checkout-page .customer-cart-item button[aria-label="Увеличить количество"],
+.customer-checkout-page .customer-cart-item button[aria-label="Уменьшить количество"],
+.customer-checkout-page .customer-review-item button {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+  box-shadow:
+    0 8px 20px color-mix(
+      in srgb,
+      var(--customer-accent, #6C4BF4) 22%,
+      transparent
+    ) !important;
+}
+
+.customer-checkout-page .customer-cart-item .quantity-control button:hover,
+.customer-checkout-page .customer-cart-item button[aria-label="Увеличить количество"]:hover,
+.customer-checkout-page .customer-cart-item button[aria-label="Уменьшить количество"]:hover,
+.customer-checkout-page .customer-review-item button:hover {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  color: #fff !important;
+  filter: brightness(.94);
+}
+
+/* ---------- QUANTITY CONTROL CONTAINER ---------- */
+
+.customer-checkout-page .quantity-control {
+  background: color-mix(
+    in srgb,
+    var(--customer-accent, #6C4BF4) 9%,
+    #fff
+  ) !important;
+}
+
+/* ---------- SUCCESS CHECK SQUARE ---------- */
+
+.customer-success-page .customer-success-icon {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+  box-shadow:
+    0 22px 45px color-mix(
+      in srgb,
+      var(--customer-accent, #6C4BF4) 30%,
+      transparent
+    ),
+    0 7px 18px color-mix(
+      in srgb,
+      var(--customer-accent, #6C4BF4) 18%,
+      transparent
+    ) !important;
+}
+
+/* Световой эффект вокруг галочки тоже использует акцент */
+.customer-success-page .customer-success-icon::before,
+.customer-success-page .customer-success-icon::after {
+  border-color: color-mix(
+    in srgb,
+    var(--customer-accent, #6C4BF4) 25%,
+    transparent
+  ) !important;
+}
+
