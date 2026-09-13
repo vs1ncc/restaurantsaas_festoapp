@@ -21,6 +21,28 @@ function mergeById(current = [], incoming = []) {
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
+  if (req.method === "GET") {
+    try {
+      const data = await getData();
+
+      return res.status(200).json({
+        ok: true,
+        restaurants: Array.isArray(data.restaurants) ? data.restaurants : [],
+        categories: Array.isArray(data.categories) ? data.categories : [],
+        dishes: Array.isArray(data.dishes) ? data.dishes : [],
+        tables: Array.isArray(data.tables) ? data.tables : [],
+        orders: Array.isArray(data.orders) ? data.orders : [],
+      });
+    } catch (error) {
+      console.error("FESTO sync GET error:", error);
+
+      return res.status(500).json({
+        error: "FESTO sync read failed",
+        message: error?.message || "Unknown error",
+      });
+    }
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method not allowed",
