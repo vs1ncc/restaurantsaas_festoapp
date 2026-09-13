@@ -12341,3 +12341,31 @@ button {
     z-index: 1000 !important;
   }
 }
+
+/* MOBILE QR MODAL — меньше на 20% и по центру экрана */
+@media (max-width: 800px) {
+  .app-shell .modal-overlay {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+  }
+
+  .app-shell .qr-modal {
+    width: 80vw !important;
+    max-width: 480px !important;
+    max-height: 80vh !important;
+    margin: 0 !important;
+  }
+
+  .app-shell .qr-modal .qr-large {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .app-shell .qr-modal .qr-large svg {
+    width: 256px !important;
+    height: 256px !important;
+    max-width: 100% !important;
+  }
+}
