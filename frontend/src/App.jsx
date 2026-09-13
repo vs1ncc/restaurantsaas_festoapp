@@ -4296,40 +4296,149 @@ function CustomerReviewPage({
 }
 
 function CustomerDish({ dish, onAdd }) {
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+
+  function openPhoto() {
+    if (!dish.image) return;
+    setZoom(1);
+    setPhotoOpen(true);
+  }
+
+  function closePhoto() {
+    setPhotoOpen(false);
+    setZoom(1);
+  }
+
+  function zoomIn(e) {
+    e.stopPropagation();
+    setZoom((value) =>
+      Math.min(3, Number((value + 0.25).toFixed(2)))
+    );
+  }
+
+  function zoomOut(e) {
+    e.stopPropagation();
+    setZoom((value) =>
+      Math.max(0.5, Number((value - 0.25).toFixed(2)))
+    );
+  }
+
   return (
-    <div className="customer-dish">
-      <div className="customer-dish-image">
-        {dish.image ? (
-          <img
-            src={dish.image}
-            alt={dish.name}
-          />
-        ) : (
-          <div className="customer-image-placeholder">
-            F
+    <>
+      <div
+        className={`customer-dish${dish.image ? " customer-dish-clickable" : ""}`}
+        onClick={openPhoto}
+        role={dish.image ? "button" : undefined}
+        tabIndex={dish.image ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (
+            dish.image &&
+            (e.key === "Enter" || e.key === " ")
+          ) {
+            e.preventDefault();
+            openPhoto();
+          }
+        }}
+      >
+        <div className="customer-dish-image">
+          {dish.image ? (
+            <img
+              src={dish.image}
+              alt={dish.name}
+            />
+          ) : (
+            <div className="customer-image-placeholder">
+              F
+            </div>
+          )}
+        </div>
+
+        <div className="customer-dish-info">
+          <h2>{dish.name}</h2>
+
+          {dish.description && (
+            <p>{dish.description}</p>
+          )}
+
+          <div className="customer-dish-bottom">
+            <strong>{money(dish.price)}</strong>
+
+            <button
+              className="add-dish-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd();
+              }}
+            >
+              +
+            </button>
           </div>
-        )}
-      </div>
-
-      <div className="customer-dish-info">
-        <h2>{dish.name}</h2>
-
-        {dish.description && (
-          <p>{dish.description}</p>
-        )}
-
-        <div className="customer-dish-bottom">
-          <strong>{money(dish.price)}</strong>
-
-          <button
-            className="add-dish-button"
-            onClick={onAdd}
-          >
-            +
-          </button>
         </div>
       </div>
-    </div>
+
+      {photoOpen && (
+        <div
+          className="dish-photo-modal"
+          onClick={closePhoto}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Фотография блюда ${dish.name}`}
+        >
+          <div
+            className="dish-photo-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="dish-photo-close"
+              onClick={closePhoto}
+              aria-label="Закрыть"
+            >
+              ×
+            </button>
+
+            <div className="dish-photo-frame">
+              <img
+                src={dish.image}
+                alt={dish.name}
+                className="dish-photo-large"
+                style={{
+                  transform: `scale(${zoom})`,
+                }}
+              />
+            </div>
+
+            <div className="dish-photo-caption">
+              <strong>{dish.name}</strong>
+              <span>{money(dish.price)}</span>
+            </div>
+
+            <div className="dish-photo-controls">
+              <button
+                type="button"
+                onClick={zoomOut}
+                aria-label="Уменьшить фотографию"
+              >
+                −
+              </button>
+
+              <span>
+                {Math.round(zoom * 100)}%
+              </span>
+
+              <button
+                type="button"
+                onClick={zoomIn}
+                aria-label="Увеличить фотографию"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

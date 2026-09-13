@@ -10622,3 +10622,153 @@ button {
   object-fit: contain !important;
   margin: 0 auto 28px !important;
 }
+
+
+/* Фото блюда по нажатию на карточку — только клиентский интерфейс */
+.customer-dish-clickable {
+  cursor: zoom-in;
+}
+
+.customer-dish-clickable:focus-visible {
+  outline: 2px solid rgba(108, 75, 244, 0.35);
+  outline-offset: 3px;
+}
+
+.dish-photo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 10, 14, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dish-photo-card {
+  position: relative;
+  width: min(92vw, 560px);
+  max-height: 92vh;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+  overflow: hidden;
+}
+
+.dish-photo-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #222;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
+}
+
+.dish-photo-frame {
+  position: relative;
+  width: 100%;
+  height: min(68vh, 520px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 18px;
+  background: #f6f6f8;
+  overflow: auto;
+}
+
+.dish-photo-large {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform-origin: center center;
+  transition: transform 0.18s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.dish-photo-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 4px 7px;
+  color: #222;
+}
+
+.dish-photo-caption strong {
+  font-size: 17px;
+}
+
+.dish-photo-caption span {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.dish-photo-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding-top: 7px;
+}
+
+.dish-photo-controls button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  background: #fff;
+  color: #222;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.dish-photo-controls span {
+  min-width: 54px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #777;
+}
+
+@media (max-width: 600px) {
+  .dish-photo-modal {
+    padding: 12px;
+  }
+
+  .dish-photo-card {
+    width: 94vw;
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  .dish-photo-frame {
+    height: 62vh;
+    border-radius: 15px;
+  }
+
+  .dish-photo-close {
+    top: 7px;
+    right: 7px;
+    width: 36px;
+    height: 36px;
+  }
+}
