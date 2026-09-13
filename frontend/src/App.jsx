@@ -5135,6 +5135,7 @@ export default function App() {
 
   const [session, setSession] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [sharedDataLoaded, setSharedDataLoaded] = useState(false);
 
   // Safety net: every newly created restaurant automatically receives one subscription invoice.
   useEffect(() => {
@@ -5231,15 +5232,78 @@ export default function App() {
     return () => { cancelled = true; };
   }, [publicMenuRoute?.restaurantId, publicMenuRoute?.tableId]);
 
+  // Загружаем общую базу FESTO при каждом открытии приложения.
+  // Благодаря этому ПК и мобильный телефон используют одни и те же
+  // рестораны, аккаунты, категории, блюда и столы.
   useEffect(() => {
-    if (!session?.role) return;
+    let cancelled = false;
+
+    festoApi("/api/sync")
+      .then((remote) => {
+        if (cancelled) return;
+
+        if (Array.isArray(remote?.restaurants)) {
+          setRestaurants((prev) => {
+            const map = new Map(prev.filter((item) => item?.id).map((item) => [item.id, item]));
+            for (const item of remote.restaurants) {
+              if (item?.id) map.set(item.id, item);
+            }
+            return Array.from(map.values());
+          });
+        }
+
+        if (Array.isArray(remote?.categories)) {
+          setCategories((prev) => {
+            const map = new Map(prev.filter((item) => item?.id).map((item) => [item.id, item]));
+            for (const item of remote.categories) {
+              if (item?.id) map.set(item.id, item);
+            }
+            return Array.from(map.values());
+          });
+        }
+
+        if (Array.isArray(remote?.dishes)) {
+          setDishes((prev) => {
+            const map = new Map(prev.filter((item) => item?.id).map((item) => [item.id, item]));
+            for (const item of remote.dishes) {
+              if (item?.id) map.set(item.id, item);
+            }
+            return Array.from(map.values());
+          });
+        }
+
+        if (Array.isArray(remote?.tables)) {
+          setTables((prev) => {
+            const map = new Map(prev.filter((item) => item?.id).map((item) => [item.id, item]));
+            for (const item of remote.tables) {
+              if (item?.id) map.set(item.id, item);
+            }
+            return Array.from(map.values());
+          });
+        }
+
+        setSharedDataLoaded(true);
+      })
+      .catch(() => {
+        // Если сервер временно недоступен, приложение продолжает работать
+        // с локальными данными.
+        if (!cancelled) setSharedDataLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!session?.role || !sharedDataLoaded) return;
     // Синхронизируем справочники с общим сервером. Гость никогда не отправляет
     // свои локальные данные обратно на сервер и не может затереть меню ресторана.
     const timer = window.setTimeout(() => {
       festoApi("/api/sync", { method: "POST", body: JSON.stringify({ restaurants, categories, dishes, tables }) }).catch(() => {});
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [session?.role, restaurants, categories, dishes, tables]);
+  }, [session?.role, sharedDataLoaded, restaurants, categories, dishes, tables]);
 
   useEffect(() => {
     if (session?.role !== "director" || !session.restaurantId) return;
