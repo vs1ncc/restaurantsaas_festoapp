@@ -10772,3 +10772,137 @@ button {
     height: 36px;
   }
 }
+
+
+/* Настраиваемый фон клиентской страницы */
+.customer-page {
+  background: var(--customer-background, #F7F5F2);
+}
+
+.customer-background-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer-background-picker input[type="color"] {
+  width: 54px;
+  height: 42px;
+  padding: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.customer-background-picker input[type="text"] {
+  width: 120px;
+}
+
+/* Галерея фотографий блюда в настройках */
+.dish-upload-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.dish-upload-gallery .dish-upload-preview {
+  margin: 0;
+}
+
+.dish-upload-gallery .dish-upload-preview img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* Перелистывание фотографий в popup */
+.dish-photo-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  width: 46px;
+  height: 46px;
+  margin-top: -23px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #222;
+  font-size: 38px;
+  line-height: 38px;
+  cursor: pointer;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.14);
+}
+
+.dish-photo-prev {
+  left: 10px;
+}
+
+.dish-photo-next {
+  right: 10px;
+}
+
+.dish-photo-counter {
+  text-align: center;
+  padding-top: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #777;
+}
+
+/* Кнопка «Мой заказ»: выступ при наличии товаров */
+.customer-bottom-order {
+  position: relative;
+}
+
+.customer-bottom-order.has-items {
+  transform: translateY(-2px);
+}
+
+.customer-bottom-order.has-items::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  width: 34px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 8px 8px 0 0;
+  background: currentColor;
+  opacity: 0.95;
+}
+
+.customer-bottom-order.has-items::after {
+  content: "→";
+  position: absolute;
+  right: 12px;
+  bottom: 7px;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 900;
+  color: #D71920;
+}
+
+@media (max-width: 600px) {
+  .dish-photo-nav {
+    width: 42px;
+    height: 42px;
+    margin-top: -21px;
+    font-size: 34px;
+  }
+
+  .dish-photo-prev {
+    left: 7px;
+  }
+
+  .dish-photo-next {
+    right: 7px;
+  }
+
+  .customer-bottom-order.has-items::after {
+    right: 9px;
+    bottom: 6px;
+    font-size: 20px;
+  }
+}

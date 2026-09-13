@@ -2221,6 +2221,7 @@ function DishModal({
       description: "",
       price: "",
       image: "",
+      images: [],
       categoryId: categories[0]?.id || "",
       active: true,
     }
@@ -2234,37 +2235,83 @@ function DishModal({
   }
 
   function handleImageUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
-    if (!file.type.startsWith("image/")) {
-      alert("Выберите файл изображения: JPG, PNG, WEBP и т. п.");
+    const invalid = files.find((file) => !file.type.startsWith("image/"));
+    if (invalid) {
+      alert("Выберите только файлы изображений: JPG, PNG, WEBP и т. п.");
       e.target.value = "";
       return;
     }
 
-    festoImageSize(file)
-      .then(({ image, width, height }) => {
-        const maxSide = 1200;
-        const scale = Math.min(1, maxSide / Math.max(width, height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(width * scale));
-        canvas.height = Math.max(1, Math.round(height * scale));
+    Promise.all(
+      files.map((file) =>
+        festoImageSize(file).then(({ image, width, height }) => {
+          const maxSide = 1200;
+          const scale = Math.min(
+            1,
+            maxSide / Math.max(width, height)
+          );
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(width * scale));
+          canvas.height = Math.max(1, Math.round(height * scale));
 
-        const ctx = canvas.getContext("2d", { alpha: false });
-        if (!ctx) {
-          throw new Error("Не удалось подготовить изображение.");
-        }
+          const ctx = canvas.getContext("2d", { alpha: false });
+          if (!ctx) {
+            throw new Error("Не удалось подготовить изображение.");
+          }
 
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL("image/jpeg", 0.82);
+          ctx.drawImage(
+            image,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+
+          return canvas.toDataURL("image/jpeg", 0.82);
+        })
+      )
+    )
+      .then((dataUrls) => {
+        const current = Array.isArray(form.images)
+          ? form.images.filter(Boolean)
+          : form.image
+            ? [form.image]
+            : [];
+
+        const merged = Array.from(
+          new Set([...current, ...dataUrls])
+        );
+
+        update("images", merged);
+        update("image", merged[0] || "");
       })
-      .then((dataUrl) => update("image", dataUrl))
-      .catch(() => alert("Не удалось обработать выбранное изображение."));
+      .catch(() =>
+        alert("Не удалось обработать выбранные изображения.")
+      )
+      .finally(() => {
+        e.target.value = "";
+      });
   }
 
-  function removeImage() {
-    update("image", "");
+  function removeImage(index = null) {
+    const current = Array.isArray(form.images)
+      ? form.images.filter(Boolean)
+      : form.image
+        ? [form.image]
+        : [];
+
+    if (index === null) {
+      update("images", []);
+      update("image", "");
+      return;
+    }
+
+    const next = current.filter((_, itemIndex) => itemIndex !== index);
+    update("images", next);
+    update("image", next[0] || "");
   }
 
   function submit(e) {
@@ -2288,6 +2335,13 @@ function DishModal({
       description: form.description.trim(),
       price: Number(form.price || 0),
       image: form.image.trim(),
+      images: Array.from(
+        new Set(
+          (Array.isArray(form.images) ? form.images : [])
+            .filter(Boolean)
+            .map((image) => String(image))
+        )
+      ),
       active: form.active !== false,
     };
 
@@ -2388,18 +2442,31 @@ function DishModal({
             <input
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageUpload}
             />
-            <small className="field-help">Выберите JPG, PNG, WEBP или другое изображение. Фото сохраняется вместе с блюдом.</small>
+            <small className="field-help">
+              Можно выбрать несколько фотографий. Они будут доступны клиенту в окне блюда.
+            </small>
           </div>
 
-          {form.image && (
-            <div className="image-preview dish-upload-preview">
-              <img
-                src={form.image}
-                alt="Предпросмотр блюда"
-              />
-              <button type="button" className="secondary-button dish-remove-image" onClick={removeImage}>Удалить фото</button>
+          {((Array.isArray(form.images) && form.images.length) || form.image) && (
+            <div className="dish-upload-gallery">
+              {(Array.isArray(form.images) && form.images.length
+                ? form.images
+                : [form.image]
+              ).filter(Boolean).map((image, index) => (
+                <div className="image-preview dish-upload-preview" key={`${image}-${index}`}>
+                  <img src={image} alt={`Фото блюда ${index + 1}`} />
+                  <button
+                    type="button"
+                    className="secondary-button dish-remove-image"
+                    onClick={() => removeImage(index)}
+                  >
+                    Удалить фото
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -3206,6 +3273,9 @@ function RestaurantSettings({
   const [accent, setAccent] = useState(
     restaurant.accent || "#6C4BF4"
   );
+  const [customerBackground, setCustomerBackground] = useState(
+    restaurant.customerBackground || "#F7F5F2"
+  );
   const [logo, setLogo] = useState(restaurant.logo || "");
 
   const [oldPassword, setOldPassword] = useState("");
@@ -3259,6 +3329,7 @@ function RestaurantSettings({
               address,
               phone,
               accent,
+              customerBackground,
               logo,
             }
           : r
@@ -3338,6 +3409,28 @@ function RestaurantSettings({
           value={accent}
           onChange={(e) => setAccent(e.target.value)}
         />
+      </div>
+
+      <div className="details-edit customer-background-setting">
+        <h3>Цвет фона клиентской страницы</h3>
+        <div className="customer-background-picker">
+          <input
+            type="color"
+            value={customerBackground}
+            onChange={(e) => setCustomerBackground(e.target.value)}
+            aria-label="Цвет фона клиентской страницы"
+          />
+          <input
+            type="text"
+            value={customerBackground}
+            onChange={(e) => setCustomerBackground(e.target.value)}
+            placeholder="#F7F5F2"
+            maxLength={7}
+          />
+        </div>
+        <small className="field-help">
+          Этот цвет используется на клиентской странице меню и заказа.
+        </small>
       </div>
 
       <div className="details-edit">
@@ -3609,6 +3702,11 @@ function CustomerApp({
           price: Number(dish.price || 0),
           quantity: 1,
           image: dish.image || null,
+          images: Array.isArray(dish.images)
+            ? dish.images.filter(Boolean)
+            : dish.image
+              ? [dish.image]
+              : [],
           description: dish.description || "",
         },
       ];
@@ -3734,6 +3832,8 @@ function CustomerApp({
         style={{
           "--customer-accent":
             publicRestaurant.accent || "#6C4BF4",
+          "--customer-background":
+            publicRestaurant.customerBackground || "#F7F5F2",
         }}
       >
         <div className="customer-success-card">
@@ -4297,10 +4397,21 @@ function CustomerReviewPage({
 
 function CustomerDish({ dish, onAdd }) {
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
   const [zoom, setZoom] = useState(1);
 
+  const photos = Array.from(
+    new Set(
+      [
+        dish.image,
+        ...(Array.isArray(dish.images) ? dish.images : []),
+      ].filter(Boolean)
+    )
+  );
+
   function openPhoto() {
-    if (!dish.image) return;
+    if (!photos.length) return;
+    setPhotoIndex(0);
     setZoom(1);
     setPhotoOpen(true);
   }
@@ -4324,16 +4435,34 @@ function CustomerDish({ dish, onAdd }) {
     );
   }
 
+  function previousPhoto(e) {
+    e.stopPropagation();
+    setPhotoIndex((value) =>
+      value === 0 ? photos.length - 1 : value - 1
+    );
+    setZoom(1);
+  }
+
+  function nextPhoto(e) {
+    e.stopPropagation();
+    setPhotoIndex((value) =>
+      value === photos.length - 1 ? 0 : value + 1
+    );
+    setZoom(1);
+  }
+
+  const currentPhoto = photos[photoIndex] || photos[0];
+
   return (
     <>
       <div
-        className={`customer-dish${dish.image ? " customer-dish-clickable" : ""}`}
+        className={`customer-dish${photos.length ? " customer-dish-clickable" : ""}`}
         onClick={openPhoto}
-        role={dish.image ? "button" : undefined}
-        tabIndex={dish.image ? 0 : undefined}
+        role={photos.length ? "button" : undefined}
+        tabIndex={photos.length ? 0 : undefined}
         onKeyDown={(e) => {
           if (
-            dish.image &&
+            photos.length &&
             (e.key === "Enter" || e.key === " ")
           ) {
             e.preventDefault();
@@ -4342,11 +4471,8 @@ function CustomerDish({ dish, onAdd }) {
         }}
       >
         <div className="customer-dish-image">
-          {dish.image ? (
-            <img
-              src={dish.image}
-              alt={dish.name}
-            />
+          {photos.length ? (
+            <img src={photos[0]} alt={dish.name} />
           ) : (
             <div className="customer-image-placeholder">
               F
@@ -4383,7 +4509,7 @@ function CustomerDish({ dish, onAdd }) {
           onClick={closePhoto}
           role="dialog"
           aria-modal="true"
-          aria-label={`Фотография блюда ${dish.name}`}
+          aria-label={`Фотографии блюда ${dish.name}`}
         >
           <div
             className="dish-photo-card"
@@ -4399,8 +4525,30 @@ function CustomerDish({ dish, onAdd }) {
             </button>
 
             <div className="dish-photo-frame">
+              {photos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className="dish-photo-nav dish-photo-prev"
+                    onClick={previousPhoto}
+                    aria-label="Предыдущая фотография"
+                  >
+                    ‹
+                  </button>
+
+                  <button
+                    type="button"
+                    className="dish-photo-nav dish-photo-next"
+                    onClick={nextPhoto}
+                    aria-label="Следующая фотография"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+
               <img
-                src={dish.image}
+                src={currentPhoto}
                 alt={dish.name}
                 className="dish-photo-large"
                 style={{
@@ -4413,6 +4561,12 @@ function CustomerDish({ dish, onAdd }) {
               <strong>{dish.name}</strong>
               <span>{money(dish.price)}</span>
             </div>
+
+            {photos.length > 1 && (
+              <div className="dish-photo-counter">
+                {photoIndex + 1} / {photos.length}
+              </div>
+            )}
 
             <div className="dish-photo-controls">
               <button
@@ -4441,7 +4595,6 @@ function CustomerDish({ dish, onAdd }) {
     </>
   );
 }
-
 function CustomerCart({
   cart,
   total,
@@ -5690,7 +5843,13 @@ export default function App() {
 
   if (publicMenuRoute) {
     if (publicRouteError) return <CustomerError title="Меню временно недоступно" text={publicRouteError} />;
-    if (!publicRouteData) return <div className="customer-page"><div className="customer-content"><div className="glass-panel"><h2>Загружаем меню…</h2><p className="muted">Подключаемся к FESTO.</p></div></div></div>;
+    if (!publicRouteData) return <div
+      className="customer-page"
+      style={{
+        "--customer-accent": "#6C4BF4",
+        "--customer-background": "#F7F5F2",
+      }}
+    ><div className="customer-content"><div className="glass-panel"><h2>Загружаем меню…</h2><p className="muted">Подключаемся к FESTO.</p></div></div></div>;
     return (
       <CustomerApp
         restaurant={publicRouteData.restaurant}
