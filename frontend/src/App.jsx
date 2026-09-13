@@ -569,6 +569,7 @@ function AdminApp({
 
 function DirectorApp({
   restaurant,
+  restaurants,
   categories,
   setCategories,
   dishes,
@@ -6064,6 +6065,7 @@ export default function App() {
       setTables={setTables}
       orders={orders}
       setOrders={setOrders}
+      restaurants={restaurants}
       setRestaurants={setRestaurants}
       invoices={invoices}
       setInvoices={setInvoices}
