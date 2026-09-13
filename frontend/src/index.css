@@ -6232,7 +6232,6 @@ button {
 
 .customer-dish-image img {
   width: 100% !important;
-  height: 100% !important;
   object-fit: cover !important;
 }
 
@@ -6649,7 +6648,6 @@ button {
 .customer-dish-image img {
   display: block !important;
   width: 100% !important;
-  height: 100% !important;
   object-fit: cover !important;
 }
 
@@ -7298,7 +7296,6 @@ button {
 
 .customer-dish-image img {
   width: 100% !important;
-  height: 100% !important;
   object-fit: cover !important;
 }
 
@@ -8666,7 +8663,6 @@ button {
 
 .customer-dish-image img {
   width: 100% !important;
-  height: 100% !important;
 
   object-fit: cover !important;
 
@@ -8675,7 +8671,6 @@ button {
 
 .customer-image-placeholder {
   width: 100% !important;
-  height: 100% !important;
 
   display: grid !important;
   place-items: center !important;
@@ -10230,7 +10225,6 @@ button {
   place-items: center !important;
 
   width: 100% !important;
-  height: 100% !important;
 
   color: #fff !important;
   font-size: 58px !important;
@@ -10333,7 +10327,6 @@ button {
   place-items: center !important;
 
   width: 100% !important;
-  height: 100% !important;
 
   color: #ffffff !important;
   font-size: 58px !important;
@@ -11373,3 +11366,414 @@ button {
   border-color: var(--customer-accent, #6C4BF4) !important;
   color: #fff !important;
 }
+
+/* =========================================================
+   FESTO — DL GAMES INSPIRED VISUAL LAYER
+   Только визуальные переопределения.
+   Логику React/API не затрагивает.
+   ========================================================= */
+
+:root {
+  --festo-gradient-main: linear-gradient(
+    135deg,
+    #7b61ff 0%,
+    #3345d9 52%,
+    #2634c8 100%
+  );
+
+  --festo-gradient-hot: linear-gradient(
+    135deg,
+    #e95be8 0%,
+    #f22a9e 48%,
+    #ef382f 100%
+  );
+
+  --festo-surface: #ffffff;
+  --festo-page: #f5f5f3;
+  --festo-text: #171717;
+  --festo-muted: #777777;
+  --festo-radius: 28px;
+  --festo-radius-small: 18px;
+}
+
+/* ---------- Общий кабинет ---------- */
+
+.app-shell {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(123, 97, 255, 0.07),
+      transparent 28rem
+    ),
+    var(--festo-page);
+  color: var(--festo-text);
+}
+
+/* ---------- Заголовки страниц ---------- */
+
+.app-shell .page-heading {
+  margin-bottom: 30px;
+}
+
+.app-shell .page-heading h1,
+.app-shell .page-heading h2 {
+  color: #171717;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+.app-shell .page-heading h1 {
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 0.98;
+}
+
+.app-shell .eyebrow {
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+/* ---------- Верхняя панель ---------- */
+
+.app-shell .topbar {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(20, 20, 20, 0.06);
+}
+
+/* ---------- Sidebar ---------- */
+
+.app-shell .sidebar {
+  background: rgba(255, 255, 255, 0.94);
+  border-right: 1px solid rgba(20, 20, 20, 0.06);
+}
+
+.app-shell .sidebar button,
+.app-shell .sidebar a {
+  border-radius: 18px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.app-shell .sidebar button:hover,
+.app-shell .sidebar a:hover {
+  transform: translateX(2px);
+}
+
+/* ---------- Главные кнопки ---------- */
+
+.app-shell .primary-button {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(
+    --ui-accent,
+    var(--festo-gradient-main)
+  ) !important;
+  background-image: var(--festo-gradient-main) !important;
+  color: #ffffff !important;
+  font-weight: 750;
+  min-height: 52px;
+  padding: 0 25px;
+  box-shadow:
+    0 12px 28px rgba(67, 67, 210, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.app-shell .primary-button:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.08);
+  box-shadow:
+    0 16px 34px rgba(67, 67, 210, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.app-shell .primary-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ---------- Вторичные кнопки ---------- */
+
+.app-shell .secondary-button {
+  border-radius: 999px !important;
+  min-height: 50px;
+  padding: 0 23px;
+  background: #ffffff !important;
+  color: #242424 !important;
+  border: 1px solid rgba(20, 20, 20, 0.09) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.app-shell .secondary-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(83, 70, 220, 0.28) !important;
+  box-shadow: 0 13px 28px rgba(0, 0, 0, 0.09);
+}
+
+/* ---------- Опасные действия ---------- */
+
+.app-shell .danger-button {
+  border-radius: 999px !important;
+  min-height: 50px;
+  padding: 0 22px;
+  border: 0 !important;
+  color: #ffffff !important;
+  background: var(--festo-gradient-hot) !important;
+  box-shadow: 0 10px 26px rgba(239, 56, 47, 0.20);
+  font-weight: 750;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.app-shell .danger-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(239, 56, 47, 0.27);
+}
+
+/* ---------- Карточки ---------- */
+
+.app-shell .card,
+.app-shell .table-card,
+.app-shell .glass-panel,
+.app-shell .stat-card,
+.app-shell .panel,
+.app-shell .editor-card {
+  border-radius: var(--festo-radius) !important;
+  border: 1px solid rgba(20, 20, 20, 0.055);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 18px 50px rgba(20, 20, 30, 0.065),
+    0 3px 12px rgba(20, 20, 30, 0.035);
+}
+
+/* ---------- Карточки столов ---------- */
+
+.app-shell .table-card {
+  padding: 22px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.app-shell .table-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 24px 58px rgba(20, 20, 30, 0.10),
+    0 4px 14px rgba(20, 20, 30, 0.045);
+}
+
+.app-shell .table-number {
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+/* ---------- Формы ---------- */
+
+.app-shell input,
+.app-shell textarea,
+.app-shell select {
+  border-radius: 18px !important;
+  border: 1px solid rgba(20, 20, 20, 0.10) !important;
+  background: #ffffff !important;
+  min-height: 50px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.app-shell input:focus,
+.app-shell textarea:focus,
+.app-shell select:focus {
+  border-color: rgba(86, 72, 224, 0.48) !important;
+  box-shadow: 0 0 0 4px rgba(86, 72, 224, 0.10) !important;
+  outline: none;
+}
+
+/* ---------- Модальные окна ---------- */
+
+.app-shell .modal {
+  border-radius: 30px !important;
+  border: 1px solid rgba(20, 20, 20, 0.07);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.18),
+    0 8px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- Сетка карточек ---------- */
+
+.app-shell .table-grid,
+.app-shell .card-grid,
+.app-shell .stats-grid {
+  gap: 20px;
+}
+
+/* ---------- Маленькие action-кнопки ---------- */
+
+.app-shell .icon-button,
+.app-shell .close-button {
+  border-radius: 999px !important;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
+}
+
+.app-shell .icon-button:hover,
+.app-shell .close-button:hover {
+  transform: scale(1.05);
+}
+
+/* ---------- Градиентные акцентные элементы ---------- */
+
+.app-shell .accent-gradient,
+.app-shell .gradient-card {
+  background: var(--festo-gradient-main);
+  color: #ffffff;
+  border: 0;
+  border-radius: var(--festo-radius);
+  box-shadow: 0 20px 48px rgba(65, 60, 210, 0.22);
+}
+
+/* ---------- Мобильный вид ---------- */
+
+@media (max-width: 768px) {
+  .app-shell .page-heading h1 {
+    font-size: 38px;
+  }
+
+  .app-shell .page-heading {
+    margin-bottom: 22px;
+  }
+
+  .app-shell .primary-button,
+  .app-shell .secondary-button,
+  .app-shell .danger-button {
+    min-height: 54px;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .app-shell .table-card {
+    border-radius: 24px !important;
+    padding: 18px;
+  }
+
+  .app-shell .card,
+  .app-shell .glass-panel,
+  .app-shell .stat-card,
+  .app-shell .panel,
+  .app-shell .editor-card {
+    border-radius: 24px !important;
+  }
+}
+
+
+/* ---------- Rounded topbar ---------- */
+
+.app-shell .topbar {
+  border-radius: 28px;
+  padding: 18px 24px;
+  box-shadow:
+    0 14px 40px rgba(20, 20, 30, 0.055),
+    0 3px 12px rgba(20, 20, 30, 0.025);
+}
+
+@media (max-width: 768px) {
+  .app-shell .topbar {
+    border-radius: 22px;
+    padding: 13px 16px;
+  }
+}
+
+
+/* -------------------------------------------------------
+   SIDEBAR — точное выравнивание меню
+------------------------------------------------------- */
+
+.app-shell .sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell .sidebar nav {
+  width: 100%;
+}
+
+.app-shell .sidebar .nav-item {
+  display: flex;
+  align-items: center;
+}
+
+.app-shell .sidebar .nav-item > svg {
+  flex: 0 0 auto;
+}
+
+.app-shell .sidebar .nav-item > span {
+  position: relative;
+  left: 1px;
+}
+
+/* Кнопка выхода всегда внизу панели */
+.app-shell .sidebar .logout {
+  margin-top: auto;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.app-shell .sidebar .logout svg {
+  flex: 0 0 auto;
+}
+
+
+/* Кнопка «Выйти» — строго внизу панели */
+.app-shell .sidebar {
+  position: relative;
+}
+
+.app-shell .sidebar .logout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  margin: 0;
+}
+
+
+/* -------------------------------------------------------
+   SIDEBAR — ВЫХОД ВНИЗУ БЕЗ ИЗМЕНЕНИЯ ВЫСОТЫ СТРАНИЦЫ
+------------------------------------------------------- */
+
+.app-shell .sidebar {
+  position: relative;
+}
+
+.app-shell .sidebar .logout {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 5px;
+  width: calc(100% - 32px);
+  margin: 0;
+}
+
+
+/* Только прижимаем «Выйти» к низу существующей панели */
+@media (min-width: 801px) {
+  .app-shell .sidebar .logout {
+    margin-top: auto !important;
+    margin-bottom: 5px !important;
+  }
+}
+
