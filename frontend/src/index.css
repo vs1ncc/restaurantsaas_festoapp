@@ -11237,3 +11237,64 @@ button {
   ) !important;
 }
 
+
+/* =========================================================
+   FESTO — FINAL CUSTOMER ACCENT FIX
+   Только визуал. Логика заказа НЕ изменяется.
+   ========================================================= */
+
+/* + / − в корзине и на проверке заказа */
+.customer-checkout-page .customer-quantity button,
+.customer-checkout-page .customer-quantity button:hover,
+.customer-checkout-page .customer-quantity button:active,
+.customer-checkout-page .customer-quantity button:focus {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+/* Кнопка оформления заказа */
+.customer-checkout-page .customer-primary-button,
+.customer-checkout-page .customer-primary-button:hover,
+.customer-checkout-page .customer-primary-button:active,
+.customer-checkout-page .customer-primary-button:focus {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+/* Кнопка на странице успешного заказа */
+.customer-success-page .customer-primary-button,
+.customer-success-page .customer-primary-button:hover,
+.customer-success-page .customer-primary-button:active,
+.customer-success-page .customer-primary-button:focus {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+/* Квадрат с белой галочкой */
+.customer-success-page .customer-success-icon {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+/* Свечение вокруг квадрата тоже зависит от акцента */
+.customer-success-page .customer-success-icon::after {
+  border-color: color-mix(
+    in srgb,
+    var(--customer-accent, #6C4BF4) 25%,
+    transparent
+  ) !important;
+}
+
+/* Если галочка является отдельным элементом */
+.customer-success-page .customer-success-check {
+  color: #fff !important;
+}
+
