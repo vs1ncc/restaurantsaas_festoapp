@@ -12118,3 +12118,59 @@ button {
   }
 }
 
+
+/* =======================================================
+   FINAL DESKTOP CATEGORY LAYOUT
+   Categories wrap to new rows instead of overflowing.
+======================================================= */
+@media (min-width: 801px) {
+  .app-shell .category-panel {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    align-content: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    padding: 10px !important;
+  }
+
+  .app-shell .category-panel > .category-item,
+  .app-shell .category-panel > .category-row {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .app-shell .category-panel .category-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 5px !important;
+  }
+
+  .app-shell .category-panel .category-item {
+    flex: 0 1 auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    border-radius: 999px !important;
+  }
+
+  .app-shell .category-panel .category-delete {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    box-sizing: border-box !important;
+  }
+}
+
