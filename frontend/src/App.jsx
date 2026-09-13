@@ -691,6 +691,7 @@ function DirectorApp({
         {page === "settings" && (
           <RestaurantSettings
             restaurant={restaurant}
+            restaurants={restaurants}
             setRestaurants={setRestaurants}
           />
         )}
@@ -3266,6 +3267,7 @@ function SettingsPage({
 
 function RestaurantSettings({
   restaurant,
+  restaurants,
   setRestaurants,
 }) {
   const [name, setName] = useState(restaurant.name);
@@ -3341,31 +3343,49 @@ function RestaurantSettings({
   }
 
   function saveAccentColor() {
-    setRestaurants((prev) =>
-      prev.map((r) =>
-        r.id === restaurant.id
-          ? {
-              ...r,
-              accent,
-            }
-          : r
-      )
+    const updatedRestaurants = restaurants.map((r) =>
+      r.id === restaurant.id
+        ? {
+            ...r,
+            accent,
+          }
+        : r
     );
+
+    setRestaurants(updatedRestaurants);
+
+    festoApi("/api/sync", {
+      method: "POST",
+      body: JSON.stringify({
+        restaurants: updatedRestaurants,
+      }),
+    }).catch((error) => {
+      console.error("FESTO accent sync error:", error);
+    });
 
     alert("Акцентный цвет сохранён.");
   }
 
   function saveCustomerBackground() {
-    setRestaurants((prev) =>
-      prev.map((r) =>
-        r.id === restaurant.id
-          ? {
-              ...r,
-              customerBackground,
-            }
-          : r
-      )
+    const updatedRestaurants = restaurants.map((r) =>
+      r.id === restaurant.id
+        ? {
+            ...r,
+            customerBackground,
+          }
+        : r
     );
+
+    setRestaurants(updatedRestaurants);
+
+    festoApi("/api/sync", {
+      method: "POST",
+      body: JSON.stringify({
+        restaurants: updatedRestaurants,
+      }),
+    }).catch((error) => {
+      console.error("FESTO customer background sync error:", error);
+    });
 
     alert("Цвет фона клиентской страницы сохранён.");
   }

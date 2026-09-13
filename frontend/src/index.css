@@ -11298,3 +11298,49 @@ button {
   color: #fff !important;
 }
 
+
+/* =========================================================
+   FESTO — CUSTOMER COLORS: ABSOLUTE FINAL OVERRIDE
+   Только визуальные стили.
+   Логика заказа НЕ изменяется.
+   ========================================================= */
+
+.customer-page.customer-checkout-page .customer-quantity button,
+.customer-page.customer-checkout-page .customer-quantity button:hover,
+.customer-page.customer-checkout-page .customer-quantity button:active,
+.customer-page.customer-checkout-page .customer-quantity button:focus,
+.customer-page.customer-checkout-page .customer-quantity button:focus-visible {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+.customer-page.customer-checkout-page .customer-primary-button,
+.customer-page.customer-checkout-page .customer-primary-button:hover,
+.customer-page.customer-checkout-page .customer-primary-button:active,
+.customer-page.customer-checkout-page .customer-primary-button:focus,
+.customer-page.customer-checkout-page .customer-primary-button:focus-visible {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+.customer-page.customer-success-page .customer-success-icon,
+.customer-page.customer-success-page .customer-success-icon:hover {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+.customer-page.customer-success-page .customer-success-icon::before,
+.customer-page.customer-success-page .customer-success-icon::after {
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  background: transparent !important;
+}
+
+.customer-page.customer-success-page .customer-success-check {
+  color: #fff !important;
+}
