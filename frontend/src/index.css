@@ -11777,3 +11777,224 @@ button {
   }
 }
 
+
+/* -------------------------------------------------------
+   MENU MANAGER — аккуратный поиск и категории
+------------------------------------------------------- */
+
+/* Поиск */
+.app-shell .menu-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.app-shell .menu-search {
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 17px;
+  border: 1px solid rgba(20, 20, 30, .07);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .88);
+  box-shadow:
+    0 10px 28px rgba(20, 20, 30, .045),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.app-shell .menu-search .festo-icon {
+  flex: 0 0 auto;
+  color: #777780;
+}
+
+.app-shell .menu-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1a1a1e;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.app-shell .menu-search input::placeholder {
+  color: #9a9aa1;
+}
+
+.app-shell .menu-toolbar-count {
+  flex: 0 0 auto;
+  color: #8b8b92;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+/* Контейнер меню */
+.app-shell .menu-manager {
+  display: block;
+  width: 100%;
+}
+
+/* Категории — одна аккуратная горизонтальная панель */
+.app-shell .category-panel {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid rgba(20, 20, 30, .055);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .72);
+  box-shadow:
+    0 10px 28px rgba(20, 20, 30, .035),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  scrollbar-width: none;
+}
+
+.app-shell .category-panel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Обычная категория */
+.app-shell .category-panel > .category-item,
+.app-shell .category-panel .category-row {
+  flex: 0 0 auto;
+}
+
+.app-shell .category-panel > .category-item,
+.app-shell .category-panel .category-row .category-item {
+  min-height: 40px;
+  height: 40px;
+  width: auto;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: #73737b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background .18s ease,
+    color .18s ease,
+    transform .18s ease;
+}
+
+.app-shell .category-panel > .category-item:hover,
+.app-shell .category-panel .category-row .category-item:hover {
+  background: rgba(255,255,255,.9);
+  color: #1a1a1e;
+}
+
+.app-shell .category-panel > .category-item.active {
+  color: #fff;
+  background: var(--ui-accent, #4b49c7);
+  box-shadow:
+    0 8px 20px rgba(75,73,199,.18),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+/* Категория с кнопкой удаления */
+.app-shell .category-panel .category-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 40px;
+  border-radius: 13px;
+}
+
+.app-shell .category-panel .category-row.active {
+  background: var(--ui-accent, #4b49c7);
+  box-shadow:
+    0 8px 20px rgba(75,73,199,.18),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.app-shell .category-panel .category-row.active .category-item {
+  color: #fff;
+}
+
+.app-shell .category-panel .category-row.active .category-item:hover {
+  background: transparent;
+}
+
+.app-shell .category-panel .category-delete {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  margin-right: 5px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(0,0,0,.045);
+  color: #9a4a4a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.app-shell .category-panel .category-delete:hover {
+  background: rgba(180,50,50,.10);
+}
+
+/* Счётчик блюд внутри категории */
+.app-shell .category-panel .category-item strong {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: rgba(20,20,30,.055);
+  color: #777780;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.app-shell .category-panel > .category-item.active strong,
+.app-shell .category-panel .category-row.active .category-item strong {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+}
+
+/* На мобильном поиск остаётся широким, категории можно прокручивать */
+@media (max-width: 800px) {
+  .app-shell .menu-toolbar {
+    gap: 8px;
+  }
+
+  .app-shell .menu-search {
+    height: 46px;
+    border-radius: 15px;
+    padding: 0 14px;
+  }
+
+  .app-shell .menu-toolbar-count {
+    display: none;
+  }
+
+  .app-shell .category-panel {
+    margin-bottom: 14px;
+    border-radius: 17px;
+  }
+}
+
