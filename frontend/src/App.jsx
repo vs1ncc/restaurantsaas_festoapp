@@ -3206,9 +3206,48 @@ function RestaurantSettings({
   const [accent, setAccent] = useState(
     restaurant.accent || "#6C4BF4"
   );
+  const [logo, setLogo] = useState(restaurant.logo || "");
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
+  function handleLogoUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Выберите файл изображения: JPG, PNG, WEBP и т. п.");
+      e.target.value = "";
+      return;
+    }
+
+    festoImageSize(file)
+      .then(({ image, width, height }) => {
+        const maxSide = 800;
+        const scale = Math.min(1, maxSide / Math.max(width, height));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+
+        const ctx = canvas.getContext("2d", { alpha: false });
+        if (!ctx) {
+          throw new Error("Не удалось подготовить изображение.");
+        }
+
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL("image/jpeg", 0.82);
+      })
+      .then((dataUrl) => setLogo(dataUrl))
+      .catch(() => {
+        alert("Не удалось обработать выбранный логотип.");
+        e.target.value = "";
+      });
+  }
+
+  function removeLogo() {
+    setLogo("");
+  }
 
   function saveDetails() {
     setRestaurants((prev) =>
@@ -3220,6 +3259,7 @@ function RestaurantSettings({
               address,
               phone,
               accent,
+              logo,
             }
           : r
       )
@@ -3298,6 +3338,60 @@ function RestaurantSettings({
           value={accent}
           onChange={(e) => setAccent(e.target.value)}
         />
+      </div>
+
+      <div className="details-edit">
+        <h3>Логотип ресторана</h3>
+
+        {logo ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <img
+              src={logo}
+              alt="Логотип ресторана"
+              style={{
+                width: 88,
+                height: 88,
+                objectFit: "cover",
+                borderRadius: 24,
+                display: "block",
+              }}
+            />
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <label className="secondary-button" style={{ cursor: "pointer" }}>
+                Заменить логотип
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  style={{ display: "none" }}
+                />
+              </label>
+
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={removeLogo}
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        ) : (
+          <label className="secondary-button" style={{ cursor: "pointer" }}>
+            Загрузить логотип
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              style={{ display: "none" }}
+            />
+          </label>
+        )}
+
+        <p className="muted" style={{ marginTop: 8 }}>
+          Логотип будет показан клиентам вместо буквы F на странице заказа.
+        </p>
       </div>
 
       <button
