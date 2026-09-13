@@ -11090,3 +11090,45 @@ button {
 .customer-checkout-page .icon-button {
   color: var(--customer-accent, #6c4bf4) !important;
 }
+
+/* =========================================================
+   FESTO — CUSTOMER CHECKOUT — RESTAURANT ACCENT
+   Акцент берётся непосредственно из --customer-accent
+   ========================================================= */
+
+.customer-checkout-page .customer-primary-button,
+.customer-checkout-page .customer-checkout-content .customer-primary-button {
+  background: var(--customer-accent, #6c4bf4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6c4bf4) !important;
+  color: #fff !important;
+}
+
+.customer-checkout-page .customer-primary-button:hover,
+.customer-checkout-page .customer-checkout-content .customer-primary-button:hover {
+  background: var(--customer-accent, #6c4bf4) !important;
+  background-image: none !important;
+  filter: brightness(0.92);
+}
+
+.customer-checkout-page .customer-checkout-content button[type="submit"],
+.customer-checkout-page .customer-checkout-content .primary-button {
+  background: var(--customer-accent, #6c4bf4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6c4bf4) !important;
+  color: #fff !important;
+}
+
+.customer-checkout-page .customer-checkout-content button[type="submit"]:hover,
+.customer-checkout-page .customer-checkout-content .primary-button:hover {
+  background: var(--customer-accent, #6c4bf4) !important;
+  background-image: none !important;
+  filter: brightness(0.92);
+}
+
+/* Иконки и вторичные акцентные элементы checkout */
+.customer-checkout-page .customer-checkout-back,
+.customer-checkout-page .customer-checkout-mini-total {
+  color: var(--customer-accent, #6c4bf4) !important;
+}
+
