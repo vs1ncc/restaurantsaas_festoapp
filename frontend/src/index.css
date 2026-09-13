@@ -11344,3 +11344,32 @@ button {
 .customer-page.customer-success-page .customer-success-check {
   color: #fff !important;
 }
+
+/* FESTO — постоянный акцентный цвет кнопок клиента */
+.customer-page.customer-checkout-page .customer-quantity button {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+.customer-page.customer-checkout-page .customer-primary-button {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+.customer-page.customer-success-page .customer-primary-button {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
+
+.customer-page.customer-success-page .customer-success-icon {
+  background: var(--customer-accent, #6C4BF4) !important;
+  background-image: none !important;
+  border-color: var(--customer-accent, #6C4BF4) !important;
+  color: #fff !important;
+}
