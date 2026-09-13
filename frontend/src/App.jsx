@@ -2553,8 +2553,19 @@ function TablesManager({
           restaurant={restaurant}
           onClose={() => setTableSubpage(false)}
           onCreate={(table) => {
-            setTables((prev) => [...prev, table]);
+            const updatedTables = [...tables, table];
+
+            setTables(updatedTables);
             setTableSubpage(false);
+
+            festoApi("/api/sync", {
+              method: "POST",
+              body: JSON.stringify({
+                tables: updatedTables,
+              }),
+            }).catch((error) => {
+              console.error("FESTO table sync error:", error);
+            });
           }}
         />
       </div>
