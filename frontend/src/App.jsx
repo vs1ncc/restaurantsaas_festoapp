@@ -2605,7 +2605,7 @@ function TablesManager({
 
               <div className="qr-box">
                 <QRCodeSVG
-                  value={customerUrl(table.id, table.restaurantId)}
+                  value={customerUrl(table.id, restaurant.id)}
                   size={240}
                   bgColor="#ffffff"
                   fgColor="#111111"
@@ -2615,7 +2615,7 @@ function TablesManager({
               </div>
 
               <div className="table-url">
-                {customerUrl(table.id, table.restaurantId)}
+                {customerUrl(table.id, restaurant.id)}
               </div>
 
               <div className="table-actions">
@@ -2650,6 +2650,7 @@ function TablesManager({
       {selectedTable && (
         <QRModal
           table={selectedTable}
+          restaurantId={restaurant.id}
           onClose={() => setSelectedTable(null)}
         />
       )}
@@ -2758,8 +2759,8 @@ function AddTableModal({
    QR MODAL
 ------------------------------------------------------- */
 
-function QRModal({ table, onClose }) {
-  const link = customerUrl(table.id, table.restaurantId);
+function QRModal({ table, restaurantId, onClose }) {
+  const link = customerUrl(table.id, restaurantId);
 
   return (
     <div className="modal-overlay">
@@ -5018,7 +5019,7 @@ function QRStandOrderPage({ restaurant, tables, onBack, standOrders, setStandOrd
     setStandOrders(prev => [order, ...prev]); setSent(true);
   }
   const previewTable = tables.find(t => selectedTables.includes(t.id)) || tables[0];
-  const previewValue = previewTable ? customerUrl(previewTable.id, previewTable.restaurantId) : `${window.location.origin}/?restaurant=demo-restaurant&table=table-1`;
+  const previewValue = previewTable ? customerUrl(previewTable.id, restaurant.id) : `${window.location.origin}/?restaurant=demo-restaurant&table=table-1`;
 
   if (sent) return <div className="profile-subpage"><SubpageHeader title="QR подставки" onBack={onBack}/><div className="success-card"><div className="success-icon"><Icon name="check" size={30}/></div><h2>Заявка отправлена</h2><p>Мы получили дизайн и список столов. Заказ будет обработан после подтверждения.</p><div className="info-box"><span>Столы</span><strong>{selectedTables.map(id => tables.find(t => t.id === id)?.name).filter(Boolean).join(", ")}</strong></div><button className="primary-button" onClick={onBack}>Вернуться в профиль</button></div></div>;
 
