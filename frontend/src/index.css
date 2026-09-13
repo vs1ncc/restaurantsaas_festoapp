@@ -12223,3 +12223,39 @@ button {
   margin-top: 5px;
 }
 
+
+/* QR modal — final precise layout */
+.app-shell .qr-modal .qr-large {
+  width: 320px;
+  height: 320px;
+  margin: 10px auto 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-shell .qr-modal .qr-large svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.app-shell .qr-modal .qr-link {
+  display: none !important;
+}
+
+.app-shell .qr-modal .modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+.app-shell .qr-modal .modal-actions .primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  line-height: 1;
+}
+
