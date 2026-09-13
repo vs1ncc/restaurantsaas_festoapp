@@ -155,6 +155,13 @@ export default async function handler(req, res) {
         logo: restaurant.logo || null,
 
         /*
+         * Цвета клиентской страницы.
+         */
+        accent: restaurant.accent || "#6C4BF4",
+        customerBackground:
+          restaurant.customerBackground || "#F7F5F2",
+
+        /*
          * Дополнительные публичные поля.
          * Они не обязательны, но сохраняют совместимость
          * с уже существующей структурой FESTO.
