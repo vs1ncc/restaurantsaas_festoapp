@@ -12298,3 +12298,14 @@ button {
     margin-bottom: 6px !important;
   }
 }
+
+/* SIDEBAR — карточка ресторана: 6px над кнопкой «Выйти» */
+@media (min-width: 801px) {
+  .app-shell .sidebar > .sidebar-restaurant {
+    position: absolute !important;
+    left: 5px !important;
+    right: 5px !important;
+    bottom: 51px !important;
+    margin: 0 !important;
+  }
+}
