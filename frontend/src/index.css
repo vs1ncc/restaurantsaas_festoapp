@@ -12203,3 +12203,23 @@ button {
   vertical-align: middle;
 }
 
+
+/* QR modal — final alignment */
+.app-shell .qr-modal .qr-box {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 0 5px;
+  margin: 0 auto;
+}
+
+.app-shell .qr-modal .qr-large,
+.app-shell .qr-modal .qr-box svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.app-shell .qr-modal .qr-box + * {
+  margin-top: 5px;
+}
+
