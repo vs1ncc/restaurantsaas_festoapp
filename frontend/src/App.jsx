@@ -3531,7 +3531,10 @@ function RestaurantSettings({
             />
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <label className="secondary-button" style={{ cursor: "pointer" }}>
+              <label
+                className="secondary-button logo-replace-button"
+                style={{ cursor: "pointer" }}
+              >
                 Заменить логотип
                 <input
                   type="file"
