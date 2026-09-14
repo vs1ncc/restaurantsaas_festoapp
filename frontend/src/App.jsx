@@ -4323,6 +4323,12 @@ function CustomerApp({
         </section>
       </main>
 
+      <footer className="customer-company-footer">
+        <strong>ООО "Фесто"</strong>
+        <span>ИНН: 1800054857</span>
+        <span>ОГРН: 1261800009679</span>
+      </footer>
+
       <div className="customer-bottom-bar">
         <button
           type="button"

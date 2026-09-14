@@ -12887,3 +12887,31 @@ button {
     text-align: left;
   }
 }
+
+/* FESTO CUSTOMER — COMPANY LEGAL DETAILS */
+.customer-company-footer {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 24px 20px 110px;
+  color: #8a8a90;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.customer-company-footer strong {
+  margin-bottom: 2px;
+  color: #66666d;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.customer-company-footer span {
+  color: #99999f;
+  font-size: 10px;
+  font-weight: 600;
+}
