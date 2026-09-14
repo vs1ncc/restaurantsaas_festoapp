@@ -12396,3 +12396,129 @@ button {
   line-height: 1 !important;
 }
 
+
+
+/* =========================================================
+   FESTO — ANDROID MOBILE PERFORMANCE
+   Только визуальная оптимизация мобильного интерфейса.
+   Логика заказа / API / React state не изменяется.
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+  /* Android особенно чувствителен к blur во время scroll */
+  .customer-page *,
+  .customer-checkout-page *,
+  .customer-success-page * {
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .customer-page .customer-header,
+  .customer-page .customer-category,
+  .customer-page .customer-dish,
+  .customer-page .customer-bottom-bar,
+  .customer-page .customer-cart,
+  .customer-page .customer-cart-item,
+  .customer-page .customer-review-item,
+  .customer-checkout-page .customer-checkout-header,
+  .customer-checkout-page .customer-checkout-content,
+  .customer-checkout-page .customer-cart-item,
+  .customer-checkout-page .customer-review-item,
+  .customer-success-page .customer-success-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Более лёгкие тени вместо больших многослойных */
+  .customer-page .customer-dish,
+  .customer-page .customer-category,
+  .customer-page .customer-bottom-bar,
+  .customer-page .customer-cart-item,
+  .customer-page .customer-review-item,
+  .customer-checkout-page .customer-cart-item,
+  .customer-checkout-page .customer-review-item {
+    box-shadow: 0 6px 18px rgba(40, 35, 75, 0.07) !important;
+  }
+
+  /* Не заставляем браузер постоянно пересчитывать тяжёлые эффекты */
+  .customer-page .customer-dish,
+  .customer-page .customer-category,
+  .customer-page .customer-cart-item,
+  .customer-page .customer-review-item {
+    will-change: auto !important;
+  }
+
+  /* Убираем дорогие hover-переходы, которые на touch-устройствах
+     пользы не дают */
+  .customer-page .customer-primary-button:hover,
+  .customer-page .add-dish-button:hover,
+  .customer-page .customer-bottom-bar button:hover,
+  .customer-checkout-page .customer-primary-button:hover {
+    transform: none !important;
+    filter: none !important;
+  }
+
+  /* Анимации карточек не должны тормозить scroll */
+  .customer-page .customer-dish,
+  .customer-page .customer-category,
+  .customer-page .customer-cart-item,
+  .customer-page .customer-review-item {
+    animation: none !important;
+  }
+
+  /* Системе проще отрисовывать длинный список без лишних
+     перерисовок невидимого контента */
+  .customer-page .customer-dishes,
+  .customer-page .customer-order-list,
+  .customer-page .customer-review-list {
+    contain: layout paint;
+  }
+
+  /* На маленьких экранах не используем тяжёлый blur у success */
+  .customer-success-page .customer-success-card {
+    box-shadow: 0 10px 28px rgba(40, 35, 75, 0.09) !important;
+  }
+}
+
+/* =========================================================
+   ADMIN MOBILE PERFORMANCE
+   Не меняет desktop.
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .app-shell .topbar,
+  .app-shell .sidebar,
+  .app-shell .glass-panel,
+  .app-shell .card,
+  .app-shell .modal {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .app-shell .topbar,
+  .app-shell .glass-panel,
+  .app-shell .card {
+    box-shadow: 0 6px 20px rgba(20, 20, 30, 0.06) !important;
+  }
+
+  .app-shell .topbar,
+  .app-shell .glass-panel,
+  .app-shell .card {
+    will-change: auto !important;
+  }
+}
+
+/* =========================================================
+   MOBILE — бокового меню быть не должно.
+   Оставляем нижнюю навигацию.
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .app-shell .sidebar {
+    display: none !important;
+  }
+
+  .app-shell .mobile-bar {
+    display: flex !important;
+  }
+}
