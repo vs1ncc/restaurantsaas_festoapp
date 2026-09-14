@@ -14,6 +14,7 @@ const STORAGE = {
   invoices: "festo_invoices",
   qrStands: "festo_qr_stands",
   reportDrafts: "festo_report_drafts",
+  session: "festo_session",
 };
 
 const DEFAULT_RESTAURANT = {
@@ -5601,7 +5602,9 @@ export default function App() {
     readStorage(STORAGE.invoices, [])
   );
 
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(() =>
+    readStorage(STORAGE.session, null)
+  );
   const [now, setNow] = useState(Date.now());
   const [sharedDataLoaded, setSharedDataLoaded] = useState(false);
 
@@ -5765,6 +5768,7 @@ export default function App() {
       setRestaurants((prev) => prev.map((r) => r.id === nextSession.restaurantId && !r.trialStartedAt ? { ...r, trialStartedAt: new Date().toISOString() } : r));
     }
     setSession(nextSession);
+    writeStorage(STORAGE.session, nextSession);
   }
 
   const urlParams = useMemo(() => {
@@ -6028,6 +6032,11 @@ export default function App() {
 
   function logout() {
     setSession(null);
+    try {
+      localStorage.removeItem(STORAGE.session);
+    } catch (error) {
+      console.error("FESTO session storage cleanup failed:", error);
+    }
   }
 
   if (session.role === "admin") {
