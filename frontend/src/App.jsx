@@ -764,7 +764,6 @@ function Topbar({ title, name, subtitle, liveCount = 0, onOpenLiveOrders }) {
           >
             <span className="live-dot" />
             LIVE ЗАКАЗЫ
-            <span className="live-count">{liveCount}</span>
             <span className="live-arrow"><Icon name="arrow" size={15} /></span>
           </button>
         )}
