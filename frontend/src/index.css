@@ -12629,3 +12629,261 @@ button {
     gap: 2px 10px !important;
   }
 }
+
+/* ============================================================
+   TEMPORARY SBP PAYMENT FLOW
+   ============================================================ */
+
+.customer-sbp-payment {
+  margin-top: 24px;
+}
+
+.customer-sbp-payment h2 {
+  margin: 6px 0 14px;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.customer-bank-list {
+  display: grid;
+  gap: 9px;
+}
+
+.customer-bank {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(20, 20, 25, .10);
+  border-radius: 18px;
+  background: #fff;
+  color: #171717;
+  font: inherit;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    background .16s ease,
+    box-shadow .16s ease;
+}
+
+.customer-bank:active {
+  transform: scale(.98);
+}
+
+.customer-bank-active {
+  border-color: var(--customer-accent, #6C4BF4);
+  background: color-mix(
+    in srgb,
+    var(--customer-accent, #6C4BF4) 8%,
+    #fff
+  );
+  box-shadow:
+    0 8px 24px rgba(30, 30, 40, .08);
+}
+
+.customer-bank-check {
+  width: 25px;
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--customer-accent, #6C4BF4);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.customer-final-note {
+  margin: 14px 0 10px !important;
+  color: #707078 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  text-align: center;
+}
+
+.customer-payment-page {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding:
+    max(24px, env(safe-area-inset-top))
+    18px
+    max(32px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--customer-background, #F7F5F2);
+}
+
+.customer-payment-card {
+  width: min(100%, 540px);
+  box-sizing: border-box;
+  padding: 30px 22px 24px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow:
+    0 18px 55px rgba(25, 25, 35, .09);
+  text-align: center;
+}
+
+.customer-payment-icon {
+  width: 64px;
+  height: 64px;
+  margin: 14px auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--customer-accent, #6C4BF4);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.customer-payment-card h1 {
+  margin: 0 auto 12px;
+  max-width: 430px;
+  font-size: clamp(29px, 7vw, 42px);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+}
+
+.customer-payment-description {
+  margin: 0 auto;
+  max-width: 400px;
+  color: #707078;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.customer-payment-total {
+  margin: 22px 0;
+  padding: 17px 18px;
+  border-radius: 20px;
+  background: #f5f5f3;
+}
+
+.customer-payment-total span {
+  display: block;
+  margin-bottom: 5px;
+  color: #7b7b83;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.customer-payment-total strong {
+  display: block;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+
+.customer-payment-confirm {
+  width: 100%;
+}
+
+.customer-payment-hint {
+  margin: 13px 0 0;
+  color: #96969d;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .customer-payment-card {
+    padding: 24px 18px 20px;
+    border-radius: 24px;
+  }
+
+  .customer-payment-icon {
+    width: 58px;
+    height: 58px;
+    font-size: 27px;
+  }
+
+  .customer-payment-card h1 {
+    font-size: 30px;
+  }
+}
+/* SBP PAYMENT REQUISITES */
+.customer-payment-requisites {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 12px;
+}
+
+.customer-payment-requisite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 15px;
+  border: 1px solid rgba(30, 30, 40, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  text-align: left;
+}
+
+.customer-payment-requisite span {
+  color: #85858b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.customer-payment-requisite strong {
+  color: #18181b;
+  font-size: 14px;
+  font-weight: 750;
+  text-align: right;
+}
+
+.sbp-setting-label {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  color: #55565d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sbp-setting-label select,
+.sbp-setting-label input {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid rgba(30, 30, 40, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  color: #18181b;
+  font: inherit;
+}
+
+.sbp-setting-hint {
+  margin: 10px 0 0;
+  color: #888990;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.sbp-payment-settings {
+  margin-top: 18px;
+}
+
+@media (max-width: 600px) {
+  .customer-payment-requisite {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .customer-payment-requisite strong {
+    text-align: left;
+  }
+}

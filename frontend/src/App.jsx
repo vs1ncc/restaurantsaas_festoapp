@@ -3299,6 +3299,12 @@ function RestaurantSettings({
     restaurant.address
   );
   const [phone, setPhone] = useState(restaurant.phone);
+  const [paymentBank, setPaymentBank] = useState(
+    restaurant.paymentBank || ""
+  );
+  const [paymentPhone, setPaymentPhone] = useState(
+    restaurant.paymentPhone || restaurant.phone || ""
+  );
   const [accent, setAccent] = useState(
     restaurant.accent || "#6C4BF4"
   );
@@ -3358,6 +3364,8 @@ function RestaurantSettings({
               address,
               phone,
               logo,
+              paymentBank,
+              paymentPhone,
             }
           : r
       )
@@ -3473,6 +3481,47 @@ function RestaurantSettings({
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
+      </div>
+
+      <div className="details-edit sbp-payment-settings">
+        <div className="eyebrow">СБП</div>
+        <h3>Реквизиты для оплаты</h3>
+
+        <p className="muted">
+          Эти данные будут показаны клиенту при оплате заказа через СБП.
+        </p>
+
+        <label className="sbp-setting-label">
+          Банк получателя
+          <select
+            value={paymentBank}
+            onChange={(e) => setPaymentBank(e.target.value)}
+          >
+            <option value="">Выберите банк</option>
+            <option value="Т-Банк">Т-Банк</option>
+            <option value="Сбер">Сбер</option>
+            <option value="Альфа-Банк">Альфа-Банк</option>
+            <option value="ВТБ">ВТБ</option>
+            <option value="Газпромбанк">Газпромбанк</option>
+            <option value="ПСБ">ПСБ</option>
+            <option value="Райффайзенбанк">Райффайзенбанк</option>
+            <option value="Другой банк">Другой банк</option>
+          </select>
+        </label>
+
+        <label className="sbp-setting-label">
+          Номер телефона для оплаты
+          <input
+            type="tel"
+            value={paymentPhone}
+            onChange={(e) => setPaymentPhone(e.target.value)}
+            placeholder="+7 900 000-00-00"
+          />
+        </label>
+
+        <p className="sbp-setting-hint">
+          Укажите номер телефона, к которому привязан счёт предприятия в выбранном банке.
+        </p>
       </div>
 
       <div className="details-edit color-setting-block">
@@ -3675,6 +3724,9 @@ function CustomerApp({
   const [submittedOrder, setSubmittedOrder] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Временная ручная оплата по СБП без эквайринга.
+  const [selectedBank, setSelectedBank] = useState("");
+
   // CUSTOMER CHECKOUT — всегда показываем новую страницу с самого верха
   useEffect(() => {
     window.scrollTo({
@@ -3852,6 +3904,81 @@ function CustomerApp({
     setCheckoutStep("review");
   }
 
+  const SBP_BANKS = [
+    {
+      id: "tbank",
+      name: "Т-Банк",
+      url: "https://tbank.ru/",
+    },
+    {
+      id: "sber",
+      name: "Сбер",
+      url: "https://online.sberbank.ru/",
+    },
+    {
+      id: "alfabank",
+      name: "Альфа-Банк",
+      url: "https://alfabank.ru/",
+    },
+    {
+      id: "vtb",
+      name: "ВТБ",
+      url: "https://online.vtb.ru/",
+    },
+    {
+      id: "gazprombank",
+      name: "Газпромбанк",
+      url: "https://www.gazprombank.ru/",
+    },
+    {
+      id: "psb",
+      name: "ПСБ",
+      url: "https://ib.psbank.ru/",
+    },
+    {
+      id: "raiffeisen",
+      name: "Райффайзенбанк",
+      url: "https://online.raiffeisen.ru/",
+    },
+    {
+      id: "other",
+      name: "Другой банк",
+      url: "https://sbp.nspk.ru/",
+    },
+  ];
+
+  function startSBPPayment() {
+    if (!cart.length || !table || isSubmitting) {
+      return;
+    }
+
+    if (!selectedBank) {
+      alert("Выберите банк для оплаты.");
+      return;
+    }
+
+    const bank = SBP_BANKS.find(
+      (item) => item.id === selectedBank
+    );
+
+    if (!bank) {
+      alert("Не удалось определить выбранный банк.");
+      return;
+    }
+
+    // Сначала переводим FESTO на экран подтверждения.
+    setCheckoutStep("payment");
+
+    // Затем открываем банковскую страницу.
+    // Если устройство/браузер умеет передавать ссылку
+    // банковскому приложению, это может открыть приложение.
+    window.open(
+      bank.url,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
   async function submitOrder() {
     if (!cart.length || !table || isSubmitting) {
       return;
@@ -4012,10 +4139,91 @@ function CustomerApp({
           orderComment={orderComment}
           setOrderComment={setOrderComment}
           onChangeQuantity={changeQuantity}
-          onSubmit={submitOrder}
+          selectedBank={selectedBank}
+          setSelectedBank={setSelectedBank}
+          onSubmit={startSBPPayment}
           isSubmitting={isSubmitting}
         />
       </CustomerCheckoutLayout>
+    );
+  }
+
+  if (checkoutStep === "payment") {
+    const bank =
+      SBP_BANKS.find(
+        (item) => item.id === selectedBank
+      ) || null;
+
+    return (
+      <div
+        className="customer-page customer-payment-page"
+        style={{
+          "--customer-accent":
+            publicRestaurant.accent || "#6C4BF4",
+          "--customer-background":
+            publicRestaurant.customerBackground || "#F7F5F2",
+        }}
+      >
+        <div className="customer-payment-card">
+          <div className="customer-eyebrow">
+            ОПЛАТА ПО СБП
+          </div>
+
+          <div className="customer-payment-icon">
+            ↗
+          </div>
+
+          <h1>Подтвердите оплату заказа</h1>
+
+          <p className="customer-payment-description">
+            Мы открыли {bank?.name || "ваш банк"}.
+            <br />
+            После совершения перевода вернитесь в приложение.
+          </p>
+
+          <div className="customer-payment-requisites">
+            <div className="customer-payment-requisite">
+              <span>Банк получателя</span>
+              <strong>
+                {publicRestaurant.paymentBank ||
+                  "Банк не указан"}
+              </strong>
+            </div>
+
+            <div className="customer-payment-requisite">
+              <span>Телефон предприятия</span>
+              <strong>
+                {publicRestaurant.paymentPhone ||
+                  publicRestaurant.phone ||
+                  "Номер не указан"}
+              </strong>
+            </div>
+          </div>
+
+          <div className="customer-payment-total">
+            <span>Сумма заказа</span>
+            <strong>{money(cartTotal)}</strong>
+          </div>
+
+          <button
+            type="button"
+            className="customer-primary-button customer-payment-confirm"
+            onClick={submitOrder}
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? "Оформляем заказ..."
+              : "Подтвердить"}
+          </button>
+
+          <p className="customer-payment-hint">
+            В банковском приложении укажите телефон предприятия,
+            банк получателя и сумму заказа.
+            <br />
+            Нажимайте «Подтвердить» только после перевода.
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -4404,6 +4612,8 @@ function CustomerReviewPage({
   orderComment,
   setOrderComment,
   onChangeQuantity,
+  selectedBank,
+  setSelectedBank,
   onSubmit,
   isSubmitting,
 }) {
@@ -4481,21 +4691,61 @@ function CustomerReviewPage({
         <strong>{money(cartTotal)}</strong>
       </div>
 
+      <div className="customer-sbp-payment">
+        <div className="customer-eyebrow">
+          ОПЛАТА ПО СБП
+        </div>
+
+        <h2>Выберите банк</h2>
+
+        <div className="customer-bank-list">
+          {[
+            ["tbank", "Т-Банк"],
+            ["sber", "Сбер"],
+            ["alfabank", "Альфа-Банк"],
+            ["vtb", "ВТБ"],
+            ["other", "Другой банк"],
+          ].map(([id, name]) => (
+            <button
+              key={id}
+              type="button"
+              className={
+                selectedBank === id
+                  ? "customer-bank customer-bank-active"
+                  : "customer-bank"
+              }
+              onClick={() => setSelectedBank(id)}
+            >
+              <span>{name}</span>
+
+              {selectedBank === id && (
+                <span className="customer-bank-check">
+                  ✓
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <p className="customer-final-note">
+        Вернитесь в приложение после оплаты.
+      </p>
+
       <button
         type="button"
         className="customer-primary-button"
         onClick={onSubmit}
-        disabled={isSubmitting || !cart.length}
+        disabled={
+          isSubmitting ||
+          !cart.length ||
+          !selectedBank
+        }
       >
         {isSubmitting
-          ? "Оформляем заказ..."
+          ? "Подготавливаем оплату..."
           : "Оформить заказ"}
       </button>
-
-      <p className="customer-final-note">
-        После нажатия заказ сразу поступит
-        в ресторан.
-      </p>
     </section>
   );
 }
