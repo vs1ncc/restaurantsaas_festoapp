@@ -12369,3 +12369,13 @@ button {
     max-width: 100% !important;
   }
 }
+
+/* LOGO UPLOAD — центрируем текст внутри кнопок */
+.app-shell .restaurant-logo-actions .secondary-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle;
+  line-height: 1 !important;
+}
+

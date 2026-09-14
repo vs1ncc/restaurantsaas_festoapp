@@ -3562,9 +3562,7 @@ function RestaurantSettings({
           </label>
         )}
 
-        <p className="muted" style={{ marginTop: 8 }}>
-          Логотип будет показан клиентам вместо буквы F на странице заказа.
-        </p>
+        
       </div>
 
       <button
