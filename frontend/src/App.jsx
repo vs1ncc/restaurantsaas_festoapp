@@ -1605,6 +1605,11 @@ function SubpageHeader({ title, onBack }) {
 function MenuManager({ restaurant, categories, dishes, setCategories, setDishes }) {
   const [menuSubpage, setMenuSubpage] = useState(null);
   const [editingDish, setEditingDish] = useState(null);
+
+  // Navigation inside the menu must always start at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [menuSubpage]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -2525,6 +2530,11 @@ function TablesManager({
 }) {
   const [tableSubpage, setTableSubpage] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
+
+  // Navigation inside tables must always start at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [tableSubpage]);
 
   function deleteTable(id) {
     if (!window.confirm("Удалить этот столик?")) return;
@@ -4923,6 +4933,12 @@ function EmptyState({
 
 function ProfilePage({ restaurant, orders, setOrders, tables, invoices, setInvoices, onLogout }) {
   const [section, setSection] = useState("home");
+
+  // Navigation inside the director profile must always start at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [section]);
+
   const [, forceClock] = useState(Date.now());
   useEffect(() => { const timer = window.setInterval(() => forceClock(Date.now()), 30000); return () => window.clearInterval(timer); }, []);
   const [standOrders, setStandOrders] = useState(() =>
@@ -4988,6 +5004,11 @@ function ReportsPage({ restaurant, orders, onBack }) {
   const [type, setType] = useState("speed");
   const [report, setReport] = useState(null);
 
+  // Switching between report builder and report result starts at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [report]);
+
   function buildReport() {
     const range = getReportRange(interval);
     const filtered = orders.filter((o) => {
@@ -5018,6 +5039,12 @@ function ReportsPage({ restaurant, orders, onBack }) {
 
 function AdminProfilePage({ restaurants, setRestaurants, invoices, setInvoices, onLogout }) {
   const [section, setSection] = useState("home");
+
+  // Navigation inside the admin profile must always start at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [section]);
+
   if (section === "invoices") return <AdminInvoicesPage restaurants={restaurants} setRestaurants={setRestaurants} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
   return (
     <div className="profile-page">
