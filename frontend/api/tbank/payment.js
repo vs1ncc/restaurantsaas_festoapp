@@ -283,7 +283,14 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error(
       "FESTO T-Bank payment error:",
-      error
+      {
+        name: error?.name || null,
+        message: error?.message || null,
+        code: error?.code || null,
+        causeName: error?.cause?.name || null,
+        causeMessage: error?.cause?.message || null,
+        causeCode: error?.cause?.code || null,
+      }
     );
 
     return sendJson(res, 500, {
