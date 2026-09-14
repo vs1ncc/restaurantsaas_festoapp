@@ -1,7 +1,14 @@
 import { randomUUID, createHash } from "crypto";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
 import { getData, saveData } from "../../lib/redis.js";
 
 const TBANK_INIT_URL = "https://securepay.tinkoff.ru/v2/Init";
+
+// Keep the certificate in the Vercel Function bundle.
+// Node loads this certificate through NODE_EXTRA_CA_CERTS.
+const HARICA_CERT_PATH = fileURLToPath(new URL("./harica.crt", import.meta.url));
+readFileSync(HARICA_CERT_PATH);
 
 function sendJson(res, status, data) {
   res.status(status).json(data);
