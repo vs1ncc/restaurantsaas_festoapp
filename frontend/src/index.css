@@ -12522,3 +12522,110 @@ button {
     display: flex !important;
   }
 }
+
+/* =========================================================
+   LIVE ORDERS — adaptive large-order cards
+   CSS ONLY. Do not change API / JS logic.
+   ========================================================= */
+
+.live-orders-screen .live-orders-grid {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 360px), 1fr)
+  ) !important;
+  grid-auto-rows: max-content !important;
+  align-content: start !important;
+  align-items: start !important;
+  gap: 14px !important;
+  height: calc(100vh - 96px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 14px 14px 80px !important;
+  box-sizing: border-box !important;
+}
+
+/* Большая карточка больше не обрезается по высоте */
+.live-orders-screen .live-order-card {
+  min-width: 0 !important;
+  width: 100% !important;
+  min-height: 300px !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: hidden !important;
+  align-self: start !important;
+}
+
+/* Позиции заказа становятся адаптивной сеткой */
+.live-orders-screen .live-order-items {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(180px, 1fr)
+  ) !important;
+
+  align-content: start !important;
+  align-items: start !important;
+  gap: 2px 14px !important;
+  padding: 10px 14px !important;
+}
+
+/* Позиция не должна растягивать карточку */
+.live-orders-screen .live-order-item {
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/*
+   5+ позиций:
+   карточка получает дополнительную ширину.
+*/
+@media (min-width: 901px) {
+  .live-orders-screen .live-order-card:has(
+    .live-order-item:nth-child(5)
+  ) {
+    grid-column: span 2 !important;
+  }
+
+  /*
+     9+ позиций:
+     ещё шире — на три колонки сетки.
+  */
+  .live-orders-screen .live-order-card:has(
+    .live-order-item:nth-child(9)
+  ) {
+    grid-column: span 3 !important;
+  }
+}
+
+/*
+   Узкий экран:
+   карточки идут последовательно вниз,
+   ничего не вылезает за ширину.
+*/
+@media (max-width: 900px) {
+  .live-orders-screen .live-orders-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    height: calc(100vh - 70px) !important;
+    padding: 10px 10px 80px !important;
+    gap: 10px !important;
+  }
+
+  .live-orders-screen .live-order-card {
+    grid-column: auto !important;
+    min-height: 260px !important;
+  }
+
+  .live-orders-screen .live-order-items {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(150px, 1fr)
+    ) !important;
+    gap: 2px 10px !important;
+  }
+}
