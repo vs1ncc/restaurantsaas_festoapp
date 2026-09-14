@@ -206,13 +206,8 @@ async function festoApi(path, options = {}) {
 function customerUrl(tableId, restaurantId) {
   // Короткий hash-URL: iPhone легко считывает такой QR, а SPA-хостингу
   // не нужен отдельный server rewrite для /menu/...
-  // Страница условий никогда не должна становиться базовым путём QR.
   const path = window.location.pathname || "/";
-  const normalizedPath = path.replace(/\/+$/, "") || "/";
-  const safePath = normalizedPath === "/terms" ? "/" : path;
-  const basePath = safePath.endsWith("/")
-    ? safePath
-    : safePath.slice(0, safePath.lastIndexOf("/") + 1) || "/";
+  const basePath = path.endsWith("/") ? path : path.slice(0, path.lastIndexOf("/") + 1) || "/";
   return `${window.location.origin}${basePath}#/menu/${encodeURIComponent(restaurantId)}/${encodeURIComponent(tableId)}`;
 }
 
@@ -6477,7 +6472,10 @@ function App() {
   const isTermsRoute =
     window.location.pathname.replace(/\/+$/, "") === "/terms";
 
-  // QR/hash menu route has priority over the standalone terms page.
+  if (isTermsRoute) {
+    return <TermsPage />;
+  }
+
   if (publicMenuRoute) {
     if (publicRouteError) return <CustomerError title="Меню временно недоступно" text={publicRouteError} />;
     if (!publicRouteData) return <div
@@ -6497,10 +6495,6 @@ function App() {
         publicData={publicRouteData}
       />
     );
-  }
-
-  if (isTermsRoute) {
-    return <TermsPage />;
   }
 
   // Новый QR содержит публичный снимок меню и стола прямо в URL.
