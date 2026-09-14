@@ -1,14 +1,64 @@
 import { randomUUID, createHash } from "crypto";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
+import https from "https";
 import { getData, saveData } from "../../lib/redis.js";
 
 const TBANK_INIT_URL = "https://securepay.tinkoff.ru/v2/Init";
 
-// Keep the certificate in the Vercel Function bundle.
-// Node loads this certificate through NODE_EXTRA_CA_CERTS.
+// Keep the certificate in the Vercel Function bundle and pass it
+// directly to the TLS connection used for the T-Bank API request.
 const HARICA_CERT_PATH = fileURLToPath(new URL("./harica.crt", import.meta.url));
-readFileSync(HARICA_CERT_PATH);
+const HARICA_CERT = readFileSync(HARICA_CERT_PATH);
+
+function postTBankInit(payload) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(TBANK_INIT_URL);
+    const requestBody = JSON.stringify(payload);
+
+    const request = https.request(
+      url,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(requestBody),
+        },
+        ca: HARICA_CERT,
+      },
+      (response) => {
+        let body = "";
+
+        response.setEncoding("utf8");
+
+        response.on("data", (chunk) => {
+          body += chunk;
+        });
+
+        response.on("end", () => {
+          try {
+            const result = JSON.parse(body);
+
+            resolve({
+              ok:
+                response.statusCode >= 200 &&
+                response.statusCode < 300,
+              status: response.statusCode,
+              result,
+            });
+          } catch (error) {
+            error.message =
+              `Invalid JSON response from T-Bank: ${error.message}`;
+            reject(error);
+          }
+        });
+      }
+    );
+
+    request.on("error", reject);
+    request.end(requestBody);
+  });
+}
 
 function sendJson(res, status, data) {
   res.status(status).json(data);
@@ -201,33 +251,21 @@ export default async function handler(req, res) {
         password
       );
 
-    const response = await fetch(
-      TBANK_INIT_URL,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify({
-          ...initParams,
-          Token: token,
-        }),
-      }
-    );
-
-    const result =
-      await response.json();
+    const { ok, status, result } =
+      await postTBankInit({
+        ...initParams,
+        Token: token,
+      });
 
     if (
-      !response.ok ||
+      !ok ||
       !result.Success ||
       !result.PaymentURL
     ) {
       console.error(
         "FESTO T-Bank Init error:",
         {
-          httpStatus: response.status,
+          httpStatus: status,
           response: result,
         }
       );
