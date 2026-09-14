@@ -519,6 +519,7 @@ function AdminApp({
             setRestaurants={setRestaurants}
             invoices={invoices}
             setInvoices={setInvoices}
+            onLogout={onLogout}
           />
         )}
 
@@ -5016,10 +5017,42 @@ function ReportsPage({ restaurant, orders, onBack }) {
   return <div className="profile-subpage"><SubpageHeader title="Отчеты" onBack={onBack}/><div className="glass-panel reports-builder"><div className="eyebrow">АНАЛИТИКА РЕСТОРАНА</div><h2>Сформировать отчет</h2><p className="muted">Выберите интервал и тип отчета. После формирования откроется отдельная страница с результатами.</p><div className="report-form-grid"><div className="input-group"><label>Интервал</label><select value={interval} onChange={e=>setInterval(e.target.value)}><option value="last_hour">Последний час</option><option value="today">Сегодня</option><option value="yesterday">Прошедший день</option><option value="month">Текущий месяц</option></select></div><div className="input-group"><label>Отчет</label><select value={type} onChange={e=>setType(e.target.value)}><option value="speed">По скорости приготовления</option><option value="turnover">По товарообороту</option></select></div></div><button className="primary-button report-generate" onClick={buildReport}><Icon name="chart" size={18}/>Сформировать отчет</button></div></div>;
 }
 
-function AdminProfilePage({ restaurants, setRestaurants, invoices, setInvoices }) {
+function AdminProfilePage({ restaurants, setRestaurants, invoices, setInvoices, onLogout }) {
   const [section, setSection] = useState("home");
   if (section === "invoices") return <AdminInvoicesPage restaurants={restaurants} setRestaurants={setRestaurants} invoices={invoices} setInvoices={setInvoices} onBack={() => setSection("home")} />;
-  return <div className="profile-page"><div className="page-heading"><div><div className="eyebrow">АККАУНТ</div><h1>Профиль</h1><p>Управление аккаунтом администратора</p></div></div><div className="profile-grid"><button className="profile-card" onClick={() => setSection("invoices")}><span className="profile-card-icon"><Icon name="bank" size={26}/></span><strong>Счета и оплаты</strong><span>Выставляйте счета ресторанам и проверяйте платежи</span><b>{invoices.filter(x => x.status === "payment_submitted").length}</b></button></div></div>;
+  return (
+    <div className="profile-page">
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">АККАУНТ</div>
+          <h1>Профиль</h1>
+          <p>Управление аккаунтом администратора</p>
+        </div>
+      </div>
+
+      <div className="profile-grid">
+        <button className="profile-card" onClick={() => setSection("invoices")}>
+          <span className="profile-card-icon">
+            <Icon name="bank" size={26}/>
+          </span>
+          <strong>Счета и оплаты</strong>
+          <span>Выставляйте счета ресторанам и проверяйте платежи</span>
+          <b>{invoices.filter(x => x.status === "payment_submitted").length}</b>
+        </button>
+      </div>
+
+      <div className="profile-logout-wrap">
+        <button
+          className="profile-logout-button"
+          onClick={onLogout}
+          type="button"
+        >
+          <Icon name="logout" size={18}/>
+          Выйти из аккаунта
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function QRStandOrderPage({ restaurant, tables, onBack, standOrders, setStandOrders }) {
