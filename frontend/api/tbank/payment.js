@@ -232,10 +232,10 @@ export default async function handler(req, res) {
       `${publicBaseUrl}/api/tbank/notification`;
 
     const successUrl =
-      `${publicBaseUrl}/?tbank=success&orderId=${encodeURIComponent(orderId)}`;
+      `${publicBaseUrl}/?tbank=success&orderId=${encodeURIComponent(orderId)}&restaurant=${encodeURIComponent(body.restaurantId)}&table=${encodeURIComponent(body.tableId)}`;
 
     const failUrl =
-      `${publicBaseUrl}/?tbank=fail&orderId=${encodeURIComponent(orderId)}`;
+      `${publicBaseUrl}/?tbank=fail&orderId=${encodeURIComponent(orderId)}&restaurant=${encodeURIComponent(body.restaurantId)}&table=${encodeURIComponent(body.tableId)}`;
 
     const initParams = {
       TerminalKey: terminalKey,

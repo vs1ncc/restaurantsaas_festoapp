@@ -6138,8 +6138,25 @@ export default function App() {
     urlParams.get("liveOrders");
   const menuPathMatch = window.location.pathname.match(/\/menu\/([^/]+)\/([^/]+)\/?$/);
   const hashMenuMatch = window.location.hash.match(/^#\/menu\/([^/]+)\/([^/]+)\/?$/);
+  const tbankResult = urlParams.get("tbank");
+  const tbankRestaurantId = urlParams.get("restaurant");
+  const tbankTableId = urlParams.get("table");
+
   const publicMenuMatch = menuPathMatch || hashMenuMatch;
-  const publicMenuRoute = publicMenuMatch ? { restaurantId: decodeURIComponent(publicMenuMatch[1]), tableId: decodeURIComponent(publicMenuMatch[2]) } : null;
+
+  const publicMenuRoute = publicMenuMatch
+    ? {
+        restaurantId: decodeURIComponent(publicMenuMatch[1]),
+        tableId: decodeURIComponent(publicMenuMatch[2]),
+      }
+    : tbankResult &&
+        tbankRestaurantId &&
+        tbankTableId
+      ? {
+          restaurantId: tbankRestaurantId,
+          tableId: tbankTableId,
+        }
+      : null;
   const [publicRouteData, setPublicRouteData] = useState(null);
   const [publicRouteError, setPublicRouteError] = useState("");
 
