@@ -12379,3 +12379,11 @@ button {
   line-height: 1 !important;
 }
 
+
+/* LOGO — опускаем только текст внутри кнопки */
+.app-shell .restaurant-logo-actions .logo-replace-text {
+  display: inline-block;
+  position: relative;
+  top: 2px;
+}
+
