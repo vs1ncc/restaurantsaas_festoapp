@@ -3723,9 +3723,9 @@ function CustomerApp({
   const [orderComment, setOrderComment] = useState("");
   const [submittedOrder, setSubmittedOrder] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Временная ручная оплата по СБП без эквайринга.
-  const [selectedBank, setSelectedBank] = useState("");
+  const [tbankPaymentState, setTbankPaymentState] = useState("idle");
+  const [tbankPaymentOrderId, setTbankPaymentOrderId] = useState("");
+  const [tbankPaymentError, setTbankPaymentError] = useState("");
 
   // CUSTOMER CHECKOUT — всегда показываем новую страницу с самого верха
   useEffect(() => {
@@ -3734,7 +3734,143 @@ function CustomerApp({
       left: 0,
       behavior: "smooth",
     });
-  }, [checkoutStep, orderComplete]);
+  }, [checkoutStep, orderComplete, tbankPaymentState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const tbankResult = params.get("tbank");
+    const orderId = String(
+      params.get("orderId") || ""
+    ).trim();
+
+    if (!tbankResult || !orderId) {
+      return;
+    }
+
+    if (tbankResult === "fail") {
+      setTbankPaymentOrderId(orderId);
+      setTbankPaymentState("failed");
+      setTbankPaymentError(
+        "Оплата не была завершена. Заказ не передан в ресторан."
+      );
+      return;
+    }
+
+    if (tbankResult !== "success") {
+      return;
+    }
+
+    let cancelled = false;
+    let timer = null;
+    const startedAt = Date.now();
+
+    setTbankPaymentOrderId(orderId);
+    setTbankPaymentState("waiting");
+    setTbankPaymentError("");
+
+    async function checkPayment() {
+      if (cancelled) {
+        return;
+      }
+
+      try {
+        const result = await festoApi(
+          `/api/tbank/status?orderId=${encodeURIComponent(orderId)}`
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        if (
+          result?.confirmed &&
+          result?.orderCreated &&
+          result?.order
+        ) {
+          setSubmittedOrder(result.order);
+          setCart([]);
+          setOrderComment("");
+          setTbankPaymentState("idle");
+          setOrderComplete(true);
+
+          window.history.replaceState(
+            {},
+            "",
+            window.location.pathname
+          );
+
+          return;
+        }
+
+        const status = String(
+          result?.status || ""
+        ).toUpperCase();
+
+        if (
+          [
+            "REJECTED",
+            "CANCELED",
+            "CANCELLED",
+            "DEADLINE_EXPIRED",
+          ].includes(status)
+        ) {
+          setTbankPaymentState("failed");
+          setTbankPaymentError(
+            "Т-Банк отклонил оплату. Заказ не передан в ресторан."
+          );
+
+          window.history.replaceState(
+            {},
+            "",
+            window.location.pathname
+          );
+
+          return;
+        }
+
+        if (Date.now() - startedAt >= 10 * 60 * 1000) {
+          setTbankPaymentState("failed");
+          setTbankPaymentError(
+            "Не удалось дождаться подтверждения оплаты. Проверьте статус платежа позже."
+          );
+
+          window.history.replaceState(
+            {},
+            "",
+            window.location.pathname
+          );
+
+          return;
+        }
+      } catch (error) {
+        console.error(
+          "FESTO T-Bank status error:",
+          error
+        );
+      }
+
+      if (!cancelled) {
+        timer = window.setTimeout(
+          checkPayment,
+          2000
+        );
+      }
+    }
+
+    checkPayment();
+
+    return () => {
+      cancelled = true;
+
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, []);
 
   const restaurantCategories = (publicCategories || [])
     .filter(
@@ -3904,90 +4040,15 @@ function CustomerApp({
     setCheckoutStep("review");
   }
 
-  const SBP_BANKS = [
-    {
-      id: "tbank",
-      name: "Т-Банк",
-      url: "https://tbank.ru/",
-    },
-    {
-      id: "sber",
-      name: "Сбер",
-      url: "https://online.sberbank.ru/",
-    },
-    {
-      id: "alfabank",
-      name: "Альфа-Банк",
-      url: "https://alfabank.ru/",
-    },
-    {
-      id: "vtb",
-      name: "ВТБ",
-      url: "https://online.vtb.ru/",
-    },
-    {
-      id: "gazprombank",
-      name: "Газпромбанк",
-      url: "https://www.gazprombank.ru/",
-    },
-    {
-      id: "psb",
-      name: "ПСБ",
-      url: "https://ib.psbank.ru/",
-    },
-    {
-      id: "raiffeisen",
-      name: "Райффайзенбанк",
-      url: "https://online.raiffeisen.ru/",
-    },
-    {
-      id: "other",
-      name: "Другой банк",
-      url: "https://sbp.nspk.ru/",
-    },
-  ];
-
-  function startSBPPayment() {
-    if (!cart.length || !table || isSubmitting) {
-      return;
-    }
-
-    if (!selectedBank) {
-      alert("Выберите банк для оплаты.");
-      return;
-    }
-
-    const bank = SBP_BANKS.find(
-      (item) => item.id === selectedBank
-    );
-
-    if (!bank) {
-      alert("Не удалось определить выбранный банк.");
-      return;
-    }
-
-    // Сначала переводим FESTO на экран подтверждения.
-    setCheckoutStep("payment");
-
-    // Затем открываем банковскую страницу.
-    // Если устройство/браузер умеет передавать ссылку
-    // банковскому приложению, это может открыть приложение.
-    window.open(
-      bank.url,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  }
-
   async function submitOrder() {
     if (!cart.length || !table || isSubmitting) {
       return;
     }
 
     setIsSubmitting(true);
+    setTbankPaymentError("");
 
     const orderDraft = {
-      id: uid("order"),
       restaurantId: publicRestaurant.id,
       tableId: table.id,
       tableName:
@@ -4005,41 +4066,41 @@ function CustomerApp({
       })),
       total: cartTotal,
       comment: orderComment.trim(),
-      status: "new",
-      createdAt: new Date().toISOString(),
     };
 
     try {
-      const saved = await festoApi(
-        "/api/orders",
+      const payment = await festoApi(
+        "/api/tbank/payment",
         {
           method: "POST",
           body: JSON.stringify(orderDraft),
         }
       );
 
-      setOrders((prev) => [
-        ...prev.filter(
-          (item) => item.id !== saved.id
-        ),
-        saved,
-      ]);
+      if (
+        !payment?.ok ||
+        !payment?.paymentUrl
+      ) {
+        throw new Error(
+          payment?.error ||
+            "Не удалось подготовить оплату."
+        );
+      }
 
-      setSubmittedOrder(saved);
-      setCart([]);
-      setOrderComment("");
-      setCheckoutStep("menu");
-      setOrderComplete(true);
+      window.location.assign(
+        payment.paymentUrl
+      );
     } catch (error) {
       console.error(
-        "FESTO customer order error:",
+        "FESTO T-Bank payment initialization error:",
         error
       );
 
       alert(
-        "Не удалось оформить заказ. Проверьте соединение и повторите попытку."
+        error?.message ||
+          "Не удалось подготовить оплату. Попробуйте ещё раз."
       );
-    } finally {
+
       setIsSubmitting(false);
     }
   }
@@ -4139,21 +4200,14 @@ function CustomerApp({
           orderComment={orderComment}
           setOrderComment={setOrderComment}
           onChangeQuantity={changeQuantity}
-          selectedBank={selectedBank}
-          setSelectedBank={setSelectedBank}
-          onSubmit={startSBPPayment}
+          onSubmit={submitOrder}
           isSubmitting={isSubmitting}
         />
       </CustomerCheckoutLayout>
     );
   }
 
-  if (checkoutStep === "payment") {
-    const bank =
-      SBP_BANKS.find(
-        (item) => item.id === selectedBank
-      ) || null;
-
+  if (tbankPaymentState === "waiting") {
     return (
       <div
         className="customer-page customer-payment-page"
@@ -4166,62 +4220,83 @@ function CustomerApp({
       >
         <div className="customer-payment-card">
           <div className="customer-eyebrow">
-            ОПЛАТА ПО СБП
+            ПРОВЕРКА ОПЛАТЫ
           </div>
 
           <div className="customer-payment-icon">
-            ↗
+            …
           </div>
 
-          <h1>Подтвердите оплату заказа</h1>
+          <h1>Проверяем оплату</h1>
 
           <p className="customer-payment-description">
-            Мы открыли {bank?.name || "ваш банк"}.
+            Т-Банк сообщил о возврате со страницы оплаты.
             <br />
-            После совершения перевода вернитесь в приложение.
+            Ждём подтверждение платежа от банка.
           </p>
 
-          <div className="customer-payment-requisites">
-            <div className="customer-payment-requisite">
-              <span>Банк получателя</span>
-              <strong>
-                {publicRestaurant.paymentBank ||
-                  "Банк не указан"}
-              </strong>
-            </div>
-
-            <div className="customer-payment-requisite">
-              <span>Телефон предприятия</span>
-              <strong>
-                {publicRestaurant.paymentPhone ||
-                  publicRestaurant.phone ||
-                  "Номер не указан"}
-              </strong>
-            </div>
-          </div>
-
           <div className="customer-payment-total">
-            <span>Сумма заказа</span>
-            <strong>{money(cartTotal)}</strong>
+            <span>Заказ</span>
+            <strong>
+              #{tbankPaymentOrderId.slice(-6)}
+            </strong>
           </div>
+
+          <p className="customer-payment-hint">
+            Не закрывайте страницу. Заказ появится
+            в ресторане только после подтверждения
+            успешной оплаты.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (tbankPaymentState === "failed") {
+    return (
+      <div
+        className="customer-page customer-payment-page"
+        style={{
+          "--customer-accent":
+            publicRestaurant.accent || "#6C4BF4",
+          "--customer-background":
+            publicRestaurant.customerBackground || "#F7F5F2",
+        }}
+      >
+        <div className="customer-payment-card">
+          <div className="customer-eyebrow">
+            ОПЛАТА
+          </div>
+
+          <div className="customer-payment-icon">
+            !
+          </div>
+
+          <h1>Оплата не подтверждена</h1>
+
+          <p className="customer-payment-description">
+            {tbankPaymentError ||
+              "Платёж не был подтверждён."}
+          </p>
 
           <button
             type="button"
-            className="customer-primary-button customer-payment-confirm"
-            onClick={submitOrder}
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? "Оформляем заказ..."
-              : "Подтвердить"}
-          </button>
+            className="customer-primary-button"
+            onClick={() => {
+              setTbankPaymentState("idle");
+              setTbankPaymentOrderId("");
+              setTbankPaymentError("");
+              setCheckoutStep("review");
 
-          <p className="customer-payment-hint">
-            В банковском приложении укажите телефон предприятия,
-            банк получателя и сумму заказа.
-            <br />
-            Нажимайте «Подтвердить» только после перевода.
-          </p>
+              window.history.replaceState(
+                {},
+                "",
+                window.location.pathname
+              );
+            }}
+          >
+            Вернуться к заказу
+          </button>
         </div>
       </div>
     );
@@ -4618,8 +4693,6 @@ function CustomerReviewPage({
   orderComment,
   setOrderComment,
   onChangeQuantity,
-  selectedBank,
-  setSelectedBank,
   onSubmit,
   isSubmitting,
 }) {
@@ -4697,45 +4770,11 @@ function CustomerReviewPage({
         <strong>{money(cartTotal)}</strong>
       </div>
 
-      <div className="customer-sbp-payment">
-        <div className="customer-eyebrow">
-          ОПЛАТА ПО СБП
-        </div>
-
-        <h2>Выберите банк</h2>
-
-        <div className="customer-bank-list">
-          {[
-            ["tbank", "Т-Банк"],
-            ["sber", "Сбер"],
-            ["alfabank", "Альфа-Банк"],
-            ["vtb", "ВТБ"],
-            ["other", "Другой банк"],
-          ].map(([id, name]) => (
-            <button
-              key={id}
-              type="button"
-              className={
-                selectedBank === id
-                  ? "customer-bank customer-bank-active"
-                  : "customer-bank"
-              }
-              onClick={() => setSelectedBank(id)}
-            >
-              <span>{name}</span>
-
-              {selectedBank === id && (
-                <span className="customer-bank-check">
-                  ✓
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <p className="customer-final-note">
-        Вернитесь в приложение после оплаты.
+        После нажатия вы будете перенаправлены
+        на защищённую страницу оплаты Т-Банка.
+        Заказ поступит в ресторан только после
+        подтверждения успешной оплаты.
       </p>
 
       <button
@@ -4744,8 +4783,7 @@ function CustomerReviewPage({
         onClick={onSubmit}
         disabled={
           isSubmitting ||
-          !cart.length ||
-          !selectedBank
+          !cart.length
         }
       >
         {isSubmitting
