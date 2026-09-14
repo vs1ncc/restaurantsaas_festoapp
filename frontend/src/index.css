@@ -9156,7 +9156,7 @@ button {
   border: 1px solid rgba(255,255,255,.95) !important;
   border-radius: 28px !important;
 
-  background: rgba(255,255,255,.68) !important;
+  background: rgba(255,255,255,.90) !important;
 
   backdrop-filter: blur(28px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
