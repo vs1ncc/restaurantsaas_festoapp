@@ -4117,7 +4117,7 @@ function CustomerApp({
           orderComment={orderComment}
           setOrderComment={setOrderComment}
           onChangeQuantity={changeQuantity}
-          onSubmit={submitOrder}
+          onSubmit={() => setCheckoutStep("review")}
           isSubmitting={isSubmitting}
         />
       </CustomerCheckoutLayout>
