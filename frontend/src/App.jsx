@@ -3664,6 +3664,15 @@ function CustomerApp({
   const [submittedOrder, setSubmittedOrder] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // CUSTOMER CHECKOUT — всегда показываем новую страницу с самого верха
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  }, [checkoutStep, orderComplete]);
+
   const restaurantCategories = (publicCategories || [])
     .filter(
       (category) =>
