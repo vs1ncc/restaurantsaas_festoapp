@@ -1,5 +1,6 @@
 import { randomUUID, createHash } from "crypto";
 import { readFileSync } from "fs";
+import tls from "tls";
 import { fileURLToPath } from "url";
 import https from "https";
 import { getData, saveData } from "../../lib/redis.js";
@@ -8,8 +9,10 @@ const TBANK_INIT_URL = "https://securepay.tinkoff.ru/v2/Init";
 
 // Keep the certificate in the Vercel Function bundle and pass it
 // directly to the TLS connection used for the T-Bank API request.
-const HARICA_CERT_PATH = fileURLToPath(new URL("./harica.crt", import.meta.url));
-const HARICA_CERT = readFileSync(HARICA_CERT_PATH);
+const RUSSIAN_ROOT_CA_PATH = fileURLToPath(
+  new URL("./russian-trusted-root.crt", import.meta.url)
+);
+const RUSSIAN_ROOT_CA = readFileSync(RUSSIAN_ROOT_CA_PATH);
 
 function postTBankInit(payload) {
   return new Promise((resolve, reject) => {
@@ -24,7 +27,7 @@ function postTBankInit(payload) {
           "Content-Type": "application/json",
           "Content-Length": Buffer.byteLength(requestBody),
         },
-        ca: HARICA_CERT,
+        ca: [...tls.rootCertificates, RUSSIAN_ROOT_CA],
       },
       (response) => {
         let body = "";
