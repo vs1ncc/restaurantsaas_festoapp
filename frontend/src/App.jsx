@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import "./index.css";
 
 const ADMIN_EMAIL = "yosoycastello@gmail.com";
-const TELEGRAM_MINI_APP_URL = "https://restaurantsaas-festoapp.vercel.app/#/mini-app/FESTO-48675F86784DD150";
+const TELEGRAM_MINI_APP_URL = "https://restaurantsaas-festoapp1-pi.vercel.app/";
 const ADMIN_PASSWORD = "admin";
 
 const STORAGE = {
