@@ -303,3 +303,12 @@ footer span:first-child {
   font-weight: 800;
   letter-spacing: 0.5px;
 }
+
+/* Telegram WebApp top safe area */
+.app {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
+}
+
+.topbar {
+  padding-top: 8px;
+}
