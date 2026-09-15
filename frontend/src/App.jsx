@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import "./index.css";
 
 const ADMIN_EMAIL = "yosoycastello@gmail.com";
+const TELEGRAM_MINI_APP_URL = "https://restaurantsaas-festoapp.vercel.app/#/mini-app/FESTO-48675F86784DD150";
 const ADMIN_PASSWORD = "admin";
 
 const STORAGE = {
@@ -459,6 +460,7 @@ function AdminApp({
         page={page}
         setPage={setPage}
         role="admin"
+        email={ADMIN_EMAIL}
         onLogout={onLogout}
       />
 
@@ -529,6 +531,10 @@ function AdminApp({
             subtitle="Основные параметры приложения Festo"
             email={ADMIN_EMAIL}
           />
+        )}
+
+        {page === "telegram" && (
+          <TelegramIntegrationPage />
         )}
 
         {showCreate && (
@@ -713,13 +719,14 @@ function DirectorApp({
    SIDEBAR
 ------------------------------------------------------- */
 
-function Sidebar({ page, setPage, role, restaurant, onLogout }) {
+function Sidebar({ page, setPage, role, restaurant, onLogout, email }) {
   const adminItems = [
     { id: "dashboard", icon: "home", label: "Главная" },
     { id: "restaurants", icon: "restaurant", label: "Рестораны" },
     { id: "licenses", icon: "license", label: "Лицензии" },
     { id: "profile", icon: "profile", label: "Профиль" },
     { id: "settings", icon: "settings", label: "Настройки" },
+    ...(email === ADMIN_EMAIL ? [{ id: "telegram", icon: "send", label: "Telegram" }] : []),
   ];
   const directorItems = [
     { id: "dashboard", icon: "home", label: "Главная" },
@@ -3244,6 +3251,94 @@ function OrderModal({
 /* -------------------------------------------------------
    SETTINGS
 ------------------------------------------------------- */
+
+function TelegramMiniAppPage() {
+  return (
+    <main
+      className="customer-page"
+      style={{
+        "--customer-accent": "#6C4BF4",
+        "--customer-background": "#F7F5F2",
+        minHeight: "100vh",
+      }}
+    >
+      <div
+        className="customer-content"
+        style={{
+          maxWidth: "520px",
+          margin: "0 auto",
+          padding: "32px 20px",
+        }}
+      >
+        <div className="glass-panel">
+          <div className="eyebrow">RESTAURANT OS</div>
+
+          <h1 style={{ marginTop: "12px" }}>
+            FESTO
+          </h1>
+
+          <p className="muted">
+            Управляйте рестораном прямо из Telegram.
+          </p>
+
+          <div className="info-box" style={{ marginTop: "24px" }}>
+            <span>
+              <strong>Mini App</strong>
+            </span>
+            <span>FESTO Telegram</span>
+          </div>
+
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => window.Telegram?.WebApp?.close()}
+          >
+            Открыть FESTO
+          </button>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function TelegramIntegrationPage() {
+  async function copyUrl() {
+    try {
+      await navigator.clipboard.writeText(TELEGRAM_MINI_APP_URL);
+      alert("Ссылка Mini App скопирована.");
+    } catch {
+      window.prompt("Скопируйте ссылку Mini App:", TELEGRAM_MINI_APP_URL);
+    }
+  }
+
+  return (
+    <div className="settings-card">
+      <div className="eyebrow">INTEGRATIONS</div>
+      <h1>Telegram</h1>
+      <p>Подключение FESTO к Telegram Mini App.</p>
+
+      <div className="info-box">
+        <span><strong>Telegram Bot</strong></span>
+        <span>@appfestobot</span>
+      </div>
+
+      <div className="info-box">
+        <span><strong>Mini App URL</strong></span>
+        <span style={{ wordBreak: "break-all" }}>
+          {TELEGRAM_MINI_APP_URL}
+        </span>
+      </div>
+
+      <button
+        className="primary-button"
+        type="button"
+        onClick={copyUrl}
+      >
+        Скопировать ссылку Mini App
+      </button>
+    </div>
+  );
+}
 
 function SettingsPage({
   title,
@@ -6132,6 +6227,9 @@ export default function App() {
 
   const tableFromUrl = urlParams.get("table");
   const restaurantFromUrl = urlParams.get("restaurant");
+  const miniAppMatch =
+    window.location.hash.match(/^#\/mini-app\/([^/?#]+)\/?$/);
+
   const publicMenuPayload = urlParams.get("festoMenu");
   const publicMenuData = publicMenuPayload ? festoBase64Decode(publicMenuPayload) : null;
   const liveOrdersRestaurantId =
@@ -6308,6 +6406,10 @@ export default function App() {
       })
     );
   }, []);
+
+  if (miniAppMatch) {
+    return <TelegramMiniAppPage />;
+  }
 
   if (publicMenuRoute) {
     if (publicRouteError) return <CustomerError title="Меню временно недоступно" text={publicRouteError} />;
