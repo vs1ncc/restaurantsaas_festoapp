@@ -330,7 +330,7 @@ function Auth({ restaurants, onLogin }) {
    LICENSE AGREEMENT / TRIAL ACCESS
 ------------------------------------------------------- */
 
-const TRIAL_HOURS = 5;
+const TRIAL_HOURS = 24;
 const SUBSCRIPTION_PRICE = 5000;
 const DEFAULT_PAYMENT_REQUISITES = "+7 925 569 07-37 · Даниэла Альбертовна Х. · Сбер Банк · по СБП";
 
@@ -355,7 +355,7 @@ function LicenseAgreementGate({ restaurant, onAccept, onLogout }) {
           <h3>3. Учетная запись и безопасность</h3>
           <p>Лицензиат обязан хранить логин и пароль в тайне, своевременно обновлять данные и незамедлительно сообщать об утрате контроля над учетной записью. Действия, совершенные с использованием учетной записи, считаются совершенными Лицензиатом до момента уведомления Лицензиара об ее компрометации.</p>
           <h3>4. Пробный период</h3>
-          <p>При первичном подключении предоставляется пробный доступ продолжительностью 5 часов с момента первого входа. В течение пробного периода функциональность предоставляется для ознакомления. По окончании пробного периода доступ к кабинету может быть ограничен до подтверждения оплаты лицензии.</p>
+          <p>При первичном подключении предоставляется пробный доступ продолжительностью 24 часа с момента первого входа. В течение пробного периода функциональность предоставляется для ознакомления. По окончании пробного периода доступ к кабинету может быть ограничен до подтверждения оплаты лицензии.</p>
           <h3>5. Стоимость и порядок оплаты</h3>
           <p>Стоимость подключения нового ресторана составляет <strong>{money(SUBSCRIPTION_PRICE)}</strong>. Оплата производится банковским переводом по реквизитам, указанным в счете. После загрузки подтверждения платежа счет передается администратору FESTO на ручную проверку.</p>
           <h3>6. Бессрочная лицензия после подтверждения оплаты</h3>
@@ -394,7 +394,7 @@ function TrialExpiredGate({ restaurant, invoices, setInvoices, onLogout }) {
     <div className="trial-expired-page">
       <div className="trial-expired-head">
         <div className="logo">F</div>
-        <div><div className="eyebrow">ПРОБНЫЙ ДОСТУП ЗАВЕРШЕН</div><h1>Оплатите FESTO, чтобы продолжить</h1><p>{restaurant.name} · пробный период 5 часов закончился.</p></div>
+        <div><div className="eyebrow">ПРОБНЫЙ ДОСТУП ЗАВЕРШЕН</div><h1>Оплатите FESTO, чтобы продолжить</h1><p>{restaurant.name} · пробный период 24 часа закончился.</p></div>
         <button className="secondary-button" onClick={onLogout}><Icon name="logout" size={17}/>Выйти</button>
       </div>
       <div className="trial-expired-note"><strong>Счет за программное обеспечение — {money(SUBSCRIPTION_PRICE)}</strong><span>Оплата только банковским переводом. После перевода прикрепите чек в счете.</span></div>
@@ -1149,10 +1149,15 @@ function CreateRestaurantModal({
     phone: "",
     name: "",
     address: "",
+    bik: "",
+    bankName: "",
+    settlementAccount: "",
+    correspondentAccount: "",
     accent: "#6C4BF4",
   });
 
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   function update(field, value) {
     setForm((prev) => ({
@@ -1161,31 +1166,7 @@ function CreateRestaurantModal({
     }));
   }
 
-  function generateLogin() {
-    const base =
-      form.name
-        .toLowerCase()
-        .replace(/[^a-zа-яё0-9]+/gi, "")
-        .slice(0, 12) || "restaurant";
-
-    let login = base;
-    let index = 2;
-
-    while (
-      restaurants.some(
-        (restaurant) =>
-          restaurant.login?.toLowerCase() ===
-          login.toLowerCase()
-      )
-    ) {
-      login = `${base}${index}`;
-      index += 1;
-    }
-
-    return login;
-  }
-
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
     setError("");
 
@@ -1200,32 +1181,51 @@ function CreateRestaurantModal({
       return;
     }
 
-    const login = generateLogin();
+    if (
+      !form.bik.trim() ||
+      !form.bankName.trim() ||
+      !form.settlementAccount.trim() ||
+      !form.correspondentAccount.trim()
+    ) {
+      setError("Заполните банковские реквизиты.");
+      return;
+    }
 
-    const restaurant = {
-      id: uid("restaurant"),
-      legalName: form.legalName.trim(),
-      inn: form.inn.trim(),
-      phone: form.phone.trim(),
-      name: form.name.trim(),
-      address: form.address.trim(),
-      accent: form.accent,
-      login,
-      password: Math.random()
-        .toString(36)
-        .slice(-8),
-      license: `FESTO-${new Date().getFullYear()}-${Math.random()
-        .toString(36)
-        .slice(2, 8)
-        .toUpperCase()}`,
-      licenseAcceptedAt: null,
-      trialStartedAt: null,
-      trialDurationHours: TRIAL_HOURS,
-      subscriptionActive: false,
-      subscriptionType: "trial",
-    };
+    setSaving(true);
 
-    onCreate(restaurant);
+    try {
+      const result = await festoApi("/api/restaurants", {
+        method: "POST",
+        body: JSON.stringify({
+          legalName: form.legalName.trim(),
+          inn: form.inn.trim(),
+          phone: form.phone.trim(),
+          name: form.name.trim(),
+          address: form.address.trim(),
+          accent: form.accent,
+          bankDetails: {
+            bik: form.bik.trim(),
+            bankName: form.bankName.trim(),
+            settlementAccount: form.settlementAccount.trim(),
+            correspondentAccount: form.correspondentAccount.trim(),
+          },
+        }),
+      });
+
+      if (!result?.restaurant) {
+        throw new Error("Сервер не вернул созданный ресторан.");
+      }
+
+      onCreate(result.restaurant);
+    } catch (error) {
+      console.error("FESTO create restaurant error:", error);
+      setError(
+        error?.message ||
+          "Не удалось создать ресторан. Попробуйте ещё раз."
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -1241,6 +1241,7 @@ function CreateRestaurantModal({
             type="button"
             className="close-button"
             onClick={onClose}
+            disabled={saving}
           >
             ×
           </button>
@@ -1259,6 +1260,7 @@ function CreateRestaurantModal({
                 update("legalName", e.target.value)
               }
               placeholder="ООО «Название»"
+              disabled={saving}
             />
           </div>
 
@@ -1271,6 +1273,7 @@ function CreateRestaurantModal({
                   update("inn", e.target.value)
                 }
                 placeholder="0000000000"
+                disabled={saving}
               />
             </div>
 
@@ -1282,8 +1285,66 @@ function CreateRestaurantModal({
                   update("phone", e.target.value)
                 }
                 placeholder="+7 900 000-00-00"
+                disabled={saving}
               />
             </div>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Банковские реквизиты</h3>
+
+          <div className="two-columns">
+            <div className="input-group">
+              <label>БИК *</label>
+              <input
+                value={form.bik}
+                onChange={(e) =>
+                  update("bik", e.target.value)
+                }
+                placeholder="000000000"
+                inputMode="numeric"
+                disabled={saving}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Название банка *</label>
+              <input
+                value={form.bankName}
+                onChange={(e) =>
+                  update("bankName", e.target.value)
+                }
+                placeholder="Название банка"
+                disabled={saving}
+              />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label>Расчётный счёт *</label>
+            <input
+              value={form.settlementAccount}
+              onChange={(e) =>
+                update("settlementAccount", e.target.value)
+              }
+              placeholder="40702810..."
+              inputMode="numeric"
+              disabled={saving}
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Корреспондентский счёт *</label>
+            <input
+              value={form.correspondentAccount}
+              onChange={(e) =>
+                update("correspondentAccount", e.target.value)
+              }
+              placeholder="30101810..."
+              inputMode="numeric"
+              disabled={saving}
+            />
           </div>
         </div>
 
@@ -1298,6 +1359,7 @@ function CreateRestaurantModal({
                 update("name", e.target.value)
               }
               placeholder="Название ресторана"
+              disabled={saving}
             />
           </div>
 
@@ -1309,6 +1371,7 @@ function CreateRestaurantModal({
                 update("address", e.target.value)
               }
               placeholder="Адрес ресторана"
+              disabled={saving}
             />
           </div>
 
@@ -1325,6 +1388,7 @@ function CreateRestaurantModal({
               onChange={(e) =>
                 update("accent", e.target.value)
               }
+              disabled={saving}
             />
           </div>
         </div>
@@ -1334,22 +1398,23 @@ function CreateRestaurantModal({
             type="button"
             className="secondary-button"
             onClick={onClose}
+            disabled={saving}
           >
             Отмена
           </button>
 
-          <button className="primary-button" type="submit">
-            Создать ресторан
+          <button
+            className="primary-button"
+            type="submit"
+            disabled={saving}
+          >
+            {saving ? "Создание..." : "Создать ресторан"}
           </button>
         </div>
       </form>
     </div>
   );
 }
-
-/* -------------------------------------------------------
-   RESTAURANT DETAILS
-------------------------------------------------------- */
 
 function RestaurantDetails({
   restaurant,
@@ -6212,9 +6277,6 @@ export default function App() {
   }, []);
 
   function handleLogin(nextSession) {
-    if (nextSession.role === "director") {
-      setRestaurants((prev) => prev.map((r) => r.id === nextSession.restaurantId && !r.trialStartedAt ? { ...r, trialStartedAt: new Date().toISOString() } : r));
-    }
     setSession(nextSession);
     writeStorage(STORAGE.session, nextSession);
   }
