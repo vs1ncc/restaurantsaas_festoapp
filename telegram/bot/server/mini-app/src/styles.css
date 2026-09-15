@@ -306,7 +306,7 @@ footer span:first-child {
 
 /* Telegram WebApp top safe area */
 .app {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 34px);
 }
 
 .topbar {
