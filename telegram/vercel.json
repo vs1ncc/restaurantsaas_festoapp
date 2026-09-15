@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run build:miniapp",
+  "outputDirectory": "dist",
+  "framework": "vite"
+}
